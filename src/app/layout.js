@@ -2,6 +2,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import "./globals.css";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeProvider } from "next-themes";
+import { cookies } from "next/headers";
 
 export const metadata = {
   title: "Create Next App",
@@ -9,11 +10,14 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  const cookieStore = cookies();
+  const defaultOpen = cookieStore.get("sidebar:state")?.value === "true";
+
   return (
     <html lang="en">
       <body>
         <ThemeProvider attribute="class" defaultTheme="dark">
-          <SidebarProvider>
+          <SidebarProvider defaultOpen={defaultOpen}>
             {/* Sidebar and Trigger */}
             <AppSidebar />
             <SidebarTrigger />
