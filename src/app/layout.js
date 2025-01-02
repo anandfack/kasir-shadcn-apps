@@ -1,4 +1,4 @@
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import "./globals.css";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { ThemeProvider } from "next-themes";
@@ -22,7 +22,9 @@ export default function RootLayout({ children }) {
             <AppSidebar />
             <SidebarTrigger />
             {/* Main Content */}
-            {children}
+            {children && (
+              <div className="mx-auto container md:px-5 my-10">{children}</div>
+            )}
           </SidebarProvider>
         </ThemeProvider>
       </body>

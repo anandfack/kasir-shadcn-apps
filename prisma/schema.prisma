@@ -1,0 +1,168 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Pegawai {
+  id                    Int       @id @default(autoincrement())
+  nip_pegawai           String
+  nama_pegawai          String
+  tanggal_lahir         DateTime
+  jenis_kelamin         String
+  alamat_pegawai        String
+  nomor_telepon_pegawai String
+  email_pegawai         String
+  jabatan_pegawai       String
+  password              String
+  is_aktif              Boolean
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  deleted_at            DateTime?
+
+  @@map("pegawai_m")
+}
+
+model Satuan {
+  id          Int       @id @default(autoincrement())
+  kode_satuan String
+  nama_satuan String
+  created_at  DateTime  @default(now())
+  updated_at  DateTime  @updatedAt
+  deleted_at  DateTime?
+  Produk      Produk[]
+
+  @@map("satuanproduk_m")
+}
+
+model Stok {
+  id                 Int       @id @default(autoincrement())
+  produk_id          Int?
+  produk             Produk?   @relation(fields: [produk_id], references: [id])
+  jumlah_stok        Int
+  minimal_stok       Int
+  maksimal_stok      Int
+  tanggal_masuk      DateTime
+  tanggal_kadaluarsa DateTime
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+  deleted_at         DateTime?
+
+  @@map("stokproduk_m")
+}
+
+model Kategori {
+  id            Int       @id @default(autoincrement())
+  kode_kategori String
+  nama_kategori String
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+  Produk        Produk[]
+
+  @@map("kategoriproduk_m")
+}
+
+model Supplier {
+  id                     Int       @id @default(autoincrement())
+  nama_supplier          String
+  alamat_supplier        String
+  nomor_telepon_supplier String
+  is_aktif               Boolean
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
+  deleted_at             DateTime?
+  Produk                 Produk[]
+}
+
+model Harga {
+  id         Int       @id @default(autoincrement())
+  produk_id  Int?
+  produk     Produk?   @relation(fields: [produk_id], references: [id])
+  harga_beli Float
+  harga_jual Float
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@map("hargaproduk_m")
+}
+
+model Produk {
+  id               Int               @id @default(autoincrement())
+  kategori_id      Int?
+  kategori         Kategori?         @relation(fields: [kategori_id], references: [id])
+  satuan_produk_id Int?
+  satuan           Satuan?           @relation(fields: [satuan_produk_id], references: [id])
+  supplier_id      Int?
+  supplier         Supplier?         @relation(fields: [supplier_id], references: [id])
+  kode_produk      String
+  nama_produk      String
+  deskripsi_produk String?
+  gambar_produk    String?
+  is_aktif         Boolean
+  created_at       DateTime          @default(now())
+  updated_at       DateTime          @updatedAt
+  deleted_at       DateTime?
+  Stok             Stok[]
+  Harga            Harga[]
+  DetailPenjualan  DetailPenjualan[]
+
+  @@map("produk_m")
+}
+
+model Penjualan {
+  id                Int               @id @default(autoincrement())
+  nomor_penjualan   String
+  tanggal_penjualan DateTime
+  status_penjualan  String
+  total_harga       Float
+  created_at        DateTime          @default(now())
+  updated_at        DateTime          @updatedAt
+  deleted_at        DateTime?
+  DetailPenjualan   DetailPenjualan[]
+  Pembayaran        Pembayaran[]
+
+  @@map("penjualan_t")
+}
+
+model DetailPenjualan {
+  id            Int        @id @default(autoincrement())
+  penjualan_id  Int?
+  penjualan     Penjualan? @relation(fields: [penjualan_id], references: [id])
+  produk_id     Int?
+  produk        Produk?    @relation(fields: [produk_id], references: [id])
+  harga_satuan  Float
+  jumlah_produk Int
+  harga_produk  Float
+  total_harga   Float
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+  deleted_at    DateTime?
+
+  @@map("detailpenjualan_t")
+}
+
+model Pembayaran {
+  id              Int       @id @default(autoincrement())
+  penjualan_id    Int
+  penjualan       Penjualan @relation(fields: [penjualan_id], references: [id])
+  tanggal_bayar   DateTime
+  jumlah_bayar    Float
+  metode_bayar    String
+  nomor_referensi String?
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  deleted_at      DateTime?
+
+  @@map("pembayaran_t")
+}
