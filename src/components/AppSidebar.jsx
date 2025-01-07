@@ -14,7 +14,7 @@ export function AppSidebar() {
     { icon: <PackageIcon />, name: "Produk", href: "/produk" },
     { icon: <DollarSignIcon />, name: "Harga", href: "/" },
     { icon: <RulerIcon />, name: "Satuan", href: "/" },
-    { icon: <TagIcon />, name: "Kategori", href: "/" },
+    { icon: <TagIcon />, name: "Kategori", href: "/kategori-produk" },
     { icon: <BoxesIcon />, name: "Stok", href: "/" },
   ];
 
@@ -24,9 +24,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarCollapsibleMenu
           label="Menu Utama"
-          items={[
-            { icon: <HomeIcon />, name: "Dashboard", href: "/" },
-          ]}
+          items={[{ icon: <HomeIcon />, name: "Dashboard", href: "/" }]}
         />
         <SidebarCollapsibleMenu label="Master" items={masterMenuItems} />
       </SidebarContent>
