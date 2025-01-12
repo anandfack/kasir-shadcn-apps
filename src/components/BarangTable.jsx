@@ -217,7 +217,6 @@ const columns = [
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("hargaJual"));
 
-      // Format the amount as a dollar amount
       const formatted = new Intl.NumberFormat("id-ID", {
         style: "currency",
         currency: "IDR",
@@ -258,22 +257,6 @@ const columns = [
     },
     cell: ({ row }) => <div>{row.getValue("minimalStok")}</div>,
   },
-  // {
-  //   accessorKey: "satuan",
-  //   header: ({ column }) => {
-  //     return (
-  //       <Button
-  //         variant="link"
-  //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //         className="p-0"
-  //       >
-  //         Satuan
-  //         <ArrowUpDown />
-  //       </Button>
-  //     );
-  //   },
-  //   cell: ({ row }) => <div>{row.getValue("satuan")}</div>,
-  // },
   {
     accessorKey: "status",
     header: ({ column }) => {
