@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   Card,
@@ -8,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { DataTableDemo } from "@/components/KategoriProdukTable";
+import DataTableDemo from "@/components/KategoriProdukTable";
 
 const Page = () => {
   return (
