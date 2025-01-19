@@ -4,7 +4,11 @@ const prisma = new PrismaClient();
 
 export async function GET(req) {
   try {
-    const productsCategory = await prisma.kategori.findMany();
+    const productsCategory = await prisma.kategori.findMany({
+      where: {
+        deleted_at: null,
+      },
+    });
     return new Response(JSON.stringify(productsCategory), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -19,7 +23,7 @@ export async function GET(req) {
 
 export async function POST(req) {
   try {
-    const body = await req.json(); // Membaca data JSON dari request body
+    const body = await req.json();
     const { kode_kategori, nama_kategori, created_at, updated_at } = body;
 
     if (!kode_kategori && !nama_kategori) {
@@ -53,8 +57,6 @@ export async function POST(req) {
         }
       );
     }
-
-    // Simpan ke database
     const newCategory = await prisma.kategori.create({
       data: {
         kode_kategori,

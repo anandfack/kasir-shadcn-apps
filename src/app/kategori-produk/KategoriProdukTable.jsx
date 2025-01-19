@@ -15,6 +15,7 @@ import {
   ChevronDown,
   CirclePlus,
   Eye,
+  Loader2,
   MoreHorizontal,
   SquarePen,
   Trash2,
@@ -49,12 +50,11 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { Badge } from "./ui/badge";
 import { Input } from "@/components/ui/input";
-
 import TambahKategoriProdukForm from "./TambahKategoriProdukForm";
+import EditKategoriProduk from "./TambahKategoriProdukForm";
 
-const useFetchData = (url) => {
+const useFetchData = (url, refreshKey) => {
   const [data, setData] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState(null);
@@ -72,7 +72,7 @@ const useFetchData = (url) => {
     };
 
     fetchData();
-  }, [url]);
+  }, [url, refreshKey]);
 
   return { data, loading, error };
 };
@@ -144,17 +144,30 @@ const columns = [
 
       return (
         <div className="flex items-center justify-center gap-2">
-          <Button className="text-xs" size="medium" variant="outline">
-            <Eye className="h-2 w-2" />
-            Detail
+          <Button className="text-xs" variant="outline">
+            <Eye />
           </Button>
-          <Button className="text-xs" size="medium" variant="secondary">
-            <SquarePen className="h-2 w-2" />
-            Edit
-          </Button>
-          <Button className="text-xs" size="medium" variant="destructive">
-            <Trash2 className="h-2 w-2" />
-            Delete
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="secondary" className="text-xs">
+                <SquarePen />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>Ubah Kategori Produk</DialogTitle>
+                <DialogDescription>
+                  Modifikasi kategori produk untuk mengelompokkan produk Anda
+                  secara lebih efisien.
+                </DialogDescription>
+              </DialogHeader>
+              <EditKategoriProduk
+                onSuccess={() => setRefreshKey((prev) => prev + 1)}
+              />
+            </DialogContent>
+          </Dialog>
+          <Button className="text-xs" variant="destructive">
+            <Trash2 />
           </Button>
         </div>
       );
@@ -162,13 +175,17 @@ const columns = [
   },
 ];
 
-export default function DataTableDemo() {
+const KategoriProdukTable = () => {
+  const [refreshKey, setRefreshKey] = React.useState(0);
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [rowSelection, setRowSelection] = React.useState({});
 
-  const { data, loading, error } = useFetchData("/api/kategori-produk");
+  const { data, loading, error } = useFetchData(
+    "/api/kategori-produk",
+    refreshKey
+  );
 
   const table = useReactTable({
     data,
@@ -189,8 +206,25 @@ export default function DataTableDemo() {
     },
   });
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center gap-2">
+        <Loader2 className="animate-spin h-5 w-5" />
+        <div>Loading ...</div>
+      </div>
+    );
+  if (error)
+    return (
+      <div>
+        <div className="flex items-center justify-center gap-2">
+          <Loader2 className="animate-spin h-5 w-5" />
+          <div>Gagal memuat data</div>
+        </div>
+        <div className="flex items-center justify-center text-zinc-300 text-xs">
+          {error}
+        </div>
+      </div>
+    );
 
   return (
     <div className="w-full">
@@ -214,7 +248,9 @@ export default function DataTableDemo() {
                 Anda secara lebih efisien.
               </DialogDescription>
             </DialogHeader>
-            <TambahKategoriProdukForm />
+            <TambahKategoriProdukForm
+              onSuccess={() => setRefreshKey((prev) => prev + 1)}
+            />
           </DialogContent>
         </Dialog>
         <DropdownMenu>
@@ -286,6 +322,32 @@ export default function DataTableDemo() {
           </TableBody>
         </Table>
       </div>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="flex-1 text-sm text-muted-foreground">
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div>
+        <div className="space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+          >
+            Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
     </div>
   );
-}
+};
+
+export default KategoriProdukTable;

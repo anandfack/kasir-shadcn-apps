@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import DataTableDemo from "@/components/KategoriProdukTable";
+import KategoriProdukTable from "./KategoriProdukTable";
 
 const Page = () => {
   return (
@@ -22,7 +22,7 @@ const Page = () => {
           <CardDescription>Data kategori produk ada disini</CardDescription>
         </CardHeader>
         <CardContent>
-          <DataTableDemo />
+          <KategoriProdukTable />
         </CardContent>
       </Card>
     </>

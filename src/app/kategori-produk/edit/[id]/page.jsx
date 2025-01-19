@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 
 import { useTambahKategoriProduk } from "@/hooks/useTambahKategoriProduk";
 
-const TambahKategoriProdukForm = () => {
+const TambahKategoriProdukForm = ({ onSuccess }) => {
   const { tambahKategoriProduk, isLoading, error } = useTambahKategoriProduk();
 
   const [kodeKategori, setKodeKategori] = React.useState("");
@@ -24,8 +24,9 @@ const TambahKategoriProdukForm = () => {
       await tambahKategoriProduk(payload);
       setKodeKategori("");
       setNamaKategori("");
+      if (onSuccess) onSuccess();
     } catch (error) {
-      // console.error("Error saat menambahkan kategori:", error);
+      console.error("Error saat menambahkan kategori:", error);
     }
   };
 

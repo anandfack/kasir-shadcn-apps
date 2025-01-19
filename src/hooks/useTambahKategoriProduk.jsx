@@ -25,7 +25,7 @@ export const useTambahKategoriProduk = () => {
       toast({
         title: "Data berhasil ditambahkan",
         description: "Kategori produk berhasil ditambahkan!",
-        variant: "success",
+        variant: "primary",
       });
     } catch (error) {
       console.error("Error saat menambahkan kategori:", error);
