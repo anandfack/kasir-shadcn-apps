@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 
 import { useTambahKategoriProduk } from "@/hooks/useTambahKategoriProduk";
 
-const EditKategoriProduk = ({ onSuccess }) => {
+const TambahKategoriProdukForm = ({ onSuccess, onError }) => {
   const { tambahKategoriProduk, isLoading, error } = useTambahKategoriProduk();
 
   const [kodeKategori, setKodeKategori] = React.useState("");
@@ -21,11 +21,21 @@ const EditKategoriProduk = ({ onSuccess }) => {
       updated_at: new Date().toISOString(),
     };
     try {
-      await tambahKategoriProduk(payload);
-      setKodeKategori("");
-      setNamaKategori("");
-      if (onSuccess) onSuccess();
+      // Memanggil fungsi tambahKategoriProduk
+      const result = await tambahKategoriProduk(payload, {
+        onSuccess,
+        onError,
+      });
+      if (result.success) {
+        setKodeKategori("");
+        setNamaKategori("");
+      }
+      // await tambahKategoriProduk(payload);
+      // setKodeKategori("");
+      // setNamaKategori("");
+      // if (onSuccess) onSuccess();
     } catch (error) {
+      if (onError) onError(error);
       console.error("Error saat menambahkan kategori:", error);
     }
   };
@@ -41,7 +51,7 @@ const EditKategoriProduk = ({ onSuccess }) => {
             id="kode-kategori"
             value={kodeKategori}
             onChange={(e) => setKodeKategori(e.target.value)}
-            className={`col-span-3 ${error ? "border-red-500" : ""}`}
+            className="col-span-3"
             placeholder="Masukkan kode kategori"
           />
         </div>
@@ -71,4 +81,4 @@ const EditKategoriProduk = ({ onSuccess }) => {
   );
 };
 
-export default EditKategoriProduk;
+export default TambahKategoriProdukForm;

@@ -16,7 +16,6 @@ import {
   CirclePlus,
   Eye,
   Loader2,
-  MoreHorizontal,
   SquarePen,
   Trash2,
 } from "lucide-react";
@@ -27,9 +26,6 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -52,7 +48,9 @@ import {
 
 import { Input } from "@/components/ui/input";
 import TambahKategoriProdukForm from "./TambahKategoriProdukForm";
-import EditKategoriProduk from "./TambahKategoriProdukForm";
+import UpdateKategoriProdukForm from "./UpdateKategoriProdukForm";
+
+import { useUpdateKategoriProduk } from "@/hooks/useUpdateKategoriProduk";
 
 const useFetchData = (url, refreshKey) => {
   const [data, setData] = React.useState([]);
@@ -77,34 +75,50 @@ const useFetchData = (url, refreshKey) => {
   return { data, loading, error };
 };
 
-const columns = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "kode_kategori",
-    header: ({ column }) => {
-      return (
-        <div className="flex justify-start">
+const KategoriProdukTable = () => {
+  const [refreshKey, setRefreshKey] = React.useState(0);
+  const [sorting, setSorting] = React.useState([]);
+  const [columnFilters, setColumnFilters] = React.useState([]);
+  const [columnVisibility, setColumnVisibility] = React.useState({});
+  const [rowSelection, setRowSelection] = React.useState({});
+  const [editData, setEditData] = React.useState(null);
+  const [isDialogUpdateOpen, setIsDialogUpdateOpen] = React.useState(false);
+  const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
+
+  const { data, loading, error } = useFetchData(
+    "/api/kategori-produk",
+    refreshKey
+  );
+
+  const columns = React.useMemo(
+    () => [
+      {
+        id: "select",
+        header: ({ table }) => (
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected() ||
+              (table.getIsSomePageRowsSelected() && "indeterminate")
+            }
+            onCheckedChange={(value) =>
+              table.toggleAllPageRowsSelected(!!value)
+            }
+            aria-label="Select all"
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="Select row"
+          />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      },
+      {
+        accessorKey: "kode_kategori",
+        header: ({ column }) => (
           <Button
             variant="link"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
@@ -113,78 +127,87 @@ const columns = [
             Kode Kategori Produk
             <ArrowUpDown />
           </Button>
-        </div>
-      );
-    },
-    cell: ({ row }) => <div>{row.getValue("kode_kategori")}</div>,
-  },
-  {
-    accessorKey: "nama_kategori",
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="link"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-          className="p-0"
-        >
-          Nama Kategori Produk
-          <ArrowUpDown />
-        </Button>
-      );
-    },
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("nama_kategori")}</div>
-    ),
-  },
-  {
-    id: "actions",
-    header: () => <div className="text-center">Actions</div>,
-    cell: ({ row }) => {
-      const payment = row.original;
-
-      return (
-        <div className="flex items-center justify-center gap-2">
-          <Button className="text-xs" variant="outline">
-            <Eye />
+        ),
+        cell: ({ row }) => <div>{row.getValue("kode_kategori")}</div>,
+      },
+      {
+        accessorKey: "nama_kategori",
+        header: ({ column }) => (
+          <Button
+            variant="link"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0"
+          >
+            Nama Kategori Produk
+            <ArrowUpDown />
           </Button>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="secondary" className="text-xs">
-                <SquarePen />
+        ),
+        cell: ({ row }) => (
+          <div className="capitalize">{row.getValue("nama_kategori")}</div>
+        ),
+      },
+      {
+        id: "actions",
+        header: () => <div className="text-center">Actions</div>,
+        cell: ({ row }) => {
+          const loadData = row.original;
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+              <Button className="text-xs" variant="outline">
+                <Eye />
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-4xl">
-              <DialogHeader>
-                <DialogTitle>Ubah Kategori Produk</DialogTitle>
-                <DialogDescription>
-                  Modifikasi kategori produk untuk mengelompokkan produk Anda
-                  secara lebih efisien.
-                </DialogDescription>
-              </DialogHeader>
-              <EditKategoriProduk
-                onSuccess={() => setRefreshKey((prev) => prev + 1)}
-              />
-            </DialogContent>
-          </Dialog>
-          <Button className="text-xs" variant="destructive">
-            <Trash2 />
-          </Button>
-        </div>
-      );
-    },
-  },
-];
-
-const KategoriProdukTable = () => {
-  const [refreshKey, setRefreshKey] = React.useState(0);
-  const [sorting, setSorting] = React.useState([]);
-  const [columnFilters, setColumnFilters] = React.useState([]);
-  const [columnVisibility, setColumnVisibility] = React.useState({});
-  const [rowSelection, setRowSelection] = React.useState({});
-
-  const { data, loading, error } = useFetchData(
-    "/api/kategori-produk",
-    refreshKey
+              <Dialog
+                open={isDialogUpdateOpen && editData === loadData}
+                onOpenChange={(isOpen) => {
+                  if (!isOpen) setEditData(null);
+                  setIsDialogUpdateOpen(isOpen);
+                }}
+              >
+                <DialogTrigger asChild>
+                  <Button
+                    variant="secondary"
+                    className="text-xs"
+                    onClick={() => {
+                      setEditData(loadData);
+                      setIsDialogUpdateOpen(true);
+                    }}
+                  >
+                    <SquarePen />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-4xl">
+                  <DialogHeader>
+                    <DialogTitle>Ubah Kategori Produk</DialogTitle>
+                    <DialogDescription>
+                      Modifikasi kategori produk untuk mengelompokkan produk
+                      Anda secara lebih efisien.
+                    </DialogDescription>
+                  </DialogHeader>
+                  {editData && (
+                    <UpdateKategoriProdukForm
+                      initialData={editData}
+                      onSuccess={() => {
+                        setRefreshKey((prev) => prev + 1);
+                        setIsDialogUpdateOpen(false);
+                      }}
+                      onError={(error) => {
+                        console.error("Terjadi error:", error);
+                        setIsDialogUpdateOpen(true);
+                      }}
+                    />
+                  )}
+                </DialogContent>
+              </Dialog>
+              <Button className="text-xs" variant="destructive">
+                <Trash2 />
+              </Button>
+            </div>
+          );
+        },
+      },
+    ],
+    [editData, setEditData, isDialogUpdateOpen, setIsDialogUpdateOpen]
   );
 
   const table = useReactTable({
@@ -234,7 +257,10 @@ const KategoriProdukTable = () => {
           className="max-w-sm"
           onChange={(e) => table.setGlobalFilter(e.target.value)}
         />
-        <Dialog>
+        <Dialog
+          open={isDialogTambahOpen}
+          onOpenChange={(isOpen) => setIsDialogTambahOpen(isOpen)}
+        >
           <DialogTrigger asChild>
             <Button variant="outline" className="mx-auto font-semibold">
               <CirclePlus /> Tambah Kategori Produk
@@ -249,7 +275,15 @@ const KategoriProdukTable = () => {
               </DialogDescription>
             </DialogHeader>
             <TambahKategoriProdukForm
-              onSuccess={() => setRefreshKey((prev) => prev + 1)}
+              onSuccess={() => {
+                setRefreshKey((prev) => prev + 1);
+                setIsDialogTambahOpen(false);
+              }}
+              onError={(error) => {
+                console.error("Terjadi error:", error);
+                // Tidak menutup dialog jika ada error
+                setIsDialogTambahOpen(true); // Dialog tetap terbuka meskipun terjadi error
+              }}
             />
           </DialogContent>
         </Dialog>
