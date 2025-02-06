@@ -42,7 +42,12 @@ export const PUT = async (req, { params }) => {
 
     const updateKategoriProduk = await prisma.kategori.update({
       where: { id: parseInt(id) },
-      data: body,
+      data: {
+        kode_kategori,
+        nama_kategori,
+        updated_at: new Date(), // Set waktu terbaru secara manual
+      },
+      // data: body,
     });
     return new Response(JSON.stringify(updateKategoriProduk), {
       status: 200,

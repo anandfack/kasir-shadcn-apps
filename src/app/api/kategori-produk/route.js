@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import moment from "moment-timezone";
 
 const prisma = new PrismaClient();
 
@@ -57,12 +58,17 @@ export async function POST(req) {
         }
       );
     }
+    const nowJakarta = new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Jakarta",
+    });
     const newCategory = await prisma.kategori.create({
       data: {
         kode_kategori,
         nama_kategori,
-        created_at: created_at ? new Date(created_at) : new Date(),
-        updated_at: updated_at ? new Date(updated_at) : new Date(),
+        created_at: created_at ? new Date(created_at) : nowJakarta,
+        updated_at: updated_at ? new Date(updated_at) : nowJakarta,
+        // created_at: created_at ? new Date(created_at) : new Date(),
+        // updated_at: updated_at ? new Date(updated_at) : new Date(),
       },
     });
 

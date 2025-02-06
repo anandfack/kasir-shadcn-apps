@@ -49,8 +49,7 @@ import {
 import { Input } from "@/components/ui/input";
 import TambahKategoriProdukForm from "./TambahKategoriProdukForm";
 import UpdateKategoriProdukForm from "./UpdateKategoriProdukForm";
-
-import { useUpdateKategoriProduk } from "@/hooks/useUpdateKategoriProduk";
+import { useDeleteKategoriProduk } from "@/hooks/useDeleteKategoriProduk";
 
 const useFetchData = (url, refreshKey) => {
   const [data, setData] = React.useState([]);
@@ -82,38 +81,72 @@ const KategoriProdukTable = () => {
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [rowSelection, setRowSelection] = React.useState({});
   const [editData, setEditData] = React.useState(null);
+  const [deleteData, setDeleteData] = React.useState(null);
   const [isDialogUpdateOpen, setIsDialogUpdateOpen] = React.useState(false);
   const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
+  const [isDialogDeleteOpen, setIsDialogDeleteOpen] = React.useState(false);
+
+  const { deleteKategoriProduk, isLoading } = useDeleteKategoriProduk();
 
   const { data, loading, error } = useFetchData(
     "/api/kategori-produk",
     refreshKey
   );
 
+  const handleDelete = React.useCallback(async () => {
+    if (!deleteData) return;
+
+    try {
+      await deleteKategoriProduk(deleteData);
+      setDeleteData(null);
+      setIsDialogDeleteOpen(false);
+      setRefreshKey((prev) => prev + 1);
+    } catch (error) {
+      console.error("Gagal menghapus kategori:", error);
+    }
+  }, [deleteData, deleteKategoriProduk, setIsDialogDeleteOpen, setRefreshKey]);
+
   const columns = React.useMemo(
     () => [
+      // {
+      //   id: "select",
+      //   header: ({ table }) => (
+      //     <Checkbox
+      //       checked={
+      //         table.getIsAllPageRowsSelected() ||
+      //         (table.getIsSomePageRowsSelected() && "indeterminate")
+      //       }
+      //       onCheckedChange={(value) =>
+      //         table.toggleAllPageRowsSelected(!!value)
+      //       }
+      //       aria-label="Select all"
+      //     />
+      //   ),
+      //   cell: ({ row }) => (
+      //     <Checkbox
+      //       checked={row.getIsSelected()}
+      //       onCheckedChange={(value) => row.toggleSelected(!!value)}
+      //       aria-label="Select row"
+      //     />
+      //   ),
+      //   enableSorting: false,
+      //   enableHiding: false,
+      // },
       {
-        id: "select",
-        header: ({ table }) => (
-          <Checkbox
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && "indeterminate")
-            }
-            onCheckedChange={(value) =>
-              table.toggleAllPageRowsSelected(!!value)
-            }
-            aria-label="Select all"
-          />
+        id: "no",
+        accessorFn: (_, index) => index + 1, // Menggunakan index sebagai nilai akses
+        header: ({ column }) => (
+          <Button
+            variant="link"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0"
+          >
+            No
+            <ArrowUpDown />
+          </Button>
         ),
-        cell: ({ row }) => (
-          <Checkbox
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-            aria-label="Select row"
-          />
-        ),
-        enableSorting: false,
+        cell: ({ row }) => <div>{row.getValue("no")}.</div>,
+        enableSorting: true,
         enableHiding: false,
       },
       {
@@ -154,9 +187,9 @@ const KategoriProdukTable = () => {
 
           return (
             <div className="flex items-center justify-center gap-2">
-              <Button className="text-xs" variant="outline">
+              {/* <Button className="text-xs" variant="outline">
                 <Eye />
-              </Button>
+              </Button> */}
               <Dialog
                 open={isDialogUpdateOpen && editData === loadData}
                 onOpenChange={(isOpen) => {
@@ -199,15 +232,65 @@ const KategoriProdukTable = () => {
                   )}
                 </DialogContent>
               </Dialog>
-              <Button className="text-xs" variant="destructive">
+              <Button
+                className="text-xs"
+                variant="destructive"
+                onClick={() => {
+                  setDeleteData(loadData.id);
+                  setIsDialogDeleteOpen(true);
+                }}
+              >
                 <Trash2 />
               </Button>
+              <Dialog
+                open={isDialogDeleteOpen}
+                onOpenChange={setIsDialogDeleteOpen}
+              >
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>
+                      Apakah Anda yakin ingin menghapus data ini?
+                    </DialogTitle>
+                    <DialogDescription>
+                      Yakin ingin menghapus? Data yang dihapus tidak dapat
+                      dikembalikan.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="flex justify-end gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsDialogDeleteOpen(false)}
+                    >
+                      Batal
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={handleDelete}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <Loader2 className="animate-spin" />
+                      ) : (
+                        "Hapus"
+                      )}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
           );
         },
       },
     ],
-    [editData, setEditData, isDialogUpdateOpen, setIsDialogUpdateOpen]
+    [
+      editData,
+      setEditData,
+      isDialogUpdateOpen,
+      setIsDialogUpdateOpen,
+      handleDelete,
+      isDialogDeleteOpen,
+      isLoading,
+    ]
   );
 
   const table = useReactTable({
@@ -251,18 +334,16 @@ const KategoriProdukTable = () => {
 
   return (
     <div className="w-full">
-      <div className="grid grid-cols-3 py-4">
-        <Input
-          placeholder="Cari Kategori Produk ..."
-          className="max-w-sm"
-          onChange={(e) => table.setGlobalFilter(e.target.value)}
-        />
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between py-4">
         <Dialog
           open={isDialogTambahOpen}
           onOpenChange={(isOpen) => setIsDialogTambahOpen(isOpen)}
         >
           <DialogTrigger asChild>
-            <Button variant="outline" className="mx-auto font-semibold">
+            <Button
+              variant="outline"
+              className="font-semibold text-xs md:text-sm"
+            >
               <CirclePlus /> Tambah Kategori Produk
             </Button>
           </DialogTrigger>
@@ -281,15 +362,19 @@ const KategoriProdukTable = () => {
               }}
               onError={(error) => {
                 console.error("Terjadi error:", error);
-                // Tidak menutup dialog jika ada error
-                setIsDialogTambahOpen(true); // Dialog tetap terbuka meskipun terjadi error
+                setIsDialogTambahOpen(true);
               }}
             />
           </DialogContent>
         </Dialog>
-        <DropdownMenu>
+        <Input
+          placeholder="Cari Kategori Produk ..."
+          className="max-w-sm text-xs md:text-sm"
+          onChange={(e) => table.setGlobalFilter(e.target.value)}
+        />
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+            <Button variant="outline" className="ml-auto hidden md:block">
               Columns <ChevronDown />
             </Button>
           </DropdownMenuTrigger>
@@ -312,7 +397,7 @@ const KategoriProdukTable = () => {
                 );
               })}
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
       </div>
       <div className="rounded-md border">
         <Table>
