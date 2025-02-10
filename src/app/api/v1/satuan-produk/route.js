@@ -4,15 +4,15 @@ const prisma = new PrismaClient();
 
 export async function GET(req) {
   try {
-    const productsCategory = await prisma.kategori.findMany({
+    const satuanProduk = await prisma.satuan.findMany({
       where: {
         deleted_at: null,
       },
       orderBy: {
-        nama_kategori: "asc",
+        nama_satuan: "asc",
       },
     });
-    return new Response(JSON.stringify(productsCategory), {
+    return new Response(JSON.stringify(satuanProduk), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
@@ -27,32 +27,32 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { kode_kategori, nama_kategori, created_at, updated_at } = body;
+    const { kode_satuan, nama_satuan, created_at, updated_at } = body;
 
-    if (!kode_kategori && !nama_kategori) {
+    if (!kode_satuan && !nama_satuan) {
       return new Response(
         JSON.stringify({
-          error: "kode kategori dan nama kategori harus diisi",
+          error: "kode satuan dan nama satuan harus diisi",
         }),
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
         }
       );
-    } else if (!kode_kategori) {
+    } else if (!kode_satuan) {
       return new Response(
         JSON.stringify({
-          error: "kode kategori harus diisi",
+          error: "kode satuan harus diisi",
         }),
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
         }
       );
-    } else if (!nama_kategori) {
+    } else if (!nama_satuan) {
       return new Response(
         JSON.stringify({
-          error: "nama kategori harus diisi",
+          error: "nama satuan harus diisi",
         }),
         {
           status: 400,
@@ -60,21 +60,21 @@ export async function POST(req) {
         }
       );
     }
+
     const nowJakarta = new Date().toLocaleString("en-US", {
       timeZone: "Asia/Jakarta",
     });
-    const newCategory = await prisma.kategori.create({
+
+    const tambahSatuanProduk = await prisma.satuan.create({
       data: {
-        kode_kategori,
-        nama_kategori,
+        kode_satuan,
+        nama_satuan,
         created_at: created_at ? new Date(created_at) : nowJakarta,
         updated_at: updated_at ? new Date(updated_at) : nowJakarta,
-        // created_at: created_at ? new Date(created_at) : new Date(),
-        // updated_at: updated_at ? new Date(updated_at) : new Date(),
       },
     });
 
-    return new Response(JSON.stringify(newCategory), {
+    return new Response(JSON.stringify(tambahSatuanProduk), {
       status: 201,
       headers: { "Content-Type": "application/json" },
     });

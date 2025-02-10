@@ -11,12 +11,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Card, CardHeader } from "./ui/card";
 
 export function Breadcrumbs() {
@@ -26,8 +20,13 @@ export function Breadcrumbs() {
   const breadcrumbs = segments.map((segment, index) => {
     const href = "/" + segments.slice(0, index + 1).join("/");
     const isLast = index === segments.length - 1;
+    const formattedName = segment
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
     return {
-      name: segment.charAt(0).toUpperCase() + segment.slice(1), // Capitalize first letter
+      name: formattedName,
       href,
       isLast,
     };

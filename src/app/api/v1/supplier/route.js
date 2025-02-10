@@ -4,15 +4,15 @@ const prisma = new PrismaClient();
 
 export async function GET(req) {
   try {
-    const productsCategory = await prisma.kategori.findMany({
+    const supplier = await prisma.supplier.findMany({
       where: {
         deleted_at: null,
       },
       orderBy: {
-        nama_kategori: "asc",
+        nama_supplier: "asc",
       },
     });
-    return new Response(JSON.stringify(productsCategory), {
+    return new Response(JSON.stringify(supplier), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
@@ -27,32 +27,25 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { kode_kategori, nama_kategori, created_at, updated_at } = body;
+    const {
+      kode_supplier,
+      nama_supplier,
+      alamat_supplier,
+      nomor_telepon_supplier,
+      is_aktif,
+      created_at,
+      updated_at,
+    } = body;
 
-    if (!kode_kategori && !nama_kategori) {
+    if (
+      !kode_supplier &&
+      !nama_supplier &&
+      !alamat_supplier &&
+      !nomor_telepon_supplier
+    ) {
       return new Response(
         JSON.stringify({
-          error: "kode kategori dan nama kategori harus diisi",
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    } else if (!kode_kategori) {
-      return new Response(
-        JSON.stringify({
-          error: "kode kategori harus diisi",
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    } else if (!nama_kategori) {
-      return new Response(
-        JSON.stringify({
-          error: "nama kategori harus diisi",
+          error: "semua kolom harus diisi",
         }),
         {
           status: 400,
@@ -60,21 +53,24 @@ export async function POST(req) {
         }
       );
     }
+
     const nowJakarta = new Date().toLocaleString("en-US", {
       timeZone: "Asia/Jakarta",
     });
-    const newCategory = await prisma.kategori.create({
+
+    const tambahSupplier = await prisma.supplier.create({
       data: {
-        kode_kategori,
-        nama_kategori,
+        kode_supplier,
+        nama_supplier,
+        alamat_supplier,
+        nomor_telepon_supplier,
+        is_aktif: is_aktif ? is_aktif : true,
         created_at: created_at ? new Date(created_at) : nowJakarta,
         updated_at: updated_at ? new Date(updated_at) : nowJakarta,
-        // created_at: created_at ? new Date(created_at) : new Date(),
-        // updated_at: updated_at ? new Date(updated_at) : new Date(),
       },
     });
 
-    return new Response(JSON.stringify(newCategory), {
+    return new Response(JSON.stringify(tambahSupplier), {
       status: 201,
       headers: { "Content-Type": "application/json" },
     });

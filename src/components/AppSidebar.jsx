@@ -7,15 +7,17 @@ import {
   RulerIcon,
   TagIcon,
   BoxesIcon,
+  BookUserIcon,
 } from "lucide-react";
 
 export function AppSidebar() {
   const masterMenuItems = [
     { icon: <PackageIcon />, name: "Produk", href: "/produk" },
-    { icon: <DollarSignIcon />, name: "Harga", href: "/" },
-    { icon: <RulerIcon />, name: "Satuan", href: "/" },
+    { icon: <DollarSignIcon />, name: "Harga", href: "/harga-produk" },
+    { icon: <RulerIcon />, name: "Satuan", href: "/satuan-produk" },
     { icon: <TagIcon />, name: "Kategori", href: "/kategori-produk" },
-    { icon: <BoxesIcon />, name: "Stok", href: "/" },
+    { icon: <BoxesIcon />, name: "Stok", href: "/stok-produk" },
+    { icon: <BookUserIcon />, name: "Supplier", href: "/supplier" },
   ];
 
   return (
