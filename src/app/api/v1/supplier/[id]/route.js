@@ -38,8 +38,8 @@ export const PUT = async (req, { params }) => {
         nama_supplier,
         alamat_supplier,
         nomor_telepon_supplier,
-        is_aktif: is_aktif ? is_aktif : true,
         updated_at: new Date(),
+        is_aktif,
       },
     });
     return new Response(JSON.stringify(updateSupplier), {

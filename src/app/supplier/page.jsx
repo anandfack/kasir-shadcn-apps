@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-// import SatuanProduk from "./table/SatuanProduk";
+import SupplierTable from "./table/Supplier";
 
 const Page = () => {
   return (
@@ -20,7 +20,9 @@ const Page = () => {
           <CardTitle>Supplier</CardTitle>
           <CardDescription>Data supplier ada disini</CardDescription>
         </CardHeader>
-        <CardContent>{/* <SatuanProduk /> */}</CardContent>
+        <CardContent>
+          <SupplierTable />
+        </CardContent>
       </Card>
     </>
   );

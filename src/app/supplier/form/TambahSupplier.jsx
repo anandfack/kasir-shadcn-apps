@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { useTambahSupplier } from "@/hooks/supplier/useTambahSupplier";
+import { Textarea } from "@/components/ui/textarea";
 
 const TambahSupplierForm = ({ onSuccess, onError }) => {
   const { tambahSupplier, isLoading, error } = useTambahSupplier();
@@ -73,7 +74,7 @@ const TambahSupplierForm = ({ onSuccess, onError }) => {
           <Label htmlFor="alamat-supplier" className="text-center">
             Alamat Supplier <i className="text-red-500">*</i>
           </Label>
-          <Input
+          <Textarea
             id="alamat-supplier"
             value={alamatSupplier}
             onChange={(e) => setAlamatSupplier(e.target.value)}
