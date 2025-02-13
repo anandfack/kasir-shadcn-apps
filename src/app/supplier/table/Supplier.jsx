@@ -194,7 +194,7 @@ const SupplierTable = () => {
         cell: ({ row }) => {
           const isActive = row.getValue("is_aktif");
           return (
-            <Badge variant={isActive ? "success" : "destructive"}>
+            <Badge variant={isActive ? "secondary" : "destructive"}>
               {isActive ? "Aktif" : "Non-Aktif"}
             </Badge>
           );
