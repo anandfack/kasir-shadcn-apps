@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import BarangTable, { DataTableDemo } from "@/components/BarangTable";
+import ProdukTable from "./table/Produk";
 
 const Page = () => {
   return (
@@ -20,7 +20,7 @@ const Page = () => {
           <CardDescription>Data barang ada disini</CardDescription>
         </CardHeader>
         <CardContent>
-          <DataTableDemo />
+          <ProdukTable />
         </CardContent>
       </Card>
     </>

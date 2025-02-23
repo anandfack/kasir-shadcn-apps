@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { cookies } from "next/headers";
 
 import { Toaster } from "@/components/ui/toaster";
+import ReactQueryProvider from "./providers/ReactQueryProvider";
 
 export const metadata = {
   title: "Kasir Apps",
@@ -19,16 +20,20 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body>
         <ThemeProvider attribute="class" defaultTheme="dark">
-          <SidebarProvider defaultOpen={defaultOpen}>
-            {/* Sidebar and Trigger */}
-            <AppSidebar />
-            <SidebarTrigger />
-            {/* Main Content */}
-            {children && (
-              <div className="mx-auto container md:px-5 my-10">{children}</div>
-            )}
-            <Toaster />
-          </SidebarProvider>
+          <ReactQueryProvider>
+            <SidebarProvider defaultOpen={defaultOpen}>
+              {/* Sidebar and Trigger */}
+              <AppSidebar />
+              <SidebarTrigger />
+              {/* Main Content */}
+              {children && (
+                <div className="mx-auto container md:px-5 my-10">
+                  {children}
+                </div>
+              )}
+              <Toaster />
+            </SidebarProvider>
+          </ReactQueryProvider>
         </ThemeProvider>
       </body>
     </html>

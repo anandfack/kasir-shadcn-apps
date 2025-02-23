@@ -92,3 +92,8 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.select-trigger::placeholder {
+  color: #9ca3af;
+  opacity: 1;
+}
