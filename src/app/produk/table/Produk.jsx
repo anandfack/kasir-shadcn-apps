@@ -131,46 +131,49 @@ const ProdukTable = () => {
         cell: ({ row }) => <div>{row.getValue("kode_produk")}</div>,
       },
       {
-        accessorKey: "kategori_id",
+        id: "kategori",
+        accessorFn: (row) => row.kategori?.nama_kategori,
         header: ({ column }) => (
           <Button
             variant="link"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Kategori ID
+            Kategori
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => <div>{row.getValue("kategori_id")}</div>,
+        cell: ({ row }) => <div>{row.getValue("kategori")}</div>,
       },
       {
-        accessorKey: "satuan_id",
+        id: "satuan",
+        accessorFn: (row) => row.satuan?.nama_satuan,
         header: ({ column }) => (
           <Button
             variant="link"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Satuan ID
+            Satuan
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => <div>{row.getValue("satuan_id")}</div>,
+        cell: ({ row }) => <div>{row.getValue("satuan")}</div>,
       },
       {
-        accessorKey: "supplier_id",
+        id: "supplier",
+        accessorFn: (row) => row.supplier?.nama_supplier,
         header: ({ column }) => (
           <Button
             variant="link"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Supplier ID
+            Supplier
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => <div>{row.getValue("supplier_id")}</div>,
+        cell: ({ row }) => <div>{row.getValue("supplier")}</div>,
       },
       {
         accessorKey: "nama_produk",
