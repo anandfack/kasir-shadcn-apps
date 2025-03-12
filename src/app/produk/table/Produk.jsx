@@ -84,6 +84,16 @@ const ProdukTable = () => {
 
   const { data, loading, error } = useFetchData("/api/v1/produk", refreshKey);
 
+  const handleSuccess = React.useCallback((data) => {
+    setRefreshKey((prev) => prev + 1);
+    setIsDialogUpdateOpen(false);
+  }, []);
+
+  const handleError = React.useCallback((error) => {
+    console.error("Terjadi error:", error);
+    setIsDialogUpdateOpen(true);
+  }, []);
+
   const handleDelete = React.useCallback(async () => {
     if (!deleteData) return;
 
@@ -265,15 +275,10 @@ const ProdukTable = () => {
                   </DialogHeader>
                   {editData && (
                     <UpdateProdukForm
+                      key={editData?.id}
                       initialData={editData}
-                      onSuccess={() => {
-                        setRefreshKey((prev) => prev + 1);
-                        setIsDialogUpdateOpen(false);
-                      }}
-                      onError={(error) => {
-                        console.error("Terjadi error:", error);
-                        setIsDialogUpdateOpen(true);
-                      }}
+                      onSuccess={handleSuccess}
+                      onError={handleError}
                     />
                   )}
                 </DialogContent>
@@ -336,6 +341,8 @@ const ProdukTable = () => {
       handleDelete,
       isDialogDeleteOpen,
       isLoading,
+      handleSuccess,
+      handleError,
     ]
   );
 

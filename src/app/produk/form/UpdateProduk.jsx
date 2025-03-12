@@ -51,23 +51,16 @@ const UpdateProdukForm = ({ initialData, onSuccess, onError }) => {
         ...initialData,
         kategori: initialData.kategori_id,
         supplier: initialData.supplier_id,
-        satuan: initialData.satuan_id,
+        satuan: initialData.satuan_produk_id,
       });
     }
   }, [initialData]);
-
-  // useEffect(() => {
-  //   if (initialData) {
-  //     setFormData(initialData);
-  //   }
-  // }, [initialData]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle switch change
   const handleSwitchChange = (value) => {
     setFormData((prev) => ({ ...prev, is_aktif: value }));
   };
@@ -77,7 +70,7 @@ const UpdateProdukForm = ({ initialData, onSuccess, onError }) => {
       ...formData,
       kategori_id: formData.kategori,
       supplier_id: formData.supplier,
-      satuan_id: formData.satuan,
+      satuan_produk_id: formData.satuan,
     };
 
     console.log("Data yang dikirim:", dataToSend);
@@ -86,19 +79,17 @@ const UpdateProdukForm = ({ initialData, onSuccess, onError }) => {
       onSuccess: (data) => {
         console.log("Setelah update, respons dari API:", data);
 
-        // Pastikan state diperbarui setelah berhasil menyimpan
         setFormData((prev) => ({
           ...prev,
           kategori: data.kategori_id,
           supplier: data.supplier_id,
-          satuan: data.satuan_id,
+          satuan: data.satuan_produk_id,
           nama_produk: data.nama_produk,
           deskripsi_produk: data.deskripsi_produk,
           kode_produk: data.kode_produk,
           is_aktif: data.is_aktif,
         }));
 
-        // Trigger callback agar parent component tahu data telah diperbarui
         if (onSuccess) onSuccess(data);
       },
       onError,
@@ -269,7 +260,11 @@ const UpdateProdukForm = ({ initialData, onSuccess, onError }) => {
                                     aria-hidden="true"
                                   />
                                 </span>
-                              ) : null}
+                              ) : (
+                                <div className="py-2 px-4 text-gray-500">
+                                  Tidak ada data
+                                </div>
+                              )}
                             </>
                           )}
                         </Listbox.Option>
