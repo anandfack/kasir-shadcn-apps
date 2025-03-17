@@ -24,7 +24,7 @@ const fetchOptions = async (url) => {
 
 const UpdateProdukForm = ({ initialData, onSuccess, onError }) => {
   const { updateProduk, isLoading } = useUpdateProduk();
-  const [formData, setFormData] = useState(initialData || {});
+  const [formData, setFormData] = useState(initialData ?? {});
 
   const { data: kategoriData = [] } = useQuery({
     queryKey: ["kategori-produk"],
@@ -108,8 +108,10 @@ const UpdateProdukForm = ({ initialData, onSuccess, onError }) => {
             <Listbox
               value={formData.kategori}
               onChange={(kategori) => {
-                console.log("Kategori dipilih:", kategori);
-                setFormData((prev) => ({ ...prev, kategori: kategori.id }));
+                if (kategori.id !== formData.kategori) {
+                  console.log("Kategori dipilih:", kategori);
+                  setFormData((prev) => ({ ...prev, kategori: kategori.id }));
+                }
               }}
             >
               <div className="relative mt-1">
@@ -211,8 +213,10 @@ const UpdateProdukForm = ({ initialData, onSuccess, onError }) => {
             <Listbox
               value={formData.satuan}
               onChange={(satuan) => {
-                console.log("Satuan dipilih:", satuan);
-                setFormData((prev) => ({ ...prev, satuan: satuan.id }));
+                if (kategori.id !== formData.kategori) {
+                  console.log("Satuan dipilih:", satuan);
+                  setFormData((prev) => ({ ...prev, satuan: satuan.id }));
+                }
               }}
             >
               <div className="relative mt-1">
@@ -290,8 +294,10 @@ const UpdateProdukForm = ({ initialData, onSuccess, onError }) => {
             <Listbox
               value={formData.supplier}
               onChange={(supplier) => {
-                console.log("Supplier dipilih:", supplier);
-                setFormData((prev) => ({ ...prev, supplier: supplier.id }));
+                if (kategori.id !== formData.kategori) {
+                  console.log("Supplier dipilih:", supplier);
+                  setFormData((prev) => ({ ...prev, supplier: supplier.id }));
+                }
               }}
             >
               <div className="relative mt-1">
