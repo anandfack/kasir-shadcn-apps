@@ -30,26 +30,9 @@ export async function GET(req) {
 export async function POST(req) {
   try {
     const body = await req.json();
-    const {
-      kategori_id,
-      satuan_produk_id,
-      supplier_id,
-      kode_produk,
-      nama_produk,
-      deskripsi_produk,
-      is_aktif,
-      created_at,
-      updated_at,
-    } = body;
+    const { produk_id, harga_jual, harga_beli, created_at, updated_at } = body;
 
-    if (
-      !kategori_id &&
-      !satuan_produk_id &&
-      !supplier_id &&
-      !kode_produk &&
-      !nama_produk &&
-      !deskripsi_produk
-    ) {
+    if (!produk_id && !harga_jual && !harga_beli) {
       return new Response(
         JSON.stringify({
           error: "semua kolom harus diisi",
@@ -65,21 +48,17 @@ export async function POST(req) {
       timeZone: "Asia/Jakarta",
     });
 
-    const tambahProduk = await prisma.produk.create({
+    const tambahHargaProduk = await prisma.harga.create({
       data: {
-        kategori_id,
-        satuan_produk_id,
-        supplier_id,
-        kode_produk,
-        nama_produk,
-        deskripsi_produk,
-        is_aktif: is_aktif ? is_aktif : true,
+        produk_id,
+        harga_jual,
+        harga_beli,
         created_at: created_at ? new Date(created_at) : nowJakarta,
         updated_at: updated_at ? new Date(updated_at) : nowJakarta,
       },
     });
 
-    return new Response(JSON.stringify(tambahProduk), {
+    return new Response(JSON.stringify(tambahHargaProduk), {
       status: 201,
       headers: { "Content-Type": "application/json" },
     });
