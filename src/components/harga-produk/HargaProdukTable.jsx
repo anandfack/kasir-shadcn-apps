@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import HargaProdukDialog from "./HargaProdukDialog";
 import HargaProdukActions from "./HargaProdukActions";
 import useFetchHargaProduk from "@/hooks/harga-produk/useFetchHargaProduk";
@@ -28,13 +29,19 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import TambahHargaProdukForm from "./TambahHargaProdukForm";
 
+import { useToast } from "@/hooks/use-toast";
+import UpdateHargaProdukForm from "./UpdateHargaProdukForm";
+import { apiRequest } from "@/app/utils/fetchOptions";
+
 const HargaProdukTable = () => {
+  const { toast } = useToast();
   const [refreshKey, setRefreshKey] = React.useState(0);
 
   const { data, loading, error } = useFetchHargaProduk(
     "/api/v1/harga-produk",
     refreshKey
   );
+
   const [isDialogUpdateOpen, setIsDialogUpdateOpen] = useState(false);
   const [editData, setEditData] = useState(null);
 
@@ -45,6 +52,42 @@ const HargaProdukTable = () => {
   const [deleteData, setDeleteData] = React.useState(null);
   const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
   const [isDialogDeleteOpen, setIsDialogDeleteOpen] = React.useState(false);
+  const [produkOpen, setProdukOpen] = useState(true);
+
+  const { data: produkData = [], isLoading: produkLoading } = useQuery({
+    queryKey: ["produk"],
+    queryFn: () => apiRequest("GET", "/api/v1/produk"),
+    enabled: produkOpen,
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // const [formData, setFormData] = useState({
+  //   produk: "",
+  //   harga_beli: "",
+  //   harga_jual: "",
+  // });
+
+  // const handleSelectChange = React.useCallback(
+  //   (produk) => {
+  //     setFormData((prev) => ({ ...prev, produk: produk.id }));
+  //   },
+  //   [setFormData]
+  // );
+
+  const dialogTitle = React.useMemo(
+    () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
+    [editData]
+  );
+
+  const dialogDescription = React.useMemo(
+    () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
+    [editData]
+  );
+
+  // const handleUpdateSubmit = React.useCallback(() => {
+  //   console.log("Data yang dikirim:", formData);
+  //   // Tambahkan logic untuk menyimpan data ke backend
+  // }, [formData]);
 
   // const { deleteHargaProduk, isLoading } = useDeleteHargaProduk();
 
@@ -149,16 +192,29 @@ const HargaProdukTable = () => {
                 onEdit={() => {
                   setEditData(loadData);
                   setIsDialogUpdateOpen(true);
+                  console.log("klik edit");
                 }}
-                onDelete={() => console.log("Hapus", loadData.id)}
+                onDelete={() =>
+                  console.log("Hapus", loadData.produk.nama_produk)
+                }
               />
               <HargaProdukDialog
                 isOpen={isDialogUpdateOpen}
                 onOpenChange={setIsDialogUpdateOpen}
-                title="Ubah Produk"
-                description="Modifikasi produk."
+                title={dialogTitle}
+                description={dialogDescription}
               >
-                {editData && <p>Form Edit Produk (Belum dibuat)</p>}
+                {editData && (
+                  <UpdateHargaProdukForm
+                    // formData={formData}
+                    // setFormData={setFormData}
+                    produkData={produkData} // Pastikan data produk tersedia
+                    // onSubmit={handleUpdateSubmit}
+                    isLoading={false}
+                    initialData={editData}
+                    // onChange={handleSelectChange}
+                  />
+                )}
               </HargaProdukDialog>
             </div>
           );
@@ -167,9 +223,17 @@ const HargaProdukTable = () => {
     ],
     [
       editData,
+      // handleUpdateSubmit,
+      // handleSelectChange,
       // setEditData,
       isDialogUpdateOpen,
       setIsDialogUpdateOpen,
+      // formData,
+      dialogDescription,
+      dialogTitle,
+      produkData,
+      // toast,
+      // handleUpdateSubmit,
       // handleDelete,
       // isDialogDeleteOpen,
       // isLoading,
@@ -234,6 +298,11 @@ const HargaProdukTable = () => {
           </DialogTrigger>
           <TambahHargaProdukForm
             onSuccess={() => {
+              toast({
+                title: "Sukses!",
+                description: "Data produk berhasil ditambahkan.",
+                variant: "success",
+              });
               setRefreshKey((prev) => prev + 1);
               setIsDialogTambahOpen(false);
             }}

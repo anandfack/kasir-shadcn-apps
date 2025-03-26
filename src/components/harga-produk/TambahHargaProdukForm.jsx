@@ -26,14 +26,13 @@ const TambahHargaProdukForm = ({ onSuccess, onError }) => {
 
   const { data: produkData, isLoading: produkLoading } = useQuery({
     queryKey: ["produk"],
-    queryFn: () => apiRequest("GET", "/api/v1/produk"),
+    queryFn: () => apiRequest("GET", "/api/v1/produk?without_price=true"),
     enabled: produkOpen,
-    staleTime: 1000 * 60 * 5,
   });
 
-  React.useEffect(() => {
-    console.log("data", produkData);
-  }, [produkData]);
+  // React.useEffect(() => {
+  //   console.log("data", produkData);
+  // }, [produkData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

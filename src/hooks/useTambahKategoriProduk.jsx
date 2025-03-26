@@ -21,7 +21,6 @@ export const useTambahKategoriProduk = () => {
       });
 
       console.log("Kategori berhasil ditambahkan:", response.data);
-      // Menjalankan onSuccess jika tersedia
       if (onSuccess) onSuccess(response.data);
 
       toast({
@@ -33,7 +32,6 @@ export const useTambahKategoriProduk = () => {
       return { success: true, data: response.data };
     } catch (error) {
       console.error("Error saat menambahkan kategori:", error);
-      // Menjalankan onError jika tersedia
       if (onError) onError(error);
       toast({
         title: "Terjadi kesalahan",

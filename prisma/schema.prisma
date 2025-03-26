@@ -89,7 +89,7 @@ model Supplier {
 
 model Harga {
   id         Int       @id @default(autoincrement())
-  produk_id  Int?
+  produk_id  Int?      @unique
   produk     Produk?   @relation(fields: [produk_id], references: [id])
   harga_beli Float
   harga_jual Float

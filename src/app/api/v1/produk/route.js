@@ -4,10 +4,21 @@ const prisma = new PrismaClient();
 
 export async function GET(req) {
   try {
+    const { searchParams } = new URL(req.url);
+    const withoutPrice = searchParams.get("without_price");
+
+    let whereCondition = {
+      deleted_at: null,
+    };
+
+    if (withoutPrice === "true") {
+      whereCondition.Harga = {
+        none: {},
+      };
+    }
+
     const produk = await prisma.produk.findMany({
-      where: {
-        deleted_at: null,
-      },
+      where: whereCondition,
       orderBy: {
         nama_produk: "asc",
       },
@@ -17,11 +28,13 @@ export async function GET(req) {
         supplier: true,
       },
     });
+
     return new Response(JSON.stringify(produk), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
+    console.error("Error:", error); // Tambahkan ini untuk melihat error di log
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
