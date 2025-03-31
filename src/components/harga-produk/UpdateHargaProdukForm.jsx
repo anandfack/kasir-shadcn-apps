@@ -3,127 +3,72 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Listbox, Transition } from "@headlessui/react";
-import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
-import { Fragment } from "react";
+import { apiRequest } from "@/app/utils/fetchOptions";
 
 const UpdateHargaProdukForm = ({
-  // formData,
-  // setFormData,
   produkData,
   initialData,
   onSubmit,
   isLoading,
-  onChange,
+  onError,
 }) => {
   const [formData, setFormData] = React.useState(initialData ?? {});
+  const [isChanged, setIsChanged] = React.useState(false);
 
   React.useEffect(() => {
-    console.log("Initial data berubah:", initialData);
     if (initialData) {
       setFormData({
         ...initialData,
-        produk: initialData.produk?.id || "", // Pastikan produk ID tersimpan
+        produk: initialData.produk?.id || "",
       });
     }
   }, [initialData]);
-  // const handleSelectChange = React.useCallback(
-  //   (selectedProduct) => {
-  //     if (formData.produk !== selectedProduct.id) {
-  //       setFormData((prev) => ({
-  //         ...prev,
-  //         produk: selectedProduct.id,
-  //       }));
-  //     }
 
-  //     if (onChange) {
-  //       onChange(selectedProduct);
-  //     }
-  //   },
-  //   [formData.produk, setFormData, onChange]
-  // );
+  React.useEffect(() => {
+    setIsChanged(
+      JSON.stringify(formData) !==
+        JSON.stringify({
+          ...initialData,
+          produk: initialData?.produk?.id || "",
+        })
+    );
+  }, [formData, initialData]);
 
-  // const handleChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setFormData((prev) => ({ ...prev, [name]: value }));
-  // };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const dataToSend = {
+        harga_beli: parseFloat(formData.harga_beli),
+        harga_jual: parseFloat(formData.harga_jual),
+      };
+
+      // Menggunakan apiRequest untuk update harga produk
+      const updatedData = await apiRequest(
+        "PUT",
+        `/api/v1/harga-produk/${formData.id}`,
+        dataToSend
+      );
+
+      console.log("Data berhasil disimpan:", updatedData);
+
+      // Update state dengan data baru
+      setFormData((prev) => ({
+        ...prev,
+        produk: updatedData.produk_id,
+        harga_beli: updatedData.harga_beli.toFixed(2),
+        harga_jual: updatedData.harga_jual.toFixed(2),
+      }));
+
+      if (onSubmit) onSubmit(updatedData);
+    } catch (error) {
+      onError;
+      console.error("Error saat menyimpan data:", error);
+    }
+  };
 
   return (
     <div className="grid gap-4 py-4">
-      {/* Pilih Produk */}
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="produk" className="text-center">
-          Produk <i className="text-red-500">*</i>
-        </Label>
-        <div className="col-span-3">
-          <Listbox
-            value={produkData.find((p) => p.id === formData.produk) || ""}
-            onChange={(produk) => {
-              if (produk.id !== formData.produk) {
-                console.log("Kategori dipilih:", produk);
-                setFormData((prev) => ({ ...prev, produk: produk.id }));
-              }
-            }}
-          >
-            <div className="relative mt-1">
-              <Listbox.Button className="relative w-full h-10 cursor-default rounded-md bg-background py-2 pl-3 pr-10 text-left border border-input shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input sm:text-sm">
-                <span className="block truncate">
-                  {produkData.find((k) => k.id === formData.produk)
-                    ?.nama_produk || "Pilih Produk"}
-                </span>
-
-                <span className="absolute inset-y-0 right-0 flex items-center pr-2">
-                  <ChevronUpDownIcon className="h-5 w-5" />
-                </span>
-              </Listbox.Button>
-              <Transition as={Fragment} leave="transition-opacity duration-100">
-                <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
-                  {produkData.length > 0 ? (
-                    produkData.map((produk) => (
-                      <Listbox.Option
-                        key={produk.id}
-                        value={produk}
-                        className={({ active }) =>
-                          `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                            active
-                              ? "bg-accent text-accent-foreground"
-                              : "text-popover-foreground"
-                          }`
-                        }
-                      >
-                        {({ selected }) => (
-                          <>
-                            <span
-                              className={`block truncate ${
-                                selected ? "font-medium" : "font-normal"
-                              }`}
-                            >
-                              {produk.nama_produk}
-                            </span>
-                            {selected ? (
-                              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                                <CheckIcon
-                                  className="h-5 w-5"
-                                  aria-hidden="true"
-                                />
-                              </span>
-                            ) : null}
-                          </>
-                        )}
-                      </Listbox.Option>
-                    ))
-                  ) : (
-                    <div className="py-2 px-4 text-gray-500">
-                      Tidak ada data
-                    </div>
-                  )}
-                </Listbox.Options>
-              </Transition>
-            </div>
-          </Listbox>
-        </div>
-      </div>
-
       {/* Harga Beli */}
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="harga-beli" className="text-center">
@@ -160,7 +105,7 @@ const UpdateHargaProdukForm = ({
 
       {/* Tombol Simpan */}
       <div className="flex justify-end">
-        <Button onClick={onSubmit} disabled={isLoading}>
+        <Button onClick={handleSubmit} disabled={!isChanged || isLoading}>
           {isLoading ? "Loading..." : "Simpan Perubahan"}
         </Button>
       </div>

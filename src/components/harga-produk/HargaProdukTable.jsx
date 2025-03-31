@@ -61,19 +61,6 @@ const HargaProdukTable = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  // const [formData, setFormData] = useState({
-  //   produk: "",
-  //   harga_beli: "",
-  //   harga_jual: "",
-  // });
-
-  // const handleSelectChange = React.useCallback(
-  //   (produk) => {
-  //     setFormData((prev) => ({ ...prev, produk: produk.id }));
-  //   },
-  //   [setFormData]
-  // );
-
   const dialogTitle = React.useMemo(
     () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
     [editData]
@@ -83,18 +70,6 @@ const HargaProdukTable = () => {
     () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
     [editData]
   );
-
-  // const handleUpdateSubmit = React.useCallback(() => {
-  //   console.log("Data yang dikirim:", formData);
-  //   // Tambahkan logic untuk menyimpan data ke backend
-  // }, [formData]);
-
-  // const { deleteHargaProduk, isLoading } = useDeleteHargaProduk();
-
-  const handleSuccess = React.useCallback((data) => {
-    setRefreshKey((prev) => prev + 1);
-    setIsDialogUpdateOpen(false);
-  }, []);
 
   const handleError = React.useCallback((error) => {
     console.error("Terjadi error:", error);
@@ -161,7 +136,13 @@ const HargaProdukTable = () => {
           </Button>
         ),
         cell: ({ row }) => (
-          <div className="capitalize">{row.getValue("harga_beli")}</div>
+          <div className="capitalize">
+            {new Intl.NumberFormat("id-ID", {
+              style: "currency",
+              currency: "IDR",
+              minimumFractionDigits: 2,
+            }).format(row.getValue("harga_beli"))}
+          </div>
         ),
       },
       {
@@ -177,7 +158,13 @@ const HargaProdukTable = () => {
           </Button>
         ),
         cell: ({ row }) => (
-          <div className="capitalize">{row.getValue("harga_jual")}</div>
+          <div className="capitalize">
+            {new Intl.NumberFormat("id-ID", {
+              style: "currency",
+              currency: "IDR",
+              minimumFractionDigits: 2,
+            }).format(row.getValue("harga_beli"))}
+          </div>
         ),
       },
       {
@@ -206,13 +193,28 @@ const HargaProdukTable = () => {
               >
                 {editData && (
                   <UpdateHargaProdukForm
-                    // formData={formData}
-                    // setFormData={setFormData}
-                    produkData={produkData} // Pastikan data produk tersedia
-                    // onSubmit={handleUpdateSubmit}
+                    produkData={produkData}
+                    onSubmit={() => {
+                      toast({
+                        title: "Sukses!",
+                        description: "Data harga produk berhasil diupdate.",
+                        variant: "success",
+                      });
+                      setRefreshKey((prev) => prev + 1);
+                      setIsDialogUpdateOpen(false);
+                    }}
+                    onError={(error) => {
+                      toast({
+                        title: "Terjadi kesalahan",
+                        description:
+                          error?.response?.data?.error || "Terjadi kesalahan",
+                        variant: "destructive",
+                      });
+                      console.error("Terjadi error:", error);
+                      setIsDialogTambahOpen(true);
+                    }}
                     isLoading={false}
                     initialData={editData}
-                    // onChange={handleSelectChange}
                   />
                 )}
               </HargaProdukDialog>
@@ -223,22 +225,12 @@ const HargaProdukTable = () => {
     ],
     [
       editData,
-      // handleUpdateSubmit,
-      // handleSelectChange,
-      // setEditData,
+      toast,
       isDialogUpdateOpen,
       setIsDialogUpdateOpen,
-      // formData,
       dialogDescription,
       dialogTitle,
       produkData,
-      // toast,
-      // handleUpdateSubmit,
-      // handleDelete,
-      // isDialogDeleteOpen,
-      // isLoading,
-      // handleSuccess,
-      // handleError,
     ]
   );
 
@@ -307,6 +299,12 @@ const HargaProdukTable = () => {
               setIsDialogTambahOpen(false);
             }}
             onError={(error) => {
+              toast({
+                title: "Terjadi kesalahan",
+                description:
+                  error?.response?.data?.error || "Terjadi kesalahan",
+                variant: "destructive",
+              });
               console.error("Terjadi error:", error);
               setIsDialogTambahOpen(true);
             }}

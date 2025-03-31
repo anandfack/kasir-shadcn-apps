@@ -30,10 +30,6 @@ const TambahHargaProdukForm = ({ onSuccess, onError }) => {
     enabled: produkOpen,
   });
 
-  // React.useEffect(() => {
-  //   console.log("data", produkData);
-  // }, [produkData]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
