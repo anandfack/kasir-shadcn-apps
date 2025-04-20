@@ -14,7 +14,7 @@ datasource db {
 }
 
 model Pegawai {
-  id                    Int       @id @default(autoincrement())
+  id                    Int          @id @default(autoincrement())
   nip_pegawai           String
   nama_pegawai          String
   tanggal_lahir         DateTime
@@ -25,39 +25,60 @@ model Pegawai {
   jabatan_pegawai       String
   password              String
   is_aktif              Boolean
-  created_at            DateTime  @default(now())
-  updated_at            DateTime  @updatedAt
+  created_at            DateTime     @default(now())
+  updated_at            DateTime     @updatedAt
   deleted_at            DateTime?
+  mutasiStok            MutasiStok[]
 
   @@map("pegawai_m")
 }
 
 model Satuan {
-  id          Int       @id @default(autoincrement())
+  id          Int          @id @default(autoincrement())
   kode_satuan String
   nama_satuan String
-  created_at  DateTime  @default(now())
-  updated_at  DateTime  @updatedAt
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
   deleted_at  DateTime?
   Produk      Produk[]
+  mutasiStok  MutasiStok[]
 
   @@map("satuanproduk_m")
 }
 
 model Stok {
+  id            Int       @id @default(autoincrement())
+  produk_id     Int?      @unique
+  produk        Produk?   @relation(fields: [produk_id], references: [id])
+  jumlah_stok   Int
+  minimal_stok  Int
+  maksimal_stok Int
+  created_at    DateTime  @default(now())
+  updated_at    DateTime  @updatedAt
+  deleted_at    DateTime?
+
+  @@map("stokproduk_m")
+}
+
+model MutasiStok {
   id                 Int       @id @default(autoincrement())
   produk_id          Int?
   produk             Produk?   @relation(fields: [produk_id], references: [id])
-  jumlah_stok        Int
-  minimal_stok       Int
-  maksimal_stok      Int
-  tanggal_masuk      DateTime
-  tanggal_kadaluarsa DateTime
+  tipe_mutasi        String
+  jumlah_mutasi      Int
+  keterangan_mutasi  String
+  pegawai_id         Int?
+  pegawai            Pegawai?  @relation(fields: [pegawai_id], references: [id])
+  satuan_produk_id   Int?
+  satuan_produk      Satuan?   @relation(fields: [satuan_produk_id], references: [id])
+  tanggal_kadaluarsa DateTime?
+  tanggal_mutasi     DateTime
+  nomor_mutasi       String
   created_at         DateTime  @default(now())
   updated_at         DateTime  @updatedAt
   deleted_at         DateTime?
 
-  @@map("stokproduk_m")
+  @@map("mutasistok_m")
 }
 
 model Kategori {
@@ -89,7 +110,7 @@ model Supplier {
 
 model Harga {
   id         Int       @id @default(autoincrement())
-  produk_id  Int?      @unique
+  produk_id  Int?
   produk     Produk?   @relation(fields: [produk_id], references: [id])
   harga_beli Float
   harga_jual Float
@@ -116,6 +137,7 @@ model Produk {
   created_at       DateTime          @default(now())
   updated_at       DateTime          @updatedAt
   deleted_at       DateTime?
+  mutasiStok       MutasiStok[]
   Stok             Stok[]
   Harga            Harga[]
   DetailPenjualan  DetailPenjualan[]

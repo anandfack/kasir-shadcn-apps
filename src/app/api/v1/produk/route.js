@@ -13,10 +13,14 @@ export async function GET(req) {
 
     if (withoutPrice === "true") {
       whereCondition.Harga = {
-        none: {},
+        // Produk tidak memiliki harga sama sekali,
+        // atau hanya punya harga yang semuanya sudah dihapus
+        none: {
+          deleted_at: null,
+        },
       };
     }
-
+    
     const produk = await prisma.produk.findMany({
       where: whereCondition,
       orderBy: {
