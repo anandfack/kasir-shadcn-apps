@@ -94,16 +94,17 @@ model Kategori {
 }
 
 model Supplier {
-  id                     Int       @id @default(autoincrement())
+  id                     Int         @id @default(autoincrement())
   kode_supplier          String
   nama_supplier          String
   alamat_supplier        String
   nomor_telepon_supplier String
   is_aktif               Boolean
-  created_at             DateTime  @default(now())
-  updated_at             DateTime  @updatedAt
+  created_at             DateTime    @default(now())
+  updated_at             DateTime    @updatedAt
   deleted_at             DateTime?
   Produk                 Produk[]
+  Pembelian              Pembelian[]
 
   @@map("supplier_m")
 }
@@ -141,6 +142,7 @@ model Produk {
   Stok             Stok[]
   Harga            Harga[]
   DetailPenjualan  DetailPenjualan[]
+  DetailPembelian  DetailPembelian[]
 
   @@map("produk_m")
 }
@@ -190,4 +192,38 @@ model Pembayaran {
   deleted_at      DateTime?
 
   @@map("pembayaran_t")
+}
+
+model Pembelian {
+  id                Int               @id @default(autoincrement())
+  nomor_pembelian   String
+  nomor_faktur      String
+  tanggal_pembelian DateTime
+  supplier_id      Int?
+  supplier          Supplier?         @relation(fields: [supplier_id], references: [id])
+  status_pembelian  String
+  total_harga       Float
+  created_at        DateTime          @default(now())
+  updated_at        DateTime          @updatedAt
+  deleted_at        DateTime?
+  DetailPembelian   DetailPembelian[]
+
+  @@map("pembelian_t")
+}
+
+model DetailPembelian {
+  id            Int        @id @default(autoincrement())
+  pembelian_id  Int?
+  pembelian     Pembelian? @relation(fields: [pembelian_id], references: [id])
+  produk_id     Int?
+  produk        Produk?    @relation(fields: [produk_id], references: [id])
+  harga_satuan  Float
+  jumlah_produk Int
+  harga_produk  Float
+  total_harga   Float
+  created_at    DateTime   @default(now())
+  updated_at    DateTime   @updatedAt
+  deleted_at    DateTime?
+
+  @@map("detailpembelian_t")
 }

@@ -19,6 +19,11 @@ export function AppSidebar() {
     { icon: <BoxesIcon />, name: "Stok", href: "/stok-produk" },
     { icon: <BookUserIcon />, name: "Supplier", href: "/supplier" },
   ];
+  const trasactionMenuItems = [
+    { icon: <DollarSignIcon />, name: "Pembelian", href: "/pembelian-produk" },
+    { icon: <DollarSignIcon />, name: "Penjualan", href: "/penjualan-produk" },
+    { icon: <RulerIcon />, name: "Retur", href: "/retur-produk" },
+  ];
 
   return (
     <Sidebar collapsible="icon">
@@ -29,6 +34,7 @@ export function AppSidebar() {
           items={[{ icon: <HomeIcon />, name: "Dashboard", href: "/" }]}
         />
         <SidebarCollapsibleMenu label="Master" items={masterMenuItems} />
+        <SidebarCollapsibleMenu label="Transaksi" items={trasactionMenuItems} />
       </SidebarContent>
     </Sidebar>
   );
