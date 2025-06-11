@@ -95,6 +95,27 @@ const PembelianProdukTable = () => {
         enableHiding: false,
       },
       {
+        accessorKey: "tanggal_pembelian",
+        header: ({ column }) => (
+          <Button
+            variant="link"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0"
+          >
+            Tanggal Pembelian
+            <ArrowUpDown />
+          </Button>
+        ),
+        cell: ({ row }) => {
+          const rawDate = row.getValue("tanggal_pembelian");
+          const formattedDate = rawDate
+            ? new Date(rawDate).toISOString().split("T")[0]
+            : "";
+
+          return <div className="capitalize">{formattedDate}</div>;
+        },
+      },
+      {
         accessorKey: "nomor_pembelian",
         header: ({ column }) => (
           <Button
@@ -127,27 +148,6 @@ const PembelianProdukTable = () => {
         ),
       },
       {
-        accessorKey: "tanggal_pembelian",
-        header: ({ column }) => (
-          <Button
-            variant="link"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="p-0"
-          >
-            Tanggal Pembelian
-            <ArrowUpDown />
-          </Button>
-        ),
-        cell: ({ row }) => {
-          const rawDate = row.getValue("tanggal_pembelian");
-          const formattedDate = rawDate
-            ? new Date(rawDate).toISOString().split("T")[0]
-            : "";
-
-          return <div className="capitalize">{formattedDate}</div>;
-        },
-      },
-      {
         id: "supplier",
         accessorFn: (row) => row.supplier?.nama_supplier,
         header: ({ column }) => (
@@ -161,22 +161,6 @@ const PembelianProdukTable = () => {
           </Button>
         ),
         cell: ({ row }) => <div>{row.getValue("supplier")}</div>,
-      },
-      {
-        accessorKey: "status_pembelian",
-        header: ({ column }) => (
-          <Button
-            variant="link"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="p-0"
-          >
-            Nomor Faktur
-            <ArrowUpDown />
-          </Button>
-        ),
-        cell: ({ row }) => (
-          <div className="capitalize">{row.getValue("status_pembelian")}</div>
-        ),
       },
       {
         accessorKey: "total_harga",
@@ -200,6 +184,23 @@ const PembelianProdukTable = () => {
           </div>
         ),
       },
+      {
+        accessorKey: "status_pembelian",
+        header: ({ column }) => (
+          <Button
+            variant="link"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0"
+          >
+            Nomor Faktur
+            <ArrowUpDown />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <div className="capitalize">{row.getValue("status_pembelian")}</div>
+        ),
+      },
+
       {
         id: "actions",
         header: () => <div className="text-center">Actions</div>,

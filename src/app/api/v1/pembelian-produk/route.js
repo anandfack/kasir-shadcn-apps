@@ -24,6 +24,8 @@ export async function GET(req) {
   }
 }
 
+// app/api/pembelian/route.js
+
 export async function POST(req) {
   try {
     const body = await req.json();
@@ -31,7 +33,6 @@ export async function POST(req) {
       supplier_id,
       nomor_pembelian,
       nomor_faktur,
-      status_pembelian,
       tanggal_pembelian,
       total_harga,
       created_at,
@@ -39,18 +40,9 @@ export async function POST(req) {
       detail_items,
     } = body;
 
-    if (
-      !supplier_id &&
-      !nomor_pembelian &&
-      !status_pembelian &&
-      !total_harga &&
-      !nomor_pembelian &&
-      !nomor_faktur
-    ) {
+    if (!supplier_id || !nomor_pembelian || !total_harga || !nomor_faktur) {
       return new Response(
-        JSON.stringify({
-          error: "semua kolom harus diisi",
-        }),
+        JSON.stringify({ error: "Semua kolom wajib diisi." }),
         {
           status: 400,
           headers: { "Content-Type": "application/json" },
@@ -61,7 +53,7 @@ export async function POST(req) {
     const now = new Date();
     const nowJakarta = new Date(
       now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" })
-    ).toISOString();
+    );
 
     const result = await prisma.$transaction(async (tx) => {
       const pembelian = await tx.pembelian.create({
@@ -69,7 +61,7 @@ export async function POST(req) {
           supplier_id,
           nomor_pembelian,
           nomor_faktur,
-          status_pembelian,
+          status_pembelian: "SELESAI",
           total_harga,
           tanggal_pembelian: tanggal_pembelian
             ? new Date(tanggal_pembelian)
@@ -79,49 +71,70 @@ export async function POST(req) {
         },
       });
 
-      console.log("Pembelian berhasil:", pembelian);
+      if (Array.isArray(detail_items) && detail_items.length > 0) {
+        await Promise.all(
+          detail_items.map(async (item, index) => {
+            await tx.detailPembelian.create({
+              data: {
+                pembelian_id: pembelian.id,
+                produk_id: item.produk_id,
+                jumlah_produk: item.jumlah_produk,
+                harga_satuan: item.harga_satuan,
+                harga_produk: item.harga_produk,
+                total_harga: item.total_harga,
+                created_at: created_at ? new Date(created_at) : nowJakarta,
+                updated_at: updated_at ? new Date(updated_at) : nowJakarta,
+              },
+            });
 
-      if (detail_items && detail_items.length > 0) {
-        try {
-          const detailResults = await Promise.all(
-            detail_items.map((item) =>
-              tx.detailPembelian.create({
+            await tx.mutasiStok.create({
+              data: {
+                produk_id: item.produk_id,
+                tipe_mutasi: "MASUK",
+                jumlah_mutasi: item.jumlah_produk,
+                keterangan_mutasi: `Pembelian ${pembelian.nomor_pembelian}`,
+                tanggal_mutasi: nowJakarta,
+                nomor_mutasi: `MT-PB-${pembelian.id}-${index + 1}`,
+                pegawai_id: item.pegawai_id || null,
+                satuan_produk_id: item.satuan_produk_id || null,
+                tanggal_kadaluarsa: item.tanggal_kadaluarsa
+                  ? new Date(item.tanggal_kadaluarsa)
+                  : null,
+              },
+            });
+
+            const existingStok = await tx.stok.findUnique({
+              where: { produk_id: item.produk_id },
+            });
+
+            if (existingStok) {
+              await tx.stok.update({
+                where: { produk_id: item.produk_id },
                 data: {
-                  pembelian_id: pembelian.id,
-                  produk_id: item.produk_id,
-                  jumlah_produk: item.jumlah_produk,
-                  harga_satuan: item.harga_satuan,
-                  harga_produk: item.harga_produk,
-                  total_harga: item.total_harga,
-                  created_at: created_at ? new Date(created_at) : nowJakarta,
-                  updated_at: updated_at ? new Date(updated_at) : nowJakarta,
+                  jumlah_stok: {
+                    increment: item.jumlah_produk,
+                  },
+                  updated_at: nowJakarta,
                 },
-              })
-            )
-          );
-          console.log("Detail Pembelian berhasil dibuat:", detailResults);
-        } catch (err) {
-          console.error("Gagal membuat detail pembelian:", err);
-          throw err; // lempar agar transaksi rollback
-        }
+              });
+            } else {
+              await tx.stok.create({
+                data: {
+                  produk_id: item.produk_id,
+                  jumlah_stok: item.jumlah_produk,
+                  minimal_stok: 0,
+                  maksimal_stok: 0,
+                  created_at: nowJakarta,
+                  updated_at: nowJakarta,
+                },
+              });
+            }
+          })
+        );
       }
 
       return pembelian;
     });
-    // const tambahPembelianProduk = await prisma.pembelian.create({
-    //   data: {
-    //     supplier_id,
-    //     nomor_pembelian,
-    //     nomor_faktur,
-    //     status_pembelian,
-    //     total_harga,
-    //     tanggal_pembelian: tanggal_pembelian
-    //       ? new Date(tanggal_pembelian)
-    //       : nowJakarta.toString(),
-    //     created_at: created_at ? new Date(created_at) : nowJakarta.toString(),
-    //     updated_at: updated_at ? new Date(updated_at) : nowJakarta.toString(),
-    //   },
-    // });
 
     return new Response(JSON.stringify(result), {
       status: 201,

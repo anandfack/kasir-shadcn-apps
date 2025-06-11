@@ -20,7 +20,7 @@ export async function GET(req) {
         },
       };
     }
-    
+
     const produk = await prisma.produk.findMany({
       where: whereCondition,
       orderBy: {
@@ -30,6 +30,7 @@ export async function GET(req) {
         kategori: true,
         satuan: true,
         supplier: true,
+        Harga: true,
       },
     });
 
