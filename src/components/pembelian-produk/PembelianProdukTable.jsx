@@ -43,6 +43,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/app/utils/fetchOptions";
 import useFetchPembelianProduk from "@/hooks/pembelian-produk/useFetchPembelianProduk";
 import TambahPembelianProduk from "./TambahPembelianProduk";
+import DetailPembelianProduk from "./DetailPembelianProduk";
 
 const PembelianProdukTable = () => {
   const { toast } = useToast();
@@ -62,18 +63,30 @@ const PembelianProdukTable = () => {
   const [rowSelection, setRowSelection] = React.useState({});
   const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
   const [produkOpen, setProdukOpen] = useState(true);
+  const [selectedDetail, setSelectedDetail] = useState(null);
+  const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
+  const [detailData, setDetailData] = useState(null);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
 
-  const { data: supplierData = [], isLoading: produkLoading } = useQuery({
-    queryKey: ["supplier"],
-    queryFn: () => apiRequest("GET", "/api/v1/supplier"),
-    enabled: produkOpen,
-    staleTime: 1000 * 60 * 5,
-  });
-
-  const handleError = React.useCallback((error) => {
-    console.error("Terjadi error:", error);
-    setIsDialogUpdateOpen(true);
-  }, []);
+  const fetchDetailPembelian = React.useCallback(
+    async (id) => {
+      setIsDetailLoading(true);
+      try {
+        const res = await apiRequest("GET", `/api/v1/pembelian-produk/${id}`);
+        setDetailData(res);
+        setIsDetailDialogOpen(true);
+      } catch (err) {
+        toast({
+          title: "Gagal mengambil detail",
+          description: err?.message || "Terjadi kesalahan saat memuat detail",
+          variant: "destructive",
+        });
+      } finally {
+        setIsDetailLoading(false);
+      }
+    },
+    [toast]
+  );
 
   const columns = React.useMemo(
     () => [
@@ -206,10 +219,16 @@ const PembelianProdukTable = () => {
         header: () => <div className="text-center">Actions</div>,
         cell: ({ row }) => {
           const loadData = row.original;
-
+          console.log("loadData", loadData);
           return (
             <div className="flex items-center justify-center gap-2">
-              <Button variant="secondary" className="text-xs">
+              <Button
+                variant="secondary"
+                className="text-xs"
+                onClick={() => {
+                  fetchDetailPembelian(loadData.id); // load berdasarkan id
+                }}
+              >
                 <EyeIcon />
               </Button>
             </div>
@@ -217,7 +236,7 @@ const PembelianProdukTable = () => {
         },
       },
     ],
-    []
+    [fetchDetailPembelian]
   );
 
   const table = useReactTable({
@@ -275,6 +294,7 @@ const PembelianProdukTable = () => {
             </Button>
           </DialogTrigger>
           <TambahPembelianProduk
+            open={isDialogTambahOpen}
             onSuccess={() => {
               toast({
                 title: "Sukses!",
@@ -368,6 +388,11 @@ const PembelianProdukTable = () => {
           </Button>
         </div>
       </div>
+      <DetailPembelianProduk
+        open={isDetailDialogOpen}
+        onOpenChange={setIsDetailDialogOpen}
+        data={detailData}
+      />
     </div>
   );
 };
