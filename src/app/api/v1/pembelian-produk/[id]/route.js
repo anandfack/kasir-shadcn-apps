@@ -11,11 +11,64 @@ export async function GET(req, { params }) {
         id,
         deleted_at: null,
       },
-      include: {
-        supplier: true,
+      select: {
+        id: true,
+        nomor_pembelian: true,
+        tanggal_pembelian: true,
+        status_pembelian: true,
+        total_harga: true,
+        nomor_faktur: true,
         DetailPembelian: {
-          include: {
-            produk: true,
+          select: {
+            id: true,
+            harga_satuan: true,
+            jumlah_produk: true,
+            harga_produk: true,
+            total_harga: true,
+            produk: {
+              select: {
+                id: true,
+                nama_produk: true,
+                kode_produk: true,
+                satuan: {
+                  select: {
+                    id: true,
+                    nama_satuan: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        supplier: {
+          select: {
+            id: true,
+            nama_supplier: true,
+            alamat_supplier: true,
+          },
+        },
+        ReturPembelian: {
+          select: {
+            id: true,
+            nomor_retur: true,
+            tanggal_retur: true,
+            total_harga: true,
+            keterangan_retur: true,
+            DetailReturPembelian: {
+              select: {
+                id: true,
+                harga_satuan: true,
+                jumlah_produk: true,
+                total_harga: true,
+                produk: {
+                  select: {
+                    id: true,
+                    nama_produk: true,
+                    kode_produk: true,
+                  },
+                },
+              },
+            },
           },
         },
       },

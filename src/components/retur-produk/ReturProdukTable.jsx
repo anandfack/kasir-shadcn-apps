@@ -12,7 +12,6 @@ import {
   getSortedRowModel,
 } from "@tanstack/react-table";
 import {
-  ArrowDownUp,
   ArrowUpDown,
   CirclePlus,
   EyeIcon,
@@ -42,39 +41,44 @@ import { Input } from "@/components/ui/input";
 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/app/utils/fetchOptions";
-import useFetchPembelianProduk from "@/hooks/pembelian-produk/useFetchPembelianProduk";
-import TambahPembelianProduk from "./TambahPembelianProduk";
-import DetailPembelianProduk from "./DetailPembelianProduk";
-import ReturPembelianProduk from "./ReturPembelianProduk";
+// import TambahPembelianProduk from "./TambahPembelianProduk";
+// import DetailPembelianProduk from "./DetailPembelianProduk";
+import useFetchReturProduk from "@/hooks/retur-produk/useFetchReturProduk";
+import DetailReturProduk from "./DetailReturProduk";
 
-const PembelianProdukTable = () => {
+const ReturProdukTable = () => {
   const { toast } = useToast();
   const [refreshKey, setRefreshKey] = React.useState(0);
 
-  const { data, loading, error } = useFetchPembelianProduk(
-    "/api/v1/pembelian-produk",
+  const { data, loading, error } = useFetchReturProduk(
+    "/api/v1/retur-produk",
     refreshKey
   );
+
+  // console.log("data", data);
+
+  // const [isDialogUpdateOpen, setIsDialogUpdateOpen] = useState(false);
+  // const [editData, setEditData] = useState(null);
 
   const [sorting, setSorting] = React.useState([]);
   const [columnFilters, setColumnFilters] = React.useState([]);
   const [columnVisibility, setColumnVisibility] = React.useState({});
   const [rowSelection, setRowSelection] = React.useState({});
-  const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
+  // const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
+  // const [produkOpen, setProdukOpen] = useState(true);
+  const [selectedDetail, setSelectedDetail] = useState(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [detailData, setDetailData] = useState(null);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
-  const [isReturDialogOpen, setIsReturDialogOpen] = useState(false);
-  const [isDialogReturOpen, setIsDialogReturOpen] = useState(false);
-  const [selectedReturId, setSelectedReturId] = useState(null);
 
-  const fetchDetailPembelian = React.useCallback(
+  const fetchDetailReturProduk = React.useCallback(
     async (id) => {
       setIsDetailLoading(true);
       try {
-        const res = await apiRequest("GET", `/api/v1/pembelian-produk/${id}`);
+        const res = await apiRequest("GET", `/api/v1/retur-produk/${id}`);
         setDetailData(res);
         setIsDetailDialogOpen(true);
+        console.log("Detail Data:", res);
       } catch (err) {
         toast({
           title: "Gagal mengambil detail",
@@ -108,19 +112,19 @@ const PembelianProdukTable = () => {
         enableHiding: false,
       },
       {
-        accessorKey: "tanggal_pembelian",
+        accessorKey: "tanggal_retur",
         header: ({ column }) => (
           <Button
             variant="link"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Tanggal Pembelian
+            Tanggal Retur
             <ArrowUpDown />
           </Button>
         ),
         cell: ({ row }) => {
-          const rawDate = row.getValue("tanggal_pembelian");
+          const rawDate = row.getValue("tanggal_retur");
           const formattedDate = rawDate
             ? new Date(rawDate).toISOString().split("T")[0]
             : "";
@@ -129,7 +133,39 @@ const PembelianProdukTable = () => {
         },
       },
       {
+        accessorKey: "nomor_retur",
+        header: ({ column }) => (
+          <Button
+            variant="link"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0"
+          >
+            Nomor Retur
+            <ArrowUpDown />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <div className="capitalize">{row.getValue("nomor_retur")}</div>
+        ),
+      },
+      {
+        id: "supplier",
+        accessorFn: (row) => row.pembelian?.supplier?.nama_supplier,
+        header: ({ column }) => (
+          <Button
+            variant="link"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0"
+          >
+            Supplier
+            <ArrowUpDown />
+          </Button>
+        ),
+        cell: ({ row }) => <div>{row.getValue("supplier")}</div>,
+      },
+      {
         accessorKey: "nomor_pembelian",
+        accessorFn: (row) => row.pembelian?.nomor_pembelian,
         header: ({ column }) => (
           <Button
             variant="link"
@@ -145,75 +181,21 @@ const PembelianProdukTable = () => {
         ),
       },
       {
-        accessorKey: "nomor_faktur",
+        accessorKey: "keterangan_retur",
         header: ({ column }) => (
           <Button
             variant="link"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Nomor Faktur
+            Keterangan Retur
             <ArrowUpDown />
           </Button>
         ),
         cell: ({ row }) => (
-          <div className="capitalize">{row.getValue("nomor_faktur")}</div>
+          <div className="capitalize">{row.getValue("keterangan_retur")}</div>
         ),
       },
-      {
-        id: "supplier",
-        accessorFn: (row) => row.supplier?.nama_supplier,
-        header: ({ column }) => (
-          <Button
-            variant="link"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="p-0"
-          >
-            Supplier
-            <ArrowUpDown />
-          </Button>
-        ),
-        cell: ({ row }) => <div>{row.getValue("supplier")}</div>,
-      },
-      {
-        accessorKey: "total_harga",
-        header: ({ column }) => (
-          <Button
-            variant="link"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="p-0"
-          >
-            Harga Jual
-            <ArrowUpDown />
-          </Button>
-        ),
-        cell: ({ row }) => (
-          <div className="capitalize">
-            {new Intl.NumberFormat("id-ID", {
-              style: "currency",
-              currency: "IDR",
-              minimumFractionDigits: 2,
-            }).format(row.getValue("total_harga"))}
-          </div>
-        ),
-      },
-      {
-        accessorKey: "status_pembelian",
-        header: ({ column }) => (
-          <Button
-            variant="link"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="p-0"
-          >
-            Nomor Faktur
-            <ArrowUpDown />
-          </Button>
-        ),
-        cell: ({ row }) => (
-          <div className="capitalize">{row.getValue("status_pembelian")}</div>
-        ),
-      },
-
       {
         id: "actions",
         header: () => <div className="text-center">Actions</div>,
@@ -224,30 +206,18 @@ const PembelianProdukTable = () => {
               <Button
                 variant="secondary"
                 className="text-xs"
-                title="Detail"
                 onClick={() => {
-                  fetchDetailPembelian(loadData.id); // load berdasarkan id
+                  fetchDetailReturProduk(loadData.id); // load berdasarkan id
                 }}
               >
                 <EyeIcon />
-              </Button>
-              <Button
-                variant="destructive"
-                className="text-xs"
-                title="Retur"
-                onClick={() => {
-                  setSelectedReturId(loadData.id);
-                  setIsDialogReturOpen(true);
-                }}
-              >
-                <ArrowDownUp />
               </Button>
             </div>
           );
         },
       },
     ],
-    [fetchDetailPembelian]
+    [fetchDetailReturProduk]
   );
 
   const table = useReactTable({
@@ -292,7 +262,7 @@ const PembelianProdukTable = () => {
   return (
     <div className="w-full">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between py-4">
-        <Dialog
+        {/* <Dialog
           open={isDialogTambahOpen}
           onOpenChange={(isOpen) => setIsDialogTambahOpen(isOpen)}
         >
@@ -326,9 +296,9 @@ const PembelianProdukTable = () => {
               setIsDialogTambahOpen(true);
             }}
           />
-        </Dialog>
+        </Dialog> */}
         <Input
-          placeholder="Cari Pembelian Produk ..."
+          placeholder="Cari Retur Produk ..."
           className="max-w-sm text-xs md:text-sm"
           onChange={(e) => table.setGlobalFilter(e.target.value)}
         />
@@ -376,10 +346,10 @@ const PembelianProdukTable = () => {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        {/* <div className="flex-1 text-sm text-muted-foreground">
+        <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
           {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div> */}
+        </div>
         <div className="space-x-2">
           <Button
             variant="outline"
@@ -399,38 +369,13 @@ const PembelianProdukTable = () => {
           </Button>
         </div>
       </div>
-      <DetailPembelianProduk
+      <DetailReturProduk
         open={isDetailDialogOpen}
         onOpenChange={setIsDetailDialogOpen}
         data={detailData}
       />
-      <Dialog open={isDialogReturOpen} onOpenChange={setIsDialogReturOpen}>
-        <ReturPembelianProduk
-          open={isDialogReturOpen}
-          onOpenChange={setIsReturDialogOpen}
-          pembelianId={selectedReturId}
-          data={detailData}
-          onClose={() => setIsDialogReturOpen(false)}
-          // onSuccess={() => {
-          //   setRefreshKey((prev) => prev + 1);
-          //   setIsDialogReturOpen(false);
-          // }}
-          onSuccess={() => {
-            toast({
-              title: "Sukses!",
-              description: "Data pembelian produk berhasil ditambahkan.",
-              variant: "success",
-            });
-            setRefreshKey((prev) => prev + 1);
-            setIsDialogReturOpen(false);
-          }}
-          onError={(error) => {
-            console.error("Error retur:", error);
-          }}
-        />
-      </Dialog>
     </div>
   );
 };
 
-export default PembelianProdukTable;
+export default ReturProdukTable;

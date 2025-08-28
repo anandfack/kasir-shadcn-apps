@@ -4,15 +4,50 @@ const prisma = new PrismaClient();
 
 export async function GET(req) {
   try {
-    const pembelianProduk = await prisma.pembelian.findMany({
+    const returProduk = await prisma.returPembelian.findMany({
       where: {
         deleted_at: null,
       },
-      include: {
-        supplier: true,
+      select: {
+        id: true,
+        nomor_retur: true,
+        tanggal_retur: true,
+        total_harga: true,
+        pembelian: {
+          select: {
+            id: true,
+            nomor_pembelian: true,
+            nomor_faktur: true,
+            supplier: {
+              select: {
+                id: true,
+                nama_supplier: true,
+              },
+            },
+          },
+        },
+        DetailReturPembelian: {
+          select: {
+            id: true,
+            produk: {
+              select: {
+                id: true,
+                nama_produk: true,
+                kode_produk: true,
+                satuan: {
+                  select: {
+                    id: true,
+                    nama_satuan: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        keterangan_retur: true,
       },
     });
-    return new Response(JSON.stringify(pembelianProduk), {
+    return new Response(JSON.stringify(returProduk), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
@@ -30,17 +65,18 @@ export async function POST(req) {
   try {
     const body = await req.json();
     const {
-      supplier_id,
-      nomor_pembelian,
-      nomor_faktur,
-      tanggal_pembelian,
+      pembelian_id,
+      produk_id,
+      nomor_retur,
+      tanggal_retur,
       total_harga,
+      keterangan_retur,
       created_at,
       updated_at,
-      detail_items,
+      details_retur,
     } = body;
 
-    if (!supplier_id || !nomor_pembelian || !total_harga || !nomor_faktur) {
+    if (!total_harga || !pembelian_id) {
       return new Response(
         JSON.stringify({ error: "Semua kolom wajib diisi." }),
         {
@@ -68,7 +104,7 @@ export async function POST(req) {
       const lastRetur = await tx.ReturPembelian.findFirst({
         where: {
           nomor_retur: {
-            startsWith: `PB-${formattedDate}`,
+            startsWith: `RTR-PB-${formattedDate}`,
           },
         },
         orderBy: {
@@ -85,27 +121,29 @@ export async function POST(req) {
       const autoNomorRetur = `RTR-PB-${formattedDate}${String(
         nextNumber
       ).padStart(4, "0")}`;
-      const pembelian = await tx.pembelian.create({
+
+      const pembelian = await tx.pembelian.findUnique({
+        where: { id: pembelian_id },
+      });
+
+      const retur = await tx.ReturPembelian.create({
         data: {
-          supplier_id,
-          nomor_pembelian,
-          nomor_faktur,
-          status_pembelian: "SELESAI",
-          total_harga,
-          tanggal_pembelian: tanggal_pembelian
-            ? new Date(tanggal_pembelian)
-            : nowJakarta,
+          pembelian_id,
+          nomor_retur: autoNomorRetur,
+          tanggal_retur: tanggal_retur ? new Date(tanggal_retur) : new Date(),
           created_at: created_at ? new Date(created_at) : nowJakarta,
           updated_at: updated_at ? new Date(updated_at) : nowJakarta,
+          total_harga,
+          keterangan_retur: `Retur Pembelian ${pembelian.nomor_pembelian}`,
         },
       });
 
-      if (Array.isArray(detail_items) && detail_items.length > 0) {
+      if (Array.isArray(details_retur) && details_retur.length > 0) {
         await Promise.all(
-          detail_items.map(async (item, index) => {
-            await tx.detailPembelian.create({
+          details_retur.map(async (item, index) => {
+            await tx.DetailReturPembelian.create({
               data: {
-                pembelian_id: pembelian.id,
+                retur_pembelian_id: retur.id,
                 produk_id: item.produk_id,
                 jumlah_produk: item.jumlah_produk,
                 harga_satuan: item.harga_satuan,
@@ -119,11 +157,11 @@ export async function POST(req) {
             await tx.mutasiStok.create({
               data: {
                 produk_id: item.produk_id,
-                tipe_mutasi: "MASUK",
+                tipe_mutasi: "KELUAR",
                 jumlah_mutasi: item.jumlah_produk,
-                keterangan_mutasi: `Pembelian ${pembelian.nomor_pembelian}`,
+                keterangan_mutasi: `Retur Pembelian ${pembelian.nomor_pembelian}`,
                 tanggal_mutasi: nowJakarta,
-                nomor_mutasi: `MT-PB-${pembelian.id}-${index + 1}`,
+                nomor_mutasi: `MT-KE-${retur.id}-${index + 1}`,
                 pegawai_id: item.pegawai_id || null,
                 satuan_produk_id: item.satuan_produk_id || null,
                 tanggal_kadaluarsa: item.tanggal_kadaluarsa
@@ -140,20 +178,7 @@ export async function POST(req) {
               await tx.stok.update({
                 where: { produk_id: item.produk_id },
                 data: {
-                  jumlah_stok: {
-                    increment: item.jumlah_produk,
-                  },
-                  updated_at: nowJakarta,
-                },
-              });
-            } else {
-              await tx.stok.create({
-                data: {
-                  produk_id: item.produk_id,
-                  jumlah_stok: item.jumlah_produk,
-                  minimal_stok: 0,
-                  maksimal_stok: 0,
-                  created_at: nowJakarta,
+                  jumlah_stok: existingStok.jumlah_stok - item.jumlah_produk,
                   updated_at: nowJakarta,
                 },
               });
@@ -161,8 +186,7 @@ export async function POST(req) {
           })
         );
       }
-
-      return pembelian;
+      return retur;
     });
 
     return new Response(JSON.stringify(result), {

@@ -143,6 +143,7 @@ model Produk {
   Harga            Harga[]
   DetailPenjualan  DetailPenjualan[]
   DetailPembelian  DetailPembelian[]
+  DetailReturPembelian   DetailReturPembelian[]
 
   @@map("produk_m")
 }
@@ -207,6 +208,7 @@ model Pembelian {
   updated_at        DateTime          @updatedAt
   deleted_at        DateTime?
   DetailPembelian   DetailPembelian[]
+  ReturPembelian    ReturPembelian[]
 
   @@map("pembelian_t")
 }
@@ -226,4 +228,38 @@ model DetailPembelian {
   deleted_at    DateTime?
 
   @@map("detailpembelian_t")
+}
+
+model ReturPembelian {
+  id                Int               @id @default(autoincrement())
+  nomor_retur       String
+  pembelian_id      Int?
+  pembelian         Pembelian?       @relation(fields: [pembelian_id], references: [id])
+  tanggal_retur     DateTime
+  total_harga       Float
+  keterangan_retur  String?
+  created_at        DateTime          @default(now())
+  updated_at        DateTime          @updatedAt
+  deleted_at        DateTime?
+  DetailReturPembelian DetailReturPembelian[]
+
+  @@map("returpembelian_t")
+}
+
+model DetailReturPembelian {
+  id                Int               @id @default(autoincrement())
+  retur_pembelian_id Int?
+  retur_pembelian   ReturPembelian?  @relation(fields: [retur_pembelian_id], references: [id])
+  produk_id         Int?
+  produk            Produk?          @relation(fields: [produk_id], references: [id])
+  harga_satuan      Float
+  jumlah_produk     Int
+  harga_produk      Float
+  total_harga       Float
+  keterangan_retur  String?
+  created_at        DateTime         @default(now())
+  updated_at        DateTime         @updatedAt
+  deleted_at        DateTime?
+
+  @@map("detailreturpembelian_t")
 }
