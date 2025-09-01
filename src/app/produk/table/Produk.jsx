@@ -1,6 +1,8 @@
 "use client";
 
 import React from "react";
+import { useState, useEffect } from "react";
+
 import axios from "axios";
 import {
   useReactTable,
@@ -11,6 +13,7 @@ import {
   getSortedRowModel,
 } from "@tanstack/react-table";
 import {
+  ArrowLeftRight,
   ArrowUpDown,
   CirclePlus,
   Loader2,
@@ -44,6 +47,9 @@ import { Input } from "@/components/ui/input";
 import TambahProdukForm from "../form/TambahProduk";
 import UpdateProdukForm from "../form/UpdateProduk";
 import { useDeleteProduk } from "@/hooks/produk/useDeleteProduk";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/app/utils/fetchOptions";
+import MutasiStokBarang from "@/components/mutasi-stok/MutasiStok";
 
 const useFetchData = (url, refreshKey) => {
   const [data, setData] = React.useState([]);
@@ -79,6 +85,32 @@ const ProdukTable = () => {
   const [isDialogUpdateOpen, setIsDialogUpdateOpen] = React.useState(false);
   const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
   const [isDialogDeleteOpen, setIsDialogDeleteOpen] = React.useState(false);
+  const [isMutasiDialogOpen, setIsMutasiDialogOpen] = useState(false);
+  const [mutasiData, setMutasiData] = useState(null);
+  const [isMutasiLoading, setIsMutasiLoading] = useState(false);
+
+  const { toast } = useToast();
+
+  const fetchMutasiStok = React.useCallback(
+    async (id) => {
+      setIsMutasiLoading(true);
+      try {
+        const res = await apiRequest("GET", `/api/v1/mutasi-stok/${id}`);
+        setMutasiData(res);
+        setIsMutasiDialogOpen(true);
+        // console.log("hasil hit: ", res);
+      } catch (err) {
+        toast({
+          title: "Gagal mengambil detail",
+          description: err?.message || "Terjadi kesalahan saat memuat detail",
+          variant: "destructive",
+        });
+      } finally {
+        setIsMutasiLoading(false);
+      }
+    },
+    [toast]
+  );
 
   const { deleteProduk, isLoading } = useDeleteProduk();
 
@@ -246,6 +278,16 @@ const ProdukTable = () => {
 
           return (
             <div className="flex items-center justify-center gap-2">
+              <Button
+                variant="ghost"
+                className="text-xs"
+                title="Mutasi Stok"
+                onClick={() => {
+                  fetchMutasiStok(loadData.id);
+                }}
+              >
+                <ArrowLeftRight />
+              </Button>
               <Dialog
                 open={isDialogUpdateOpen && editData === loadData}
                 onOpenChange={(isOpen) => {
@@ -343,6 +385,7 @@ const ProdukTable = () => {
       isLoading,
       handleSuccess,
       handleError,
+      fetchMutasiStok,
     ]
   );
 
@@ -492,6 +535,11 @@ const ProdukTable = () => {
           </Button>
         </div>
       </div>
+      <MutasiStokBarang
+        open={isMutasiDialogOpen}
+        onOpenChange={setIsMutasiDialogOpen}
+        data={mutasiData}
+      />
     </div>
   );
 };
