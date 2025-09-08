@@ -16,7 +16,6 @@ export default function MutasiStokBarang({ open, onOpenChange, data }) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  // Filter data berdasarkan tanggal
   const filteredData = data?.filter((item) => {
     if (!startDate && !endDate) return true;
 
@@ -24,12 +23,11 @@ export default function MutasiStokBarang({ open, onOpenChange, data }) {
     const start = startDate ? new Date(startDate) : null;
     const end = endDate ? new Date(endDate) : null;
 
-    // normalisasi jam supaya perbandingan adil
     if (start) {
-      start.setHours(0, 0, 0, 0); // mulai dari jam 00:00
+      start.setHours(0, 0, 0, 0);
     }
     if (end) {
-      end.setHours(23, 59, 59, 999); // sampai akhir hari
+      end.setHours(23, 59, 59, 999);
     }
 
     if (start && tgl < start) return false;
@@ -56,7 +54,6 @@ export default function MutasiStokBarang({ open, onOpenChange, data }) {
             <DialogDescription>Tabel Mutasi Stok Produk</DialogDescription>
           </DialogHeader>
 
-          {/* Filter Tanggal */}
           <div className="flex items-center gap-2 mb-3">
             <Input
               type="date"
@@ -81,9 +78,7 @@ export default function MutasiStokBarang({ open, onOpenChange, data }) {
             </Button>
           </div>
 
-          {/* Tabel Produk */}
           <div className="mt-4">
-            {/* <h3 className="font-semibold mb-2">Detail Produk</h3> */}
             <div className="overflow-x-auto rounded border">
               <table className="w-full text-xs">
                 <thead className="text-left">
@@ -98,8 +93,8 @@ export default function MutasiStokBarang({ open, onOpenChange, data }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredData?.map((item, index) => {
-                    return (
+                  {filteredData?.length > 0 ? (
+                    filteredData?.map((item, index) => (
                       <tr key={item.id}>
                         <td className="p-2 border align-top">{index + 1}</td>
                         <td className="p-2 border align-top">
@@ -147,8 +142,17 @@ export default function MutasiStokBarang({ open, onOpenChange, data }) {
                           {item.keterangan_mutasi}
                         </td>
                       </tr>
-                    );
-                  })}
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="p-6 text-center text-sm text-muted-foreground"
+                      >
+                        📭 Data Tidak Ditemukan
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
