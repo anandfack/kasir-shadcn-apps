@@ -14,7 +14,7 @@ datasource db {
 }
 
 model Pegawai {
-  id                    Int          @id @default(autoincrement())
+  id                    Int           @id @default(autoincrement())
   nip_pegawai           String
   nama_pegawai          String
   tanggal_lahir         DateTime
@@ -25,12 +25,43 @@ model Pegawai {
   jabatan_pegawai       String
   password              String
   is_aktif              Boolean
-  created_at            DateTime     @default(now())
-  updated_at            DateTime     @updatedAt
+  created_at            DateTime      @default(now())
+  updated_at            DateTime      @updatedAt
   deleted_at            DateTime?
   mutasiStok            MutasiStok[]
+  LoginPemakai          LoginPemakai?
 
   @@map("pegawai_m")
+}
+
+model LoginPemakai {
+  id                Int                 @id @default(autoincrement())
+  username          String              @unique
+  password          String
+  last_login        DateTime?
+  role              String
+  is_aktif          Boolean
+  email             String
+  verified          Boolean             @default(false)
+  pegawai_id        Int?                @unique
+  pegawai           Pegawai?            @relation(fields: [pegawai_id], references: [id])
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @updatedAt
+  deleted_at        DateTime?
+  EmailVerification EmailVerification[]
+
+  @@map("loginpemakai_k")
+}
+
+model EmailVerification {
+  id              Int           @id @default(autoincrement())
+  token           String        @unique
+  loginpemakai_id Int?
+  expired_at      DateTime
+  created_at      DateTime      @default(now())
+  loginPemakai    LoginPemakai? @relation(fields: [loginpemakai_id], references: [id], onDelete: Cascade)
+
+  @@map("emailverification_t")
 }
 
 model Satuan {
@@ -123,27 +154,27 @@ model Harga {
 }
 
 model Produk {
-  id               Int               @id @default(autoincrement())
-  kategori_id      Int?
-  kategori         Kategori?         @relation(fields: [kategori_id], references: [id])
-  satuan_produk_id Int?
-  satuan           Satuan?           @relation(fields: [satuan_produk_id], references: [id])
-  supplier_id      Int?
-  supplier         Supplier?         @relation(fields: [supplier_id], references: [id])
-  kode_produk      String
-  nama_produk      String
-  deskripsi_produk String?
-  gambar_produk    String?
-  is_aktif         Boolean
-  created_at       DateTime          @default(now())
-  updated_at       DateTime          @updatedAt
-  deleted_at       DateTime?
-  mutasiStok       MutasiStok[]
-  Stok             Stok[]
-  Harga            Harga[]
-  DetailPenjualan  DetailPenjualan[]
-  DetailPembelian  DetailPembelian[]
-  DetailReturPembelian   DetailReturPembelian[]
+  id                   Int                    @id @default(autoincrement())
+  kategori_id          Int?
+  kategori             Kategori?              @relation(fields: [kategori_id], references: [id])
+  satuan_produk_id     Int?
+  satuan               Satuan?                @relation(fields: [satuan_produk_id], references: [id])
+  supplier_id          Int?
+  supplier             Supplier?              @relation(fields: [supplier_id], references: [id])
+  kode_produk          String
+  nama_produk          String
+  deskripsi_produk     String?
+  gambar_produk        String?
+  is_aktif             Boolean
+  created_at           DateTime               @default(now())
+  updated_at           DateTime               @updatedAt
+  deleted_at           DateTime?
+  mutasiStok           MutasiStok[]
+  Stok                 Stok[]
+  Harga                Harga[]
+  DetailPenjualan      DetailPenjualan[]
+  DetailPembelian      DetailPembelian[]
+  DetailReturPembelian DetailReturPembelian[]
 
   @@map("produk_m")
 }
@@ -200,7 +231,7 @@ model Pembelian {
   nomor_pembelian   String
   nomor_faktur      String
   tanggal_pembelian DateTime
-  supplier_id      Int?
+  supplier_id       Int?
   supplier          Supplier?         @relation(fields: [supplier_id], references: [id])
   status_pembelian  String
   total_harga       Float
@@ -231,35 +262,35 @@ model DetailPembelian {
 }
 
 model ReturPembelian {
-  id                Int               @id @default(autoincrement())
-  nomor_retur       String
-  pembelian_id      Int?
-  pembelian         Pembelian?       @relation(fields: [pembelian_id], references: [id])
-  tanggal_retur     DateTime
-  total_harga       Float
-  keterangan_retur  String?
-  created_at        DateTime          @default(now())
-  updated_at        DateTime          @updatedAt
-  deleted_at        DateTime?
+  id                   Int                    @id @default(autoincrement())
+  nomor_retur          String
+  pembelian_id         Int?
+  pembelian            Pembelian?             @relation(fields: [pembelian_id], references: [id])
+  tanggal_retur        DateTime
+  total_harga          Float
+  keterangan_retur     String?
+  created_at           DateTime               @default(now())
+  updated_at           DateTime               @updatedAt
+  deleted_at           DateTime?
   DetailReturPembelian DetailReturPembelian[]
 
   @@map("returpembelian_t")
 }
 
 model DetailReturPembelian {
-  id                Int               @id @default(autoincrement())
+  id                 Int             @id @default(autoincrement())
   retur_pembelian_id Int?
-  retur_pembelian   ReturPembelian?  @relation(fields: [retur_pembelian_id], references: [id])
-  produk_id         Int?
-  produk            Produk?          @relation(fields: [produk_id], references: [id])
-  harga_satuan      Float
-  jumlah_produk     Int
-  harga_produk      Float
-  total_harga       Float
-  keterangan_retur  String?
-  created_at        DateTime         @default(now())
-  updated_at        DateTime         @updatedAt
-  deleted_at        DateTime?
+  retur_pembelian    ReturPembelian? @relation(fields: [retur_pembelian_id], references: [id])
+  produk_id          Int?
+  produk             Produk?         @relation(fields: [produk_id], references: [id])
+  harga_satuan       Float
+  jumlah_produk      Int
+  harga_produk       Float
+  total_harga        Float
+  keterangan_retur   String?
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @updatedAt
+  deleted_at         DateTime?
 
   @@map("detailreturpembelian_t")
 }
