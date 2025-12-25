@@ -52,7 +52,7 @@ const PembelianProdukTable = () => {
   const [refreshKey, setRefreshKey] = React.useState(0);
 
   const { data, loading, error } = useFetchPembelianProduk(
-    "/api/v1/pembelian-produk",
+    "/api/v1/admin/pembelian-produk",
     refreshKey
   );
 
@@ -72,7 +72,7 @@ const PembelianProdukTable = () => {
     async (id) => {
       setIsDetailLoading(true);
       try {
-        const res = await apiRequest("GET", `/api/v1/pembelian-produk/${id}`);
+        const res = await apiRequest("GET", `/api/v1/admin/pembelian-produk/${id}`);
         setDetailData(res);
         setIsDetailDialogOpen(true);
       } catch (err) {

@@ -43,14 +43,14 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
 
   const { data: supplierData, isLoading: supplierLoading } = useQuery({
     queryKey: ["supplier"],
-    queryFn: () => apiRequest("GET", "/api/v1/supplier"),
+    queryFn: () => apiRequest("GET", "/api/v1/admin/supplier"),
     enabled: supplierOpen,
     staleTime: 1000 * 60 * 5,
   });
 
   const { data: produkData, isLoading: produkLoading } = useQuery({
     queryKey: ["produk"],
-    queryFn: () => apiRequest("GET", "/api/v1/produk"),
+    queryFn: () => apiRequest("GET", "/api/v1/admin/produk"),
     enabled: produkOpen,
     staleTime: 1000 * 60 * 5,
   });
@@ -72,7 +72,7 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
     e.preventDefault();
 
     try {
-      await apiRequest("POST", "/api/v1/pembelian-produk", {
+      await apiRequest("POST", "/api/v1/admin/pembelian-produk", {
         supplier_id: selectedSupplier?.id,
         nomor_pembelian: nomorPembelian,
         nomor_faktur: nomorFaktur,

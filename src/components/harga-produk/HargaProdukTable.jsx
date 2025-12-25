@@ -45,7 +45,7 @@ const HargaProdukTable = () => {
   const [refreshKey, setRefreshKey] = React.useState(0);
 
   const { data, loading, error } = useFetchHargaProduk(
-    "/api/v1/harga-produk",
+    "/api/v1/admin/harga-produk",
     refreshKey
   );
 
@@ -63,7 +63,7 @@ const HargaProdukTable = () => {
 
   const { data: produkData = [], isLoading: produkLoading } = useQuery({
     queryKey: ["produk"],
-    queryFn: () => apiRequest("GET", "/api/v1/produk"),
+    queryFn: () => apiRequest("GET", "/api/v1/admin/produk"),
     enabled: produkOpen,
     staleTime: 1000 * 60 * 5,
   });
@@ -87,7 +87,7 @@ const HargaProdukTable = () => {
     if (!deleteData) return;
 
     try {
-      await apiRequest("DELETE", `/api/v1/harga-produk/${deleteData.id}`);
+      await apiRequest("DELETE", `/api/v1/admin/harga-produk/${deleteData.id}`);
       toast({
         title: "Sukses!",
         description: "Data harga produk berhasil dihapus.",

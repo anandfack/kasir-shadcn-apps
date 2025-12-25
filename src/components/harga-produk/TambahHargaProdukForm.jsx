@@ -26,7 +26,7 @@ const TambahHargaProdukForm = ({ onSuccess, onError }) => {
 
   const { data: produkData, isLoading: produkLoading } = useQuery({
     queryKey: ["produk"],
-    queryFn: () => apiRequest("GET", "/api/v1/produk?without_price=true"),
+    queryFn: () => apiRequest("GET", "/api/v1/admin/produk?without_price=true"),
     enabled: produkOpen,
   });
 
@@ -38,7 +38,7 @@ const TambahHargaProdukForm = ({ onSuccess, onError }) => {
     const hargaJualFloat = parseFloat(hargaJual) || 0;
 
     try {
-      await apiRequest("POST", "/api/v1/harga-produk", {
+      await apiRequest("POST", "/api/v1/admin/harga-produk", {
         produk_id: produkId,
         harga_beli: hargaBeliFloat,
         harga_jual: hargaJualFloat,

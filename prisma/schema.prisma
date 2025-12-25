@@ -23,7 +23,6 @@ model Pegawai {
   nomor_telepon_pegawai String
   email_pegawai         String
   jabatan_pegawai       String
-  password              String
   is_aktif              Boolean
   created_at            DateTime      @default(now())
   updated_at            DateTime      @updatedAt

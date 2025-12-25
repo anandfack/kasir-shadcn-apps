@@ -33,7 +33,7 @@ export default function DetailPembelianProduk({
   useEffect(() => {
     if (open && pembelianId) {
       (async () => {
-        const res = await fetch(`/api/v1/pembelian-produk/${pembelianId}`);
+        const res = await fetch(`/api/v1/admin/pembelian-produk/${pembelianId}`);
         const data = await res.json();
 
         const dataWithExtra = {
@@ -102,7 +102,7 @@ export default function DetailPembelianProduk({
 
       console.log("Payload dikirim:", body);
 
-      await apiRequest("POST", `/api/v1/retur-produk`, body);
+      await apiRequest("POST", `/api/v1/admin/retur-produk`, body);
 
       onSuccess?.();
       onClose();

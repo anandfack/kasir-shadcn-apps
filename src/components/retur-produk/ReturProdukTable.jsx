@@ -51,7 +51,7 @@ const ReturProdukTable = () => {
   const [refreshKey, setRefreshKey] = React.useState(0);
 
   const { data, loading, error } = useFetchReturProduk(
-    "/api/v1/retur-produk",
+    "/api/v1/admin/retur-produk",
     refreshKey
   );
 
@@ -75,7 +75,7 @@ const ReturProdukTable = () => {
     async (id) => {
       setIsDetailLoading(true);
       try {
-        const res = await apiRequest("GET", `/api/v1/retur-produk/${id}`);
+        const res = await apiRequest("GET", `/api/v1/admin/retur-produk/${id}`);
         setDetailData(res);
         setIsDetailDialogOpen(true);
         console.log("Detail Data:", res);

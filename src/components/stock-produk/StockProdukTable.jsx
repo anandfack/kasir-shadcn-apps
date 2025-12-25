@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import HargaProdukDialog from "./HargaProdukDialog";
-import HargaProdukActions from "./HargaProdukActions";
-import useFetchHargaProduk from "@/hooks/harga-produk/useFetchHargaProduk";
+// import StockProdukDialog from "./StockProdukDialog";
+// import StockProdukActions from "./StockProdukActions";
+import useFetchStockProduk from "@/hooks/stock-produk/useFetchStockProduk";
 import React from "react";
 import {
   useReactTable,
@@ -34,18 +34,19 @@ import {
 } from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
-import TambahHargaProdukForm from "./TambahHargaProdukForm";
+// import TambahStockProdukForm from "./TambahStockProdukForm";
 
 import { useToast } from "@/hooks/use-toast";
-import UpdateHargaProdukForm from "./UpdateHargaProdukForm";
-import { apiRequest } from "@/app/utils/fetchOptions";
+import { Badge } from "../ui/badge";
+// import UpdateStockProdukForm from "./UpdateStockProdukForm";
+// import { apiRequest } from "@/app/utils/fetchOptions";
 
-const HargaProdukTable = () => {
+const StockProdukTable = () => {
   const { toast } = useToast();
   const [refreshKey, setRefreshKey] = React.useState(0);
 
-  const { data, loading, error } = useFetchHargaProduk(
-    "/api/v1/harga-produk",
+  const { data, loading, error } = useFetchStockProduk(
+    "/api/v1/admin/stock",
     refreshKey
   );
 
@@ -59,52 +60,75 @@ const HargaProdukTable = () => {
   const [deleteData, setDeleteData] = React.useState(null);
   const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
   const [isDialogDeleteOpen, setIsDialogDeleteOpen] = React.useState(false);
-  const [produkOpen, setProdukOpen] = useState(true);
+  // const [produkOpen, setProdukOpen] = useState(true);
 
-  const { data: produkData = [], isLoading: produkLoading } = useQuery({
-    queryKey: ["produk"],
-    queryFn: () => apiRequest("GET", "/api/v1/produk"),
-    enabled: produkOpen,
-    staleTime: 1000 * 60 * 5,
-  });
+  // const { data: produkData = [], isLoading: produkLoading } = useQuery({
+  //   queryKey: ["produk"],
+  //   queryFn: () => apiRequest("GET", "/api/admin/v1/produk"),
+  //   enabled: produkOpen,
+  //   staleTime: 1000 * 60 * 5,
+  // });
 
-  const dialogTitle = React.useMemo(
-    () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
-    [editData]
-  );
+  // const dialogTitle = React.useMemo(
+  //   () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
+  //   [editData]
+  // );
 
-  const dialogDescription = React.useMemo(
-    () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
-    [editData]
-  );
+  // const dialogDescription = React.useMemo(
+  //   () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
+  //   [editData]
+  // );
 
   const handleError = React.useCallback((error) => {
     console.error("Terjadi error:", error);
     setIsDialogUpdateOpen(true);
   }, []);
 
-  const handleDelete = React.useCallback(async () => {
-    if (!deleteData) return;
+  // const handleDelete = React.useCallback(async () => {
+  //   if (!deleteData) return;
 
-    try {
-      await apiRequest("DELETE", `/api/v1/harga-produk/${deleteData.id}`);
-      toast({
-        title: "Sukses!",
-        description: "Data harga produk berhasil dihapus.",
-        variant: "success",
-      });
-      setRefreshKey((prev) => prev + 1);
-      setDeleteData(null);
-      setIsDialogDeleteOpen(false);
-    } catch (error) {
-      toast({
-        title: "Gagal menghapus",
-        description: error?.response?.data?.error || "Terjadi kesalahan",
-        variant: "destructive",
-      });
-      console.error("Gagal menghapus:", error);
-    }
-  }, [deleteData, toast]);
+  //   try {
+  //     await apiRequest("DELETE", `/api/v1/admin/harga-produk/${deleteData.id}`);
+  //     toast({
+  //       title: "Sukses!",
+  //       description: "Data harga produk berhasil dihapus.",
+  //       variant: "success",
+  //     });
+  //     setRefreshKey((prev) => prev + 1);
+  //     setDeleteData(null);
+  //     setIsDialogDeleteOpen(false);
+  //   } catch (error) {
+  //     toast({
+  //       title: "Gagal menghapus",
+  //       description: error?.response?.data?.error || "Terjadi kesalahan",
+  //       variant: "destructive",
+  //     });
+  //     console.error("Gagal menghapus:", error);
+  //   }
+  // }, [deleteData, toast]);
+
+  const statusBadgeMap = {
+    "Belum Diatur": {
+      label: "Belum Diatur",
+      className: "bg-purple-100 text-purple-700 border-purple-200",
+    },
+    Habis: {
+      label: "Habis",
+      className: "bg-red-100 text-red-700 border-red-200",
+    },
+    Menipis: {
+      label: "Menipis",
+      className: "bg-yellow-100 text-yellow-700 border-yellow-200",
+    },
+    Berlebih: {
+      label: "Berlebih",
+      className: "bg-blue-100 text-blue-700 border-blue-200",
+    },
+    Aman: {
+      label: "Aman",
+      className: "bg-green-100 text-green-700 border-green-200",
+    },
+  };
 
   const columns = React.useMemo(
     () => [
@@ -126,63 +150,116 @@ const HargaProdukTable = () => {
         enableHiding: false,
       },
       {
-        id: "produk",
-        accessorFn: (row) => row.produk?.nama_produk,
+        accessorKey: "nama_produk",
         header: ({ column }) => (
           <Button
             variant="link"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Produk
+            Nama Produk
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => <div>{row.getValue("produk")}</div>,
+        cell: ({ row }) => <div>{row.getValue("nama_produk")}</div>,
       },
       {
-        accessorKey: "harga_beli",
+        accessorKey: "jumlah_stok",
         header: ({ column }) => (
           <Button
             variant="link"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Harga Beli
+            Jumlah Stok
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => (
-          <div className="capitalize">
-            {new Intl.NumberFormat("id-ID", {
-              style: "currency",
-              currency: "IDR",
-              minimumFractionDigits: 2,
-            }).format(row.getValue("harga_beli"))}
-          </div>
-        ),
+        cell: ({ row }) => {
+          const value = row.getValue("jumlah_stok");
+          return <div>{value ?? "-"}</div>;
+        },
       },
       {
-        accessorKey: "harga_jual",
+        accessorKey: "minimal_stok",
         header: ({ column }) => (
           <Button
             variant="link"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Harga Jual
+            Minimal Stok
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => (
-          <div className="capitalize">
-            {new Intl.NumberFormat("id-ID", {
-              style: "currency",
-              currency: "IDR",
-              minimumFractionDigits: 2,
-            }).format(row.getValue("harga_jual"))}
-          </div>
+        cell: ({ row }) => {
+          const value = row.getValue("minimal_stok");
+          return <div>{value ?? "-"}</div>;
+        },
+      },
+      {
+        accessorKey: "maksimal_stok",
+        header: ({ column }) => (
+          <Button
+            variant="link"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0"
+          >
+            Maksimal Stok
+            <ArrowUpDown />
+          </Button>
         ),
+        cell: ({ row }) => {
+          const value = row.getValue("maksimal_stok");
+          return <div>{value ?? "-"}</div>;
+        },
+      },
+      {
+        accessorKey: "status",
+        header: ({ column }) => (
+          <Button
+            variant="link"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0"
+          >
+            Status
+            <ArrowUpDown className="ml-2 h-4 w-4" />
+          </Button>
+        ),
+        cell: ({ row }) => {
+          const status = row.getValue("status");
+          const badge = statusBadgeMap[status] ?? statusBadgeMap["Aman"];
+
+          return (
+            <Badge variant="outline" className={badge.className}>
+              {badge.label}
+            </Badge>
+          );
+        },
+      },
+      {
+        accessorKey: "terakhir_update",
+        header: ({ column }) => (
+          <Button
+            variant="link"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0"
+          >
+            Terakhir Update
+            <ArrowUpDown />
+          </Button>
+        ),
+        cell: ({ row }) => {
+          const rawDate = row.getValue("terakhir_update");
+          if (!rawDate) {
+            return <div>-</div>;
+          }
+          const formattedDate = rawDate
+            ? new Date(rawDate).toISOString().split("T")[0]
+            : "";
+
+          return <div className="capitalize">{formattedDate}</div>;
+        },
       },
       {
         id: "actions",
@@ -192,7 +269,7 @@ const HargaProdukTable = () => {
 
           return (
             <div className="flex items-center justify-center gap-2">
-              <HargaProdukActions
+              {/* <HargaProdukActions
                 onEdit={() => {
                   setEditData(loadData);
                   setIsDialogUpdateOpen(true);
@@ -202,7 +279,7 @@ const HargaProdukTable = () => {
                   setDeleteData(loadData); // ✅ Set data yang mau dihapus
                   setIsDialogDeleteOpen(true); // ✅ Buka dialog konfirmasi
                 }}
-              />
+              /> */}
               {/* <HargaProdukDialog
                 isOpen={isDialogUpdateOpen}
                 onOpenChange={setIsDialogUpdateOpen}
@@ -242,6 +319,7 @@ const HargaProdukTable = () => {
       },
     ],
     [
+      statusBadgeMap,
       // editData,
       // toast,
       // isDialogUpdateOpen,
@@ -306,7 +384,7 @@ const HargaProdukTable = () => {
               <CirclePlus /> Tambah Produk
             </Button>
           </DialogTrigger>
-          <TambahHargaProdukForm
+          {/* <TambahHargaProdukForm
             onSuccess={() => {
               toast({
                 title: "Sukses!",
@@ -326,7 +404,7 @@ const HargaProdukTable = () => {
               console.error("Terjadi error:", error);
               setIsDialogTambahOpen(true);
             }}
-          />
+          /> */}
         </Dialog>
         <Input
           placeholder="Cari Produk ..."
@@ -377,7 +455,7 @@ const HargaProdukTable = () => {
         </Table>
       </div>
       {/* ✅ Dialog Konfirmasi Delete */}
-      <Dialog open={isDialogDeleteOpen} onOpenChange={setIsDialogDeleteOpen}>
+      {/* <Dialog open={isDialogDeleteOpen} onOpenChange={setIsDialogDeleteOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Hapus Data</DialogTitle>
@@ -398,15 +476,15 @@ const HargaProdukTable = () => {
             </Button>
           </div>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
       {/* ✅ Dialog Update Harga Produk */}
       <Dialog open={isDialogUpdateOpen} onOpenChange={setIsDialogUpdateOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{dialogTitle}</DialogTitle>
-            <DialogDescription>{dialogDescription}</DialogDescription>
+            {/* <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogDescription>{dialogDescription}</DialogDescription> */}
           </DialogHeader>
-          {editData && (
+          {/* {editData && (
             <UpdateHargaProdukForm
               produkData={produkData}
               initialData={editData}
@@ -430,7 +508,7 @@ const HargaProdukTable = () => {
                 console.error("Terjadi error:", error);
               }}
             />
-          )}
+          )} */}
         </DialogContent>
       </Dialog>
       <div className="flex items-center justify-end space-x-2 py-4">
@@ -461,4 +539,4 @@ const HargaProdukTable = () => {
   );
 };
 
-export default HargaProdukTable;
+export default StockProdukTable;

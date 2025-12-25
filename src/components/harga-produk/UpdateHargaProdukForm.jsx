@@ -4,14 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiRequest } from "@/app/utils/fetchOptions";
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogHeader,
-//   DialogTitle,
-//   DialogDescription,
-//   DialogTrigger,
-// } from "@/components/ui/dialog";
 
 const UpdateHargaProdukForm = ({
   produkData,
@@ -54,7 +46,7 @@ const UpdateHargaProdukForm = ({
       // Menggunakan apiRequest untuk update harga produk
       const updatedData = await apiRequest(
         "PUT",
-        `/api/v1/harga-produk/${formData.id}`,
+        `/api/v1/admin/harga-produk/${formData.id}`,
         dataToSend
       );
 
