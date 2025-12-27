@@ -1,9 +1,9 @@
 "use client";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import StockProdukDialog from "./StockProdukDialog";
-import StockProdukActions from "./StockProdukActions";
-import useFetchStockProduk from "@/hooks/stock-produk/useFetchStockProduk";
+import KonfigurasiPenggunaDialog from "./KonfigurasiPenggunaDialog";
+import KonfigurasiPenggunaActions from "./KonfigurasiPenggunaActions";
+import useFetchKonfigurasiPengguna from "@/hooks/konfigurasi-pengguna/useFetchKonfigurasiPengguna";
 import React from "react";
 import {
   useReactTable,
@@ -34,19 +34,22 @@ import {
 } from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
-// import TambahStockProdukForm from "./TambahStockProdukForm";
+// import TambahKategoriProdukForm from "./TambahKategoriProdukForm";
+import TambahKonfigurasiPenggunaForm from "./TambahKonfigurasiPenggunaForm";
+import UpdateKonfigurasiPenggunaForm from "./UpdateKonfigurasiPenggunaForm";
 
 import { useToast } from "@/hooks/use-toast";
-import { Badge } from "../ui/badge";
-import UpdateStockProdukForm from "./UpdateStockProdukForm";
-// import { apiRequest } from "@/app/utils/fetchOptions";
+import { apiRequest } from "@/app/utils/fetchOptions";
 
-const StockProdukTable = () => {
+import { Badge } from "@/components/ui/badge";
+import { roleBadgeMap } from "@/lib/roleBadge";
+
+const KonfigurasiPenggunaTable = () => {
   const { toast } = useToast();
   const [refreshKey, setRefreshKey] = React.useState(0);
 
-  const { data, loading, error } = useFetchStockProduk(
-    "/api/v1/admin/stock",
+  const { data, loading, error } = useFetchKonfigurasiPengguna(
+    "/api/v1/admin/konfigurasi-pengguna",
     refreshKey
   );
 
@@ -60,75 +63,55 @@ const StockProdukTable = () => {
   const [deleteData, setDeleteData] = React.useState(null);
   const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
   const [isDialogDeleteOpen, setIsDialogDeleteOpen] = React.useState(false);
-  // const [produkOpen, setProdukOpen] = useState(true);
+  const [pegawaiOpen, setPegawaiOpen] = useState(true);
 
-  // const { data: produkData = [], isLoading: produkLoading } = useQuery({
-  //   queryKey: ["produk"],
-  //   queryFn: () => apiRequest("GET", "/api/admin/v1/produk"),
-  //   enabled: produkOpen,
-  //   staleTime: 1000 * 60 * 5,
-  // });
+  const { data: pegawaiData = [], isLoading: pegawaiLoading } = useQuery({
+    queryKey: ["pegawai"],
+    queryFn: () => apiRequest("GET", "/api/v1/admin/pegawai"),
+    enabled: pegawaiOpen,
+    staleTime: 1000 * 60 * 5,
+  });
 
-  // const dialogTitle = React.useMemo(
-  //   () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
-  //   [editData]
-  // );
+  //   const dialogTitle = React.useMemo(
+  //     () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
+  //     [editData]
+  //   );
 
-  // const dialogDescription = React.useMemo(
-  //   () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
-  //   [editData]
-  // );
+  //   const dialogDescription = React.useMemo(
+  //     () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
+  //     [editData]
+  //   );
 
   const handleError = React.useCallback((error) => {
     console.error("Terjadi error:", error);
     setIsDialogUpdateOpen(true);
   }, []);
 
-  // const handleDelete = React.useCallback(async () => {
-  //   if (!deleteData) return;
+  const handleDelete = React.useCallback(async () => {
+    if (!deleteData) return;
 
-  //   try {
-  //     await apiRequest("DELETE", `/api/v1/admin/harga-produk/${deleteData.id}`);
-  //     toast({
-  //       title: "Sukses!",
-  //       description: "Data harga produk berhasil dihapus.",
-  //       variant: "success",
-  //     });
-  //     setRefreshKey((prev) => prev + 1);
-  //     setDeleteData(null);
-  //     setIsDialogDeleteOpen(false);
-  //   } catch (error) {
-  //     toast({
-  //       title: "Gagal menghapus",
-  //       description: error?.response?.data?.error || "Terjadi kesalahan",
-  //       variant: "destructive",
-  //     });
-  //     console.error("Gagal menghapus:", error);
-  //   }
-  // }, [deleteData, toast]);
-
-  const statusBadgeMap = {
-    "Belum Diatur": {
-      label: "Belum Diatur",
-      className: "bg-purple-100 text-purple-700 border-purple-200",
-    },
-    Habis: {
-      label: "Habis",
-      className: "bg-red-100 text-red-700 border-red-200",
-    },
-    Menipis: {
-      label: "Menipis",
-      className: "bg-yellow-100 text-yellow-700 border-yellow-200",
-    },
-    Berlebih: {
-      label: "Berlebih",
-      className: "bg-blue-100 text-blue-700 border-blue-200",
-    },
-    Aman: {
-      label: "Aman",
-      className: "bg-green-100 text-green-700 border-green-200",
-    },
-  };
+    try {
+      await apiRequest(
+        "DELETE",
+        `/api/v1/admin/konfigurasi-pengguna/${deleteData.id}`
+      );
+      toast({
+        title: "Sukses!",
+        description: "Data konfigurasi pengguna berhasil dihapus.",
+        variant: "success",
+      });
+      setRefreshKey((prev) => prev + 1);
+      setDeleteData(null);
+      setIsDialogDeleteOpen(false);
+    } catch (error) {
+      toast({
+        title: "Gagal menghapus",
+        description: error?.response?.data?.error || "Terjadi kesalahan",
+        variant: "destructive",
+      });
+      console.error("Gagal menghapus:", error);
+    }
+  }, [deleteData, toast]);
 
   const columns = React.useMemo(
     () => [
@@ -150,72 +133,74 @@ const StockProdukTable = () => {
         enableHiding: false,
       },
       {
-        accessorKey: "nama_produk",
+        accessorKey: "username",
         header: ({ column }) => (
           <Button
             variant="link"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Nama Produk
+            Username
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => <div>{row.getValue("nama_produk")}</div>,
+        cell: ({ row }) => <div>{row.getValue("username")}</div>,
       },
       {
-        accessorKey: "jumlah_stok",
+        accessorKey: "email",
         header: ({ column }) => (
           <Button
             variant="link"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Jumlah Stok
+            Email
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => {
-          const value = row.getValue("jumlah_stok");
-          return <div>{value ?? "-"}</div>;
-        },
+        cell: ({ row }) => <div>{row.getValue("email")}</div>,
       },
+
       {
-        accessorKey: "minimal_stok",
+        accessorKey: "role",
         header: ({ column }) => (
           <Button
             variant="link"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Minimal Stok
-            <ArrowUpDown />
-          </Button>
-        ),
-        cell: ({ row }) => {
-          const value = row.getValue("minimal_stok");
-          return <div>{value ?? "-"}</div>;
-        },
-      },
-      {
-        accessorKey: "maksimal_stok",
-        header: ({ column }) => (
-          <Button
-            variant="link"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-            className="p-0"
-          >
-            Maksimal Stok
-            <ArrowUpDown />
+            Role
+            <ArrowUpDown className="ml-1 h-4 w-4" />
           </Button>
         ),
         cell: ({ row }) => {
-          const value = row.getValue("maksimal_stok");
-          return <div>{value ?? "-"}</div>;
+          const role = row.getValue("role");
+          const badge = roleBadgeMap[role];
+
+          return (
+            <Badge variant={badge?.variant || "outline"}>
+              {badge?.label || role}
+            </Badge>
+          );
         },
       },
       {
-        accessorKey: "status",
+        id: "pegawai",
+        accessorFn: (row) => row.pegawai?.nama_pegawai,
+        header: ({ column }) => (
+          <Button
+            variant="link"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0"
+          >
+            Pegawai
+            <ArrowUpDown />
+          </Button>
+        ),
+        cell: ({ row }) => <div>{row.getValue("pegawai")}</div>,
+      },
+      {
+        accessorKey: "is_aktif",
         header: ({ column }) => (
           <Button
             variant="link"
@@ -223,40 +208,64 @@ const StockProdukTable = () => {
             className="p-0"
           >
             Status
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            <ArrowUpDown />
           </Button>
         ),
         cell: ({ row }) => {
-          const status = row.getValue("status");
-          const badge = statusBadgeMap[status] ?? statusBadgeMap["Aman"];
-
+          const isActive = row.getValue("is_aktif");
           return (
-            <Badge variant="outline" className={badge.className}>
-              {badge.label}
+            <Badge variant={isActive ? "secondary" : "destructive"}>
+              {isActive ? "Aktif" : "Non-Aktif"}
             </Badge>
           );
         },
       },
       {
-        accessorKey: "terakhir_update",
+        accessorKey: "verified",
         header: ({ column }) => (
           <Button
             variant="link"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Terakhir Update
+            Verify
             <ArrowUpDown />
           </Button>
         ),
         cell: ({ row }) => {
-          const rawDate = row.getValue("terakhir_update");
+          const isVerified = row.getValue("verified");
+          return (
+            <Badge variant={isVerified ? "secondary" : "destructive"}>
+              {isVerified ? "Verified" : "Not Verified"}
+            </Badge>
+          );
+        },
+      },
+      {
+        accessorKey: "last_login",
+        header: ({ column }) => (
+          <Button
+            variant="link"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0"
+          >
+            Last Login
+            <ArrowUpDown />
+          </Button>
+        ),
+        cell: ({ row }) => {
+          const rawDate = row.getValue("last_login");
           if (!rawDate) {
             return <div>-</div>;
           }
-          const formattedDate = rawDate
-            ? new Date(rawDate).toISOString().split("T")[0]
-            : "";
+          const formattedDate = new Date(rawDate).toLocaleString("id-ID", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          });
 
           return <div className="capitalize">{formattedDate}</div>;
         },
@@ -269,26 +278,26 @@ const StockProdukTable = () => {
 
           return (
             <div className="flex items-center justify-center gap-2">
-              <StockProdukActions
+              <KonfigurasiPenggunaActions
                 onEdit={() => {
                   setEditData(loadData);
                   setIsDialogUpdateOpen(true);
                   console.log("klik edit");
                 }}
-                // onDelete={() => {
-                //   setDeleteData(loadData); // ✅ Set data yang mau dihapus
-                //   setIsDialogDeleteOpen(true); // ✅ Buka dialog konfirmasi
-                // }}
+                onDelete={() => {
+                  setDeleteData(loadData);
+                  setIsDialogDeleteOpen(true);
+                }}
               />
-              <StockProdukDialog
+              {/* <HargaProdukDialog
                 isOpen={isDialogUpdateOpen}
                 onOpenChange={setIsDialogUpdateOpen}
-                // title={dialogTitle}
-                // description={dialogDescription}
+                title={dialogTitle}
+                description={dialogDescription}
               >
                 {editData && (
-                  <UpdateStockProdukForm
-                    // produkData={produkData}
+                  <UpdateHargaProdukForm
+                    produkData={produkData}
                     onSubmit={() => {
                       toast({
                         title: "Sukses!",
@@ -312,18 +321,17 @@ const StockProdukTable = () => {
                     initialData={editData}
                   />
                 )}
-              </StockProdukDialog>
+              </HargaProdukDialog> */}
             </div>
           );
         },
       },
     ],
     [
-      statusBadgeMap,
-      editData,
-      toast,
-      isDialogUpdateOpen,
-      setIsDialogUpdateOpen,
+      // editData,
+      // toast,
+      // isDialogUpdateOpen,
+      // setIsDialogUpdateOpen,
       // dialogDescription,
       // dialogTitle,
       // produkData,
@@ -372,7 +380,7 @@ const StockProdukTable = () => {
   return (
     <div className="w-full">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between py-4">
-        {/* <Dialog
+        <Dialog
           open={isDialogTambahOpen}
           onOpenChange={(isOpen) => setIsDialogTambahOpen(isOpen)}
         >
@@ -381,14 +389,14 @@ const StockProdukTable = () => {
               variant="outline"
               className="font-semibold text-xs md:text-sm"
             >
-              <CirclePlus /> Tambah Produk
+              <CirclePlus /> Tambah Pengguna
             </Button>
           </DialogTrigger>
-          <TambahHargaProdukForm
+          <TambahKonfigurasiPenggunaForm
             onSuccess={() => {
               toast({
                 title: "Sukses!",
-                description: "Data produk berhasil ditambahkan.",
+                description: "Data pengguna berhasil ditambahkan.",
                 variant: "success",
               });
               setRefreshKey((prev) => prev + 1);
@@ -404,10 +412,13 @@ const StockProdukTable = () => {
               console.error("Terjadi error:", error);
               setIsDialogTambahOpen(true);
             }}
+            pegawaiData={pegawaiData}
+            setPegawaiOpen={setPegawaiOpen}
+            pegawaiLoading={pegawaiLoading}
           />
-        </Dialog> */}
+        </Dialog>
         <Input
-          placeholder="Cari Produk ..."
+          placeholder="Cari Pengguna ..."
           className="max-w-sm text-xs md:text-sm"
           onChange={(e) => table.setGlobalFilter(e.target.value)}
         />
@@ -455,13 +466,12 @@ const StockProdukTable = () => {
         </Table>
       </div>
       {/* ✅ Dialog Konfirmasi Delete */}
-      {/* <Dialog open={isDialogDeleteOpen} onOpenChange={setIsDialogDeleteOpen}>
+      <Dialog open={isDialogDeleteOpen} onOpenChange={setIsDialogDeleteOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Hapus Data</DialogTitle>
             <DialogDescription>
-              Apakah kamu yakin ingin menghapus harga untuk produk{" "}
-              <strong>{deleteData?.produk?.nama_produk}</strong>?
+              Apakah kamu yakin ingin menghapus harga untuk produk
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 mt-4">
@@ -476,7 +486,7 @@ const StockProdukTable = () => {
             </Button>
           </div>
         </DialogContent>
-      </Dialog> */}
+      </Dialog>
       {/* ✅ Dialog Update Harga Produk */}
       <Dialog open={isDialogUpdateOpen} onOpenChange={setIsDialogUpdateOpen}>
         <DialogContent className="sm:max-w-lg">
@@ -485,14 +495,14 @@ const StockProdukTable = () => {
             <DialogDescription>{dialogDescription}</DialogDescription> */}
           </DialogHeader>
           {editData && (
-            <UpdateStockProdukForm
-              // produkData={produkData}
+            <UpdateKonfigurasiPenggunaForm
+              pegawaiData={pegawaiData}
               initialData={editData}
               isLoading={false}
               onSubmit={() => {
                 toast({
                   title: "Sukses!",
-                  description: "Data harga produk berhasil diupdate.",
+                  description: "Data konfigurasi pengguna berhasil diupdate.",
                   variant: "success",
                 });
                 setRefreshKey((prev) => prev + 1);
@@ -539,4 +549,4 @@ const StockProdukTable = () => {
   );
 };
 
-export default StockProdukTable;
+export default KonfigurasiPenggunaTable;

@@ -9,7 +9,7 @@ import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { Textarea } from "../ui/textarea";
 import { Switch } from "../ui/switch";
 
-const UpdateHargaProdukForm = ({
+const UpdateProdukForm = ({
   kategoriData,
   satuanData,
   supplierData,
@@ -394,4 +394,4 @@ const UpdateHargaProdukForm = ({
   );
 };
 
-export default UpdateHargaProdukForm;
+export default UpdateProdukForm;

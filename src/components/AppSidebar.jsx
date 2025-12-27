@@ -39,6 +39,8 @@ export function AppSidebar() {
   ];
   const informasiMenuItems = [
     { icon: <BoxesIcon />, name: "Stok", href: "/admin/stock-produk" },
+    { icon: <Undo2Icon />, name: "Retur", href: "/admin/retur-produk" },
+
     // { icon: <ArrowLeftRightIcon />, name: "Mutasi Stok", href: "#" },
     // { icon: <HistoryIcon />, name: "Riwayat Harga", href: "#" },
   ];
@@ -53,7 +55,6 @@ export function AppSidebar() {
       name: "Penjualan",
       href: "/admin/penjualan-produk",
     },
-    { icon: <Undo2Icon />, name: "Retur", href: "/admin/retur-produk" },
   ];
 
   const laporanMenuItems = [
@@ -65,7 +66,11 @@ export function AppSidebar() {
   ];
 
   const konfigurasiMenuItems = [
-    { icon: <UserCogIcon />, name: "User & Role", href: "#" },
+    {
+      icon: <UserCogIcon />,
+      name: "User & Role",
+      href: "/admin/konfigurasi-pengguna",
+    },
     { icon: <MailCheckIcon />, name: "Verifikasi E-mail", href: "#" },
     { icon: <SettingsIcon />, name: "Pengaturan Sistem", href: "#" },
     { icon: <LogOutIcon />, name: "Logout", href: "#" },
