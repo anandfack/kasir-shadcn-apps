@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Fragment } from "react";
+import { useState, Fragment, useMemo } from "react";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,12 +20,13 @@ import { ROLE_OPTIONS } from "@/lib/roleBadge";
 const TambahKonfigurasiPenggunaForm = ({
   onSuccess,
   onError,
-  pegawaiData,
-  setPegawaiOpen,
-  pegawaiLoading,
+  pegawaiWithoutLoginData,
+  pegawaiWithoutLoginLoading,
+  setPegawaiWithoutLoginOpen,
 }) => {
-  const [selectedPegawai, setSelectedPegawai] = useState(null);
-  const [pegawaiId, setPegawaiId] = useState("");
+  const [selectedPegawaiWithoutLogin, setSelectedPegawaiWithoutLogin] =
+    useState(null);
+  const [pegawaiWithoutLoginId, setPegawaiWithoutLoginId] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -33,10 +34,25 @@ const TambahKonfigurasiPenggunaForm = ({
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [searchRole, setSearchRole] = useState("");
+  const [searchPegawaiWithoutLogin, setSearchPegawaiWithoutLogin] =
+    useState("");
+
+  console.log("pegawaiDataWithoutLogin:", pegawaiWithoutLoginData);
 
   const filteredRoles = ROLE_OPTIONS.filter((role) =>
     role.label.toLowerCase().includes(searchRole.toLowerCase())
   );
+
+  const filteredPegawai = useMemo(() => {
+    if (!pegawaiWithoutLoginData) return [];
+    if (!searchPegawaiWithoutLogin) return pegawaiWithoutLoginData;
+
+    return pegawaiWithoutLoginData.filter((pegawai) =>
+      pegawai.nama_pegawai
+        .toLowerCase()
+        .includes(searchPegawaiWithoutLogin.toLowerCase())
+    );
+  }, [pegawaiWithoutLoginData, searchPegawaiWithoutLogin]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,7 +66,7 @@ const TambahKonfigurasiPenggunaForm = ({
 
     try {
       await apiRequest("POST", "/api/v1/admin/konfigurasi-pengguna", {
-        pegawai_id: pegawaiId,
+        pegawai_id: pegawaiWithoutLoginId,
         username: username,
         password: password,
         role: role,
@@ -77,48 +93,66 @@ const TambahKonfigurasiPenggunaForm = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="kategori-produk" className="text-center">
+            <Label className="text-center">
               Pegawai <i className="text-red-500">*</i>
             </Label>
+
             <div className="col-span-3">
               <Listbox
-                value={selectedPegawai}
+                value={selectedPegawaiWithoutLogin}
                 onChange={(pegawai) => {
-                  setSelectedPegawai(pegawai);
-                  setPegawaiId(pegawai?.id || "");
+                  setSelectedPegawaiWithoutLogin(pegawai);
+                  setPegawaiWithoutLoginId(pegawai?.id || "");
                 }}
               >
                 <div className="relative mt-1">
+                  {/* Button */}
                   <Listbox.Button
-                    className="relative w-full h-10 cursor-default rounded-md bg-background py-2 pl-3 pr-10 text-left border border-input shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input sm:text-sm"
-                    onClick={() => setPegawaiOpen(true)}
+                    className="relative w-full h-10 rounded-md bg-background border border-input py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-ring sm:text-sm"
+                    onClick={() => setPegawaiWithoutLoginOpen(true)}
                   >
                     <span className="block truncate">
-                      {selectedPegawai?.nama_pegawai || "Pilih Pegawai"}
+                      {selectedPegawaiWithoutLogin?.nama_pegawai ||
+                        "Pilih Pegawai"}
                     </span>
-                    <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                      <ChevronUpDownIcon
-                        className="h-5 w-5 text-muted-foreground"
-                        aria-hidden="true"
-                      />
+                    <span className="absolute inset-y-0 right-0 flex items-center pr-2">
+                      <ChevronUpDownIcon className="h-5 w-5 text-muted-foreground" />
                     </span>
                   </Listbox.Button>
+
                   <Transition
                     as={Fragment}
                     leave="transition ease-in duration-100"
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
-                    afterLeave={() => setPegawaiOpen(false)}
+                    afterLeave={() => setPegawaiWithoutLoginOpen(false)}
                   >
-                    <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
-                      {pegawaiLoading ? (
+                    <Listbox.Options className="absolute z-10 mt-1 w-full rounded-md bg-popover shadow-lg ring-1 ring-black/5 dark:ring-white/10 sm:text-sm">
+                      {/* 🔍 Search */}
+                      <div className="p-2 border-b">
+                        <Input
+                          placeholder="Cari pegawai..."
+                          value={searchPegawaiWithoutLogin}
+                          onChange={(e) =>
+                            setSearchPegawaiWithoutLogin(e.target.value)
+                          }
+                          onKeyDownCapture={(e) => {
+                            if (e.key === " ") e.stopPropagation();
+                          }}
+                          className="h-8 text-sm"
+                        />
+                      </div>
+
+                      {/* 📋 LIST */}
+                      {pegawaiWithoutLoginLoading ? (
                         <div className="py-2 px-4 text-muted-foreground italic">
                           Loading...
                         </div>
-                      ) : pegawaiData && pegawaiData.length > 0 ? (
-                        pegawaiData.map((pegawai) => (
+                      ) : filteredPegawai.length > 0 ? (
+                        filteredPegawai.map((pegawai) => (
                           <Listbox.Option
                             key={pegawai.id}
+                            value={pegawai}
                             className={({ active }) =>
                               `relative cursor-default select-none py-2 pl-10 pr-4 ${
                                 active
@@ -126,7 +160,6 @@ const TambahKonfigurasiPenggunaForm = ({
                                   : "text-popover-foreground"
                               }`
                             }
-                            value={pegawai}
                           >
                             {({ selected }) => (
                               <>
@@ -137,21 +170,19 @@ const TambahKonfigurasiPenggunaForm = ({
                                 >
                                   {pegawai.nama_pegawai}
                                 </span>
-                                {selected ? (
+
+                                {selected && (
                                   <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                                    <CheckIcon
-                                      className="h-5 w-5"
-                                      aria-hidden="true"
-                                    />
+                                    <CheckIcon className="h-5 w-5" />
                                   </span>
-                                ) : null}
+                                )}
                               </>
                             )}
                           </Listbox.Option>
                         ))
                       ) : (
                         <div className="py-2 px-4 text-muted-foreground italic">
-                          Tidak ada data
+                          Pegawai tidak ditemukan
                         </div>
                       )}
                     </Listbox.Options>
@@ -159,7 +190,7 @@ const TambahKonfigurasiPenggunaForm = ({
                 </div>
               </Listbox>
             </div>
-          </div>
+          </div>{" "}
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="username" className="text-center">
               Username <i className="text-red-500">*</i>
@@ -170,6 +201,19 @@ const TambahKonfigurasiPenggunaForm = ({
               onChange={(e) => setUsername(e.target.value)}
               className="col-span-3"
               placeholder="Masukkan username"
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="email" className="text-center">
+              Email <i className="text-red-500">*</i>
+            </Label>
+            <Input
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="col-span-3"
+              placeholder="Masukkan email"
+              type="email"
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">

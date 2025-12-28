@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { jwtVerify } from "jose";
+// import { jwtVerify } from "jose";
 import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
@@ -7,37 +7,21 @@ const SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function GET(req) {
   try {
-    // =========================
-    // 1. Ambil token dari cookie
-    // =========================
-    const token = req.cookies.get("token")?.value;
+    const { searchParams } = new URL(req.url);
+    const withoutLogin = searchParams.get("without_login");
 
-    if (!token) {
-      return NextResponse.json(
-        { message: "Unauthorized: Token tidak ditemukan" },
-        { status: 401 }
-      );
+    let whereCondition = {
+      deleted_at: null,
+    };
+
+    if (withoutLogin === "true") {
+      whereCondition.LoginPemakai = {
+        is: null,
+      };
     }
 
-    // =========================
-    // 2. Verifikasi JWT
-    // =========================
-    const { payload } = await jwtVerify(token, SECRET);
-
-    if (payload.role !== "admin") {
-      return NextResponse.json(
-        { message: "Forbidden: Bukan admin" },
-        { status: 403 }
-      );
-    }
-
-    // =========================
-    // 3. Logic API (AMAN)
-    // =========================
     const pegawai = await prisma.pegawai.findMany({
-      where: {
-        deleted_at: null,
-      },
+      where: whereCondition,
       orderBy: {
         nama_pegawai: "asc",
       },
@@ -46,10 +30,9 @@ export async function GET(req) {
     return NextResponse.json(pegawai, { status: 200 });
   } catch (error) {
     console.error("API ERROR:", error);
-
     return NextResponse.json(
-      { message: "Invalid atau expired token" },
-      { status: 401 }
+      { message: "Terjadi kesalahan pada server" },
+      { status: 500 }
     );
   }
 }

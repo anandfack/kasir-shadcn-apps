@@ -1,5 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
-
+const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
 const pegawaiData = require("./data/pegawai.data");
@@ -10,6 +10,9 @@ const produkData = require("./data/produk.data");
 const dataHarga = require("./data/harga.data");
 
 async function main() {
+  const passwordPlanain = "admin123";
+  const hashedPassword = await bcrypt.hash(passwordPlanain, 10);
+
   console.log("🌱 Seeding Pegawai...");
   await prisma.pegawai.createMany({
     data: pegawaiData,
@@ -44,6 +47,23 @@ async function main() {
   await prisma.harga.createMany({
     data: dataHarga,
     skipDuplicates: true,
+  });
+
+  console.log("Seeding Login Pemakai Admin..");
+  await prisma.loginPemakai.createMany({
+    data: [
+      {
+        username: "admin",
+        password: hashedPassword,
+        role: "admin",
+        pegawai_id: 1,
+        email: "admin@admin.com",
+        verified: true,
+        created_at: new Date(),
+        updated_at: new Date(),
+        is_aktif: true,
+      },
+    ],
   });
 
   console.log("✅ Seeding completed.");

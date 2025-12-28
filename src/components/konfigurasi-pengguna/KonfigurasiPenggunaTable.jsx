@@ -64,6 +64,9 @@ const KonfigurasiPenggunaTable = () => {
   const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
   const [isDialogDeleteOpen, setIsDialogDeleteOpen] = React.useState(false);
   const [pegawaiOpen, setPegawaiOpen] = useState(true);
+  const [pegawaiWithoutLoginOpen, setPegawaiWithoutLoginOpen] = useState(true);
+  useState(true);
+  const [pegawaiWithoutLoading, setPegawaiWithoutLoading] = useState(true);
 
   const { data: pegawaiData = [], isLoading: pegawaiLoading } = useQuery({
     queryKey: ["pegawai"],
@@ -72,6 +75,15 @@ const KonfigurasiPenggunaTable = () => {
     staleTime: 1000 * 60 * 5,
   });
 
+  const {
+    data: pegawaiWithoutLoginData = [],
+    isLoading: pegawaiWithoutLoginLoading,
+  } = useQuery({
+    queryKey: ["pegawai", "without-login"],
+    queryFn: () =>
+      apiRequest("GET", "/api/v1/admin/pegawai?without_login=true"),
+    enabled: pegawaiWithoutLoginOpen,
+  });
   //   const dialogTitle = React.useMemo(
   //     () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
   //     [editData]
@@ -412,9 +424,12 @@ const KonfigurasiPenggunaTable = () => {
               console.error("Terjadi error:", error);
               setIsDialogTambahOpen(true);
             }}
-            pegawaiData={pegawaiData}
-            setPegawaiOpen={setPegawaiOpen}
-            pegawaiLoading={pegawaiLoading}
+            // pegawaiData={pegawaiData}
+            // setPegawaiOpen={setPegawaiOpen}
+            // pegawaiLoading={pegawaiLoading}
+            pegawaiWithoutLoginData={pegawaiWithoutLoginData}
+            setPegawaiWithoutLoginOpen={setPegawaiWithoutLoginOpen}
+            pegawaiWithoutLoginLoading={pegawaiWithoutLoginLoading}
           />
         </Dialog>
         <Input
