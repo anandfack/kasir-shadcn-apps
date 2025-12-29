@@ -4,7 +4,7 @@ const prisma = new PrismaClient();
 
 export const PUT = async (req, { params }) => {
   try {
-    const { id } = params;
+    const { id } = params; // ← ini ANGGAP produk_id
     const body = await req.json();
     const { minimal_stok, maksimal_stok } = body;
 
@@ -20,15 +20,23 @@ export const PUT = async (req, { params }) => {
       );
     }
 
-    const updateStockProduk = await prisma.stok.update({
-      where: { id: parseInt(id, 10) },
-      data: {
+    const stok = await prisma.stok.upsert({
+      where: {
+        produk_id: parseInt(id, 10), // 🔑 KUNCI UTAMA
+      },
+      update: {
         minimal_stok: minimal,
         maksimal_stok: maksimal,
-        updated_at: new Date(),
+      },
+      create: {
+        produk_id: parseInt(id, 10),
+        jumlah_stok: 0,
+        minimal_stok: minimal,
+        maksimal_stok: maksimal,
       },
     });
-    return new Response(JSON.stringify(updateStockProduk), {
+
+    return new Response(JSON.stringify(stok), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

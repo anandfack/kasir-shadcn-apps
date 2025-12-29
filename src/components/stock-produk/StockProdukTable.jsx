@@ -39,6 +39,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "../ui/badge";
 import UpdateStockProdukForm from "./UpdateStockProdukForm";
+import PenyesuaianStockForm from "./PenyesuaianStockForm";
 // import { apiRequest } from "@/app/utils/fetchOptions";
 
 const StockProdukTable = () => {
@@ -60,6 +61,10 @@ const StockProdukTable = () => {
   const [deleteData, setDeleteData] = React.useState(null);
   const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
   const [isDialogDeleteOpen, setIsDialogDeleteOpen] = React.useState(false);
+  const [penyesuaianData, setPenyesuaianData] = React.useState(null);
+  const [isDialogPenyesuaianOpen, setIsDialogPenyesuaianOpen] =
+    React.useState(false);
+
   // const [produkOpen, setProdukOpen] = useState(true);
 
   // const { data: produkData = [], isLoading: produkLoading } = useQuery({
@@ -279,6 +284,11 @@ const StockProdukTable = () => {
                 //   setDeleteData(loadData); // ✅ Set data yang mau dihapus
                 //   setIsDialogDeleteOpen(true); // ✅ Buka dialog konfirmasi
                 // }}
+                onAdjustment={() => {
+                  setPenyesuaianData(loadData);
+                  setIsDialogPenyesuaianOpen(true);
+                  console.log("klik adjustment");
+                }}
               />
               <StockProdukDialog
                 isOpen={isDialogUpdateOpen}
@@ -506,6 +516,41 @@ const StockProdukTable = () => {
                   variant: "destructive",
                 });
                 console.error("Terjadi error:", error);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ✅ Dialog Reset Password */}
+      <Dialog
+        open={isDialogPenyesuaianOpen}
+        onOpenChange={setIsDialogPenyesuaianOpen}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            {/* <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogDescription>{dialogDescription}</DialogDescription> */}
+          </DialogHeader>
+          {penyesuaianData && (
+            <PenyesuaianStockForm
+              initialData={penyesuaianData}
+              isLoading={false}
+              onSubmit={() => {
+                toast({
+                  title: "Sukses!",
+                  description: "Berhasil menyesuaikan stok produk.",
+                  variant: "success",
+                });
+                setIsDialogPenyesuaianOpen(false);
+              }}
+              onError={(error) => {
+                toast({
+                  title: "Terjadi kesalahan",
+                  description:
+                    error?.response?.data?.error || "Terjadi kesalahan",
+                  variant: "destructive",
+                });
               }}
             />
           )}
