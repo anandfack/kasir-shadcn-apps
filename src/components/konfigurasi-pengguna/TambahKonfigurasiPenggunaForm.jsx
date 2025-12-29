@@ -37,7 +37,7 @@ const TambahKonfigurasiPenggunaForm = ({
   const [searchPegawaiWithoutLogin, setSearchPegawaiWithoutLogin] =
     useState("");
 
-  console.log("pegawaiDataWithoutLogin:", pegawaiWithoutLoginData);
+  // console.log("pegawaiDataWithoutLogin:", pegawaiWithoutLoginData);
 
   const filteredRoles = ROLE_OPTIONS.filter((role) =>
     role.label.toLowerCase().includes(searchRole.toLowerCase())

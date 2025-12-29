@@ -8,6 +8,7 @@ export async function GET(req) {
     // const { searchParams } = new URL(req.url);
 
     const konfigurasiPengguna = await prisma.loginPemakai.findMany({
+      where: { deleted_at: null },  
       select: {
         id: true,
         username: true,

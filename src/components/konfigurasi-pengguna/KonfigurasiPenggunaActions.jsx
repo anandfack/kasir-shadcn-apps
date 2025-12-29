@@ -20,7 +20,6 @@ const KonfigurasiPenggunaActions = ({ onEdit, onDelete, onResetPassword }) => {
       >
         <KeyIcon />
       </Button>
-
       <Button
         title="Hapus"
         variant="destructive"

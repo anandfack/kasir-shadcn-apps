@@ -40,6 +40,11 @@ export function AppSidebar() {
   const informasiMenuItems = [
     { icon: <BoxesIcon />, name: "Stok", href: "/admin/stock-produk" },
     { icon: <Undo2Icon />, name: "Retur", href: "/admin/retur-produk" },
+    {
+      icon: <ReceiptIcon />,
+      name: "Penjualan",
+      href: "/admin/penjualan-produk",
+    },
 
     // { icon: <ArrowLeftRightIcon />, name: "Mutasi Stok", href: "#" },
     // { icon: <HistoryIcon />, name: "Riwayat Harga", href: "#" },
@@ -49,11 +54,6 @@ export function AppSidebar() {
       icon: <ShoppingCartIcon />,
       name: "Pembelian",
       href: "/admin/pembelian-produk",
-    },
-    {
-      icon: <ReceiptIcon />,
-      name: "Penjualan",
-      href: "/admin/penjualan-produk",
     },
   ];
 

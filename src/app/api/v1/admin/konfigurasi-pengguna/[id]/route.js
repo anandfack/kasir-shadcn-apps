@@ -43,21 +43,21 @@ export const PUT = async (req, { params }) => {
   }
 };
 
-// export const DELETE = async (req, { params }) => {
-//   try {
-//     const { id } = params;
-//     const deleteProduk = await prisma.produk.update({
-//       where: { id: parseInt(id) },
-//       data: { deleted_at: new Date() },
-//     });
-//     return new Response(JSON.stringify(deleteProduk), {
-//       status: 200,
-//       headers: { "Content-Type": "application/json" },
-//     });
-//   } catch (error) {
-//     return new Response(JSON.stringify({ error: error.message }), {
-//       status: 500,
-//       headers: { "Content-Type": "application/json" },
-//     });
-//   }
-// };
+export const DELETE = async (req, { params }) => {
+  try {
+    const { id } = params;
+    const deletePengguna = await prisma.loginPemakai.update({
+      where: { id: parseInt(id) },
+      data: { deleted_at: new Date() },
+    });
+    return new Response(JSON.stringify(deletePengguna), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+};

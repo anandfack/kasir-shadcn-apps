@@ -43,6 +43,7 @@ import { apiRequest } from "@/app/utils/fetchOptions";
 
 import { Badge } from "@/components/ui/badge";
 import { roleBadgeMap } from "@/lib/roleBadge";
+import ResetPasswordForm from "./ResetPasswordForm";
 
 const KonfigurasiPenggunaTable = () => {
   const { toast } = useToast();
@@ -67,6 +68,9 @@ const KonfigurasiPenggunaTable = () => {
   const [pegawaiWithoutLoginOpen, setPegawaiWithoutLoginOpen] = useState(true);
   useState(true);
   const [pegawaiWithoutLoading, setPegawaiWithoutLoading] = useState(true);
+  const [resetPasswordData, setResetPasswordData] = React.useState(null);
+  const [isDialogResetPasswordOpen, setIsDialogResetPasswordOpen] =
+    React.useState(false);
 
   const { data: pegawaiData = [], isLoading: pegawaiLoading } = useQuery({
     queryKey: ["pegawai"],
@@ -300,54 +304,17 @@ const KonfigurasiPenggunaTable = () => {
                   setDeleteData(loadData);
                   setIsDialogDeleteOpen(true);
                 }}
+                onResetPassword={() => {
+                  setResetPasswordData(loadData);
+                  setIsDialogResetPasswordOpen(true);
+                }}
               />
-              {/* <HargaProdukDialog
-                isOpen={isDialogUpdateOpen}
-                onOpenChange={setIsDialogUpdateOpen}
-                title={dialogTitle}
-                description={dialogDescription}
-              >
-                {editData && (
-                  <UpdateHargaProdukForm
-                    produkData={produkData}
-                    onSubmit={() => {
-                      toast({
-                        title: "Sukses!",
-                        description: "Data harga produk berhasil diupdate.",
-                        variant: "success",
-                      });
-                      setRefreshKey((prev) => prev + 1);
-                      setIsDialogUpdateOpen(false);
-                    }}
-                    onError={(error) => {
-                      toast({
-                        title: "Terjadi kesalahan",
-                        description:
-                          error?.response?.data?.error || "Terjadi kesalahan",
-                        variant: "destructive",
-                      });
-                      console.error("Terjadi error:", error);
-                      setIsDialogTambahOpen(true);
-                    }}
-                    isLoading={false}
-                    initialData={editData}
-                  />
-                )}
-              </HargaProdukDialog> */}
             </div>
           );
         },
       },
     ],
-    [
-      // editData,
-      // toast,
-      // isDialogUpdateOpen,
-      // setIsDialogUpdateOpen,
-      // dialogDescription,
-      // dialogTitle,
-      // produkData,
-    ]
+    []
   );
 
   const table = useReactTable({
@@ -424,9 +391,6 @@ const KonfigurasiPenggunaTable = () => {
               console.error("Terjadi error:", error);
               setIsDialogTambahOpen(true);
             }}
-            // pegawaiData={pegawaiData}
-            // setPegawaiOpen={setPegawaiOpen}
-            // pegawaiLoading={pegawaiLoading}
             pegawaiWithoutLoginData={pegawaiWithoutLoginData}
             setPegawaiWithoutLoginOpen={setPegawaiWithoutLoginOpen}
             pegawaiWithoutLoginLoading={pegawaiWithoutLoginLoading}
@@ -536,6 +500,42 @@ const KonfigurasiPenggunaTable = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* ✅ Dialog Reset Password */}
+      <Dialog
+        open={isDialogResetPasswordOpen}
+        onOpenChange={setIsDialogResetPasswordOpen}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            {/* <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogDescription>{dialogDescription}</DialogDescription> */}
+          </DialogHeader>
+          {resetPasswordData && (
+            <ResetPasswordForm
+              initialData={resetPasswordData}
+              isLoading={false}
+              onSubmit={() => {
+                toast({
+                  title: "Sukses!",
+                  description: "Password berhasil direset.",
+                  variant: "success",
+                });
+                setIsDialogResetPasswordOpen(false);
+              }}
+              onError={(error) => {
+                toast({
+                  title: "Terjadi kesalahan",
+                  description:
+                    error?.response?.data?.error || "Terjadi kesalahan",
+                  variant: "destructive",
+                });
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
