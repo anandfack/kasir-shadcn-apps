@@ -542,6 +542,7 @@ const StockProdukTable = () => {
                   description: "Berhasil menyesuaikan stok produk.",
                   variant: "success",
                 });
+                setRefreshKey((prev) => prev + 1);
                 setIsDialogPenyesuaianOpen(false);
               }}
               onError={(error) => {

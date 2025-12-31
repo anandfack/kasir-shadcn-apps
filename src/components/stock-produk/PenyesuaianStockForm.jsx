@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect } from "react";
+
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,27 +39,32 @@ const PenyesuaianStockForm = ({
     try {
       setLoading(true);
 
-      await apiRequest("POST", "/api/v1/admin/stok/penyesuaian", {
-        produk_id: initialData.produk_id,
+      console.log("SEND DATA:", {
+        produk_id: initialData?.id,
+        stok_fisik: stokFisik,
+      });
+
+      console.log("initial data produk id:", initialData);
+
+      await apiRequest("POST", "/api/v1/admin/stock/penyesuaian", {
+        produk_id: initialData.id,
         stok_fisik: Number(stokFisik),
-        alasan,
+        keterangan_mutasi: alasan,
       });
 
       setStokFisik("");
       setAlasan("");
-
       onSubmit?.();
     } catch (error) {
       console.error(error);
-      onError?.(error.message || "Terjadi kesalahan");
+      onError?.("Gagal menyimpan penyesuaian stok");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <form className="grid gap-4 py-4" onSubmit={handleSubmit}>
-      {/* Produk */}
+    <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-4 items-center gap-4">
         <Label className="text-center">Produk</Label>
         <Input
@@ -68,7 +74,6 @@ const PenyesuaianStockForm = ({
         />
       </div>
 
-      {/* Stok Sistem */}
       <div className="grid grid-cols-4 items-center gap-4">
         <Label className="text-center">Stok Sistem</Label>
         <Input value={stokSistem} disabled className="col-span-3" />
@@ -77,19 +82,24 @@ const PenyesuaianStockForm = ({
       {/* Stok Fisik */}
       <div className="grid grid-cols-4 items-center gap-4">
         <Label className="text-center">
-          Stok Fisik <i className="text-red-500">*</i>
+          Stok Fisik <span className="text-red-500">*</span>
         </Label>
         <Input
-          type="number"
-          min={0}
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
           value={stokFisik}
-          onChange={(e) => setStokFisik(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (/^\d*$/.test(value)) {
+              setStokFisik(value);
+            }
+          }}
           className="col-span-3"
           placeholder="Masukkan stok fisik"
         />
       </div>
 
-      {/* Selisih */}
       <div className="grid grid-cols-4 items-center gap-4">
         <Label className="text-center">Selisih</Label>
         <Input
@@ -101,10 +111,9 @@ const PenyesuaianStockForm = ({
         />
       </div>
 
-      {/* Alasan */}
       <div className="grid grid-cols-4 items-center gap-4">
         <Label className="text-center">
-          Alasan <i className="text-red-500">*</i>
+          Alasan <span className="text-red-500">*</span>
         </Label>
         <select
           value={alasan}
@@ -112,16 +121,22 @@ const PenyesuaianStockForm = ({
           className="col-span-3 border rounded px-3 py-2"
         >
           <option value="">-- Pilih alasan --</option>
+          <option value="OPNAME">Stok opname</option>
           <option value="RUSAK">Barang rusak</option>
           <option value="HILANG">Barang hilang</option>
-          <option value="KOREKSI">Koreksi stok</option>
-          <option value="OPNAME">Stok opname</option>
+          <option value="KOREKSI">Koreksi sistem</option>
         </select>
       </div>
 
-      {/* Tombol */}
+      <div className="grid grid-cols-4 items-center gap-4">
+        <div className="col-span-4 text-sm text-right min-h-[20px]">
+          {selisih !== 0 &&
+            (selisih > 0 ? "➕ Penambahan stok" : "➖ Pengurangan stok")}
+        </div>
+      </div>
+
       <div className="flex justify-end">
-        <Button type="submit" disabled={loading}>
+        <Button type="submit" disabled={loading || selisih === 0}>
           {loading ? "Menyimpan..." : "Simpan Penyesuaian"}
         </Button>
       </div>

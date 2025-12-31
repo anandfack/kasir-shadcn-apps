@@ -133,6 +133,8 @@ export default function MutasiStokBarang({ open, onOpenChange, data }) {
                               ? "text-red-500"
                               : item.tipe_mutasi === "MASUK"
                               ? "text-green-500"
+                              : item.tipe_mutasi === "PENYESUAIAN"
+                              ? "text-blue-500"
                               : ""
                           }`}
                         >
