@@ -42,6 +42,12 @@ export async function GET(req) {
 
 export async function POST(req) {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const body = await req.json();
     const { kode_kategori, nama_kategori } = body;
 
@@ -74,7 +80,7 @@ export async function POST(req) {
     if (existingKodeKategori) {
       return jsonResponse(
         {
-          message: "Kode Kategori already exists",
+          message: "Kode Kategori sudah digunakan",
         },
         409
       );

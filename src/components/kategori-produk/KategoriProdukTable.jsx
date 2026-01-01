@@ -37,7 +37,8 @@ import TambahKategoriProdukForm from "./TambahKategoriProdukForm";
 import UpdateKategoriProdukForm from "./UpdateKategoriProdukForm";
 
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/app/utils/fetchOptions";
+// import { apiRequest } from "@/app/utils/fetchOptions";
+import {apiRequest} from "@/lib/apiRequest";
 
 const KategoriProdukTable = () => {
   const { toast } = useToast();
@@ -107,7 +108,6 @@ const KategoriProdukTable = () => {
       toast({
         title: "Sukses!",
         description: "Data kategori produk berhasil dihapus.",
-        variant: "success",
       });
       setRefreshKey((prev) => prev + 1);
       setDeleteData(null);
@@ -259,7 +259,7 @@ const KategoriProdukTable = () => {
               toast({
                 title: "Sukses!",
                 description: "Data kategori produk berhasil ditambahkan.",
-                variant: "success",
+                // variant: "secondary",
               });
               setRefreshKey((prev) => prev + 1);
               setIsDialogTambahOpen(false);
@@ -365,7 +365,6 @@ const KategoriProdukTable = () => {
                 toast({
                   title: "Sukses!",
                   description: "Data kategori produk berhasil diupdate.",
-                  variant: "success",
                 });
                 setRefreshKey((prev) => prev + 1);
                 setIsDialogUpdateOpen(false);

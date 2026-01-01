@@ -11,7 +11,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { apiRequest } from "@/app/utils/fetchOptions";
+import { apiRequest } from "@/lib/apiRequest";
 
 const TambahKategoriProdukForm = ({ onSuccess, onError }) => {
   const [kodeKategori, setKodeKategori] = useState("");
@@ -26,8 +26,6 @@ const TambahKategoriProdukForm = ({ onSuccess, onError }) => {
       await apiRequest("POST", "/api/v1/admin/kategori-produk", {
         kode_kategori: kodeKategori,
         nama_kategori: namaKategori,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       });
 
       onSuccess();

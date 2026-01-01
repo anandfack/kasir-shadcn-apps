@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import { apiRequest } from "@/lib/apiRequest";
 
 const useFetchKategoriProduk = (url, refreshKey) => {
-  const [data, setData] = useState([]); // ARRAY SAJA
+  const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // { status, message, errors }
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
