@@ -25,11 +25,9 @@ export const PUT = async (req, { params }) => {
       error.nama_kategori = "Nama kategori wajib diisi";
     }
     if (Object.keys(error).length > 0) {
-      return new Response(
-        JSON.stringify({ errors: error }),
+      return jsonResponse(
         {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
+          message: "Validation error",
         },
         400
       );

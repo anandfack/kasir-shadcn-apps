@@ -87,7 +87,7 @@ export async function POST(req) {
     }
 
     // simpan kategori produk baru
-    const newCategory = await prisma.kategori.create({
+    const tambahKategoriProduk = await prisma.kategori.create({
       data: {
         kode_kategori,
         nama_kategori,
@@ -97,7 +97,7 @@ export async function POST(req) {
     return jsonResponse(
       {
         message: "Kategori produk berhasil ditambahkan",
-        data: newCategory,
+        data: tambahKategoriProduk,
       },
       201
     );

@@ -1,10 +1,23 @@
 import { PrismaClient } from "@prisma/client";
+import jsonResponse from "@/lib/jsonResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
 const prisma = new PrismaClient();
 
 export async function GET(req) {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const satuanProduk = await prisma.satuan.findMany({
+      select: {
+        id: true,
+        kode_satuan: true,
+        nama_satuan: true,
+      },
       where: {
         deleted_at: null,
       },
@@ -12,77 +25,91 @@ export async function GET(req) {
         nama_satuan: "asc",
       },
     });
-    return new Response(JSON.stringify(satuanProduk), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "OK",
+        data: satuanProduk,
+      },
+      200
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("Error:", error);
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }
 
 export async function POST(req) {
   try {
-    const body = await req.json();
-    const { kode_satuan, nama_satuan, created_at, updated_at } = body;
+    const auth = verifyAuth(req);
 
-    if (!kode_satuan && !nama_satuan) {
-      return new Response(
-        JSON.stringify({
-          error: "kode satuan dan nama satuan harus diisi",
-        }),
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
+    const body = await req.json();
+    const { kode_satuan, nama_satuan } = body;
+
+    // validasi form input
+    const errors = {};
+    if (!kode_satuan || kode_satuan.trim() === "") {
+      errors.kode_satuan = "Kode satuan wajib diisi";
+    }
+    if (!nama_satuan || nama_satuan.trim() === "") {
+      errors.nama_satuan = "Nama satuan wajib diisi";
+    }
+    if (Object.keys(errors).length > 0) {
+      return jsonResponse(
         {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    } else if (!kode_satuan) {
-      return new Response(
-        JSON.stringify({
-          error: "kode satuan harus diisi",
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    } else if (!nama_satuan) {
-      return new Response(
-        JSON.stringify({
-          error: "nama satuan harus diisi",
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
+          message: "Validation Error",
+          errors,
+        },
+        400
       );
     }
 
-    const nowJakarta = new Date().toLocaleString("en-US", {
-      timeZone: "Asia/Jakarta",
+    // cek duplikasi kode_satuan
+    const existingKodeSatuan = await prisma.satuan.findFirst({
+      where: {
+        kode_satuan,
+        deleted_at: null,
+      },
     });
+
+    if (existingKodeSatuan) {
+      return jsonResponse(
+        {
+          message: "Kode satuan sudah digunakan",
+        },
+        409
+      );
+    }
 
     const tambahSatuanProduk = await prisma.satuan.create({
       data: {
         kode_satuan,
         nama_satuan,
-        created_at: created_at ? new Date(created_at) : nowJakarta,
-        updated_at: updated_at ? new Date(updated_at) : nowJakarta,
       },
     });
 
-    return new Response(JSON.stringify(tambahSatuanProduk), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Satuan produk berhasil ditambahkan",
+        data: tambahSatuanProduk,
+      },
+      201
+    );
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }

@@ -37,8 +37,7 @@ import TambahKategoriProdukForm from "./TambahKategoriProdukForm";
 import UpdateKategoriProdukForm from "./UpdateKategoriProdukForm";
 
 import { useToast } from "@/hooks/use-toast";
-// import { apiRequest } from "@/app/utils/fetchOptions";
-import {apiRequest} from "@/lib/apiRequest";
+import { apiRequest } from "@/lib/apiRequest";
 
 const KategoriProdukTable = () => {
   const { toast } = useToast();
@@ -259,7 +258,6 @@ const KategoriProdukTable = () => {
               toast({
                 title: "Sukses!",
                 description: "Data kategori produk berhasil ditambahkan.",
-                // variant: "secondary",
               });
               setRefreshKey((prev) => prev + 1);
               setIsDialogTambahOpen(false);
@@ -279,7 +277,7 @@ const KategoriProdukTable = () => {
           />
         </Dialog>
         <Input
-          placeholder="Cari Produk ..."
+          placeholder="Cari kategori produk ..."
           className="max-w-sm text-xs md:text-sm"
           onChange={(e) => table.setGlobalFilter(e.target.value)}
         />
@@ -370,10 +368,12 @@ const KategoriProdukTable = () => {
                 setIsDialogUpdateOpen(false);
               }}
               onError={(error) => {
+                const message = error?.errors
+                  ? Object.values(error.errors).join(", ")
+                  : error?.message || "Terjadi kesalahan";
                 toast({
                   title: "Terjadi kesalahan",
-                  description:
-                    error?.response?.data?.error || "Terjadi kesalahan",
+                  description: message,
                   variant: "destructive",
                 });
                 console.error("Terjadi error:", error);

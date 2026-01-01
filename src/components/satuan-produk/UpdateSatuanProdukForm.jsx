@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiRequest } from "@/app/utils/fetchOptions";
+import { apiRequest } from "@/lib/apiRequest";
 
 const UpdateSatuanProdukForm = ({
   initialData,
@@ -18,7 +18,6 @@ const UpdateSatuanProdukForm = ({
     if (initialData) {
       setFormData({
         ...initialData,
-        // produk: initialData.produk?.id || "",
       });
     }
   }, [initialData]);
@@ -28,7 +27,6 @@ const UpdateSatuanProdukForm = ({
       JSON.stringify(formData) !==
         JSON.stringify({
           ...initialData,
-          // produk: initialData?.produk?.id || "",
         })
     );
   }, [formData, initialData]);
@@ -38,8 +36,6 @@ const UpdateSatuanProdukForm = ({
 
     try {
       const dataToSend = {
-        // harga_beli: parseFloat(formData.harga_beli),
-        // harga_jual: parseFloat(formData.harga_jual),
         kode_satuan: formData.kode_satuan,
         nama_satuan: formData.nama_satuan,
       };
@@ -56,9 +52,6 @@ const UpdateSatuanProdukForm = ({
       // Update state dengan data baru
       setFormData((prev) => ({
         ...prev,
-        // produk: updatedData.produk_id,
-        // harga_beli: updatedData.harga_beli.toFixed(2),
-        // harga_jual: updatedData.harga_jual.toFixed(2),
         kode_satuan: updatedData.kode_satuan,
         nama_satuan: updatedData.nama_satuan,
       }));

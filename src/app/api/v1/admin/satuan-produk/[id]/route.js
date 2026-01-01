@@ -1,42 +1,36 @@
 import { PrismaClient } from "@prisma/client";
+import jsonResponse from "@/lib/jsonResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
 const prisma = new PrismaClient();
 
 export const PUT = async (req, { params }) => {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const { id } = params;
     const body = await req.json();
     const { kode_satuan, nama_satuan } = body;
 
-    if (!kode_satuan && !nama_satuan) {
-      return new Response(
-        JSON.stringify({
-          error: "kode dan nama satuan produk harus diisi",
-        }),
+    // validasi form input
+    const error = {};
+    if (!kode_satuan || kode_satuan.trim() === "") {
+      error.kode_satuan = "Kode satuan wajib diisi";
+    }
+    if (!nama_satuan || nama_satuan.trim() === "") {
+      error.nama_satuan = "Nama satuan wajib diisi";
+    }
+
+    if (Object.keys(error).length > 0) {
+      return jsonResponse(
         {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    } else if (!kode_satuan) {
-      return new Response(
-        JSON.stringify({
-          error: "kode satuan produk harus diisi",
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    } else if (!nama_satuan) {
-      return new Response(
-        JSON.stringify({
-          error: "nama satuan produk harus diisi",
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
+          message: "Validation Error",
+        },
+        400
       );
     }
 
@@ -45,36 +39,52 @@ export const PUT = async (req, { params }) => {
       data: {
         kode_satuan,
         nama_satuan,
-        updated_at: new Date(),
       },
     });
-    return new Response(JSON.stringify(updateSatuanProduk), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "OK",
+        data: updateSatuanProduk,
+      },
+      201
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 };
 
 export const DELETE = async (req, { params }) => {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const { id } = params;
     const deleteSatuanProduk = await prisma.satuan.update({
       where: { id: parseInt(id) },
       data: { deleted_at: new Date() },
     });
-    return new Response(JSON.stringify(deleteSatuanProduk), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Satuan produk berhasil dihapus",
+        data: deleteSatuanProduk,
+      },
+      201
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("Error:", error);
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 };

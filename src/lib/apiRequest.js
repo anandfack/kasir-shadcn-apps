@@ -2,7 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: "",
-  withCredentials: true, // 🔥 PENTING
+  withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {

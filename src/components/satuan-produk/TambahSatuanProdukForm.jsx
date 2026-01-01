@@ -11,7 +11,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { apiRequest } from "@/app/utils/fetchOptions";
+import { apiRequest } from "@/lib/apiRequest";
 
 const TambahSatuanProdukForm = ({ onSuccess, onError }) => {
   const [kodeSatuan, setKodeSatuan] = useState("");
@@ -26,8 +26,6 @@ const TambahSatuanProdukForm = ({ onSuccess, onError }) => {
       await apiRequest("POST", "/api/v1/admin/satuan-produk", {
         kode_satuan: kodeSatuan,
         nama_satuan: namaSatuan,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       });
 
       onSuccess();
