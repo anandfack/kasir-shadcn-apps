@@ -1,27 +1,44 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { apiRequest } from "@/lib/apiRequest";
 
 const useFetchKategoriProduk = (url, refreshKey) => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [data, setData] = useState([]); // ARRAY SAJA
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null); // { status, message, errors }
 
   useEffect(() => {
     let isMounted = true;
+
     const fetchData = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        const response = await axios.get(url, {
-          cancelToken: axios.CancelToken.source().token,
-        });
+        const res = await apiRequest("GET", url);
+
+        /**
+         * res = {
+         *   message: "OK",
+         *   data: [...]
+         * }
+         */
         if (isMounted) {
-          setData(response.data);
+          setData(res.data || []);
         }
       } catch (err) {
+        /**
+         * err = {
+         *   status,
+         *   message,
+         *   errors
+         * }
+         */
         if (isMounted) {
-          setError(err.message || "Failed to fetch data");
+          setError({
+            status: err.status || 500,
+            message: err.message || "Terjadi kesalahan",
+            errors: err.errors || null,
+          });
         }
       } finally {
         if (isMounted) {

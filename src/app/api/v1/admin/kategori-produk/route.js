@@ -1,10 +1,23 @@
 import { PrismaClient } from "@prisma/client";
+import jsonResponse from "@/lib/jsonResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
 const prisma = new PrismaClient();
 
 export async function GET(req) {
   try {
-    const productsCategory = await prisma.kategori.findMany({
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
+    const data = await prisma.kategori.findMany({
+      select: {
+        id: true,
+        kode_kategori: true,
+        nama_kategori: true,
+      },
       where: {
         deleted_at: null,
       },
@@ -12,77 +25,83 @@ export async function GET(req) {
         nama_kategori: "asc",
       },
     });
-    return new Response(JSON.stringify(productsCategory), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
+    return jsonResponse({
+      message: "OK",
+      data,
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("Error:", error);
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }
 
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { kode_kategori, nama_kategori, created_at, updated_at } = body;
+    const { kode_kategori, nama_kategori } = body;
 
-    if (!kode_kategori && !nama_kategori) {
-      return new Response(
-        JSON.stringify({
-          error: "kode kategori dan nama kategori harus diisi",
-        }),
+    // validasi form input
+    const errors = {};
+    if (!kode_kategori || kode_kategori.trim() === "") {
+      errors.kode_kategori = "Kode kategori wajib diisi";
+    }
+    if (!nama_kategori || nama_kategori.trim() === "") {
+      errors.nama_kategori = "Nama kategori wajib diisi";
+    }
+    if (Object.keys(errors).length > 0) {
+      return jsonResponse(
         {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    } else if (!kode_kategori) {
-      return new Response(
-        JSON.stringify({
-          error: "kode kategori harus diisi",
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    } else if (!nama_kategori) {
-      return new Response(
-        JSON.stringify({
-          error: "nama kategori harus diisi",
-        }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
+          message: "Validation Error",
+          errors,
+        },
+        400
       );
     }
-    const nowJakarta = new Date().toLocaleString("en-US", {
-      timeZone: "Asia/Jakarta",
+
+    // cek duplicate kode_kategori
+    const existingKodeKategori = await prisma.kategori.findFirst({
+      where: {
+        kode_kategori,
+        deleted_at: null,
+      },
     });
+
+    if (existingKodeKategori) {
+      return jsonResponse(
+        {
+          message: "Kode Kategori already exists",
+        },
+        409
+      );
+    }
+
+    // simpan kategori produk baru
     const newCategory = await prisma.kategori.create({
       data: {
         kode_kategori,
         nama_kategori,
-        created_at: created_at ? new Date(created_at) : nowJakarta,
-        updated_at: updated_at ? new Date(updated_at) : nowJakarta,
-        // created_at: created_at ? new Date(created_at) : new Date(),
-        // updated_at: updated_at ? new Date(updated_at) : new Date(),
       },
     });
 
-    return new Response(JSON.stringify(newCategory), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Kategori produk berhasil ditambahkan",
+        data: newCategory,
+      },
+      201
+    );
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }

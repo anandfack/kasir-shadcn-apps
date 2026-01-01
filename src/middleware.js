@@ -13,23 +13,23 @@ async function verifyToken(token) {
 }
 
 export async function middleware(req) {
-  console.log("🔥 Middleware executed for:", req.nextUrl.pathname);
+  // console.log("🔥 Middleware executed for:", req.nextUrl.pathname);
 
   const token = req.cookies.get("token")?.value;
-  console.log("🔑 Token found?", token ? "YES" : "NO");
+  // console.log("🔑 Token found?", token ? "YES" : "NO");
 
   // =============================
   // 1. Cek akses ke login admin
   // =============================
   if (req.nextUrl.pathname.startsWith("/auth-admin/login")) {
-    console.log("📌 Akses ke halaman /auth-admin/login");
+    // console.log("📌 Akses ke halaman /auth-admin/login");
 
     if (token) {
       const decoded = await verifyToken(token);
       console.log("🧪 Token decoded (login page):", decoded);
 
       if (decoded?.role === "admin") {
-        console.log("➡️ Redirect ke /admin/dashboard");
+        // console.log("➡️ Redirect ke /admin/dashboard");
         return NextResponse.redirect(new URL("/admin/dashboard", req.url));
       }
     }
@@ -39,23 +39,23 @@ export async function middleware(req) {
   // 2. Proteksi halaman admin
   // =============================
   if (req.nextUrl.pathname.startsWith("/admin")) {
-    console.log("🛡️ Proteksi halaman admin");
+    // console.log("🛡️ Proteksi halaman admin");
 
     if (!token) {
-      console.log("❌ Tidak ada token → redirect ke login admin");
+      // console.log("❌ Tidak ada token → redirect ke login admin");
       return NextResponse.redirect(new URL("/auth-admin/login", req.url));
     }
 
     const decoded = await verifyToken(token);
-    console.log("🔍 Token decoded (admin area):", decoded);
+    // console.log("🔍 Token decoded (admin area):", decoded);
 
     if (!decoded || decoded.role !== "admin") {
-      console.log("⛔ Token invalid atau bukan admin → redirect");
+      // console.log("⛔ Token invalid atau bukan admin → redirect");
       return NextResponse.redirect(new URL("/auth-admin/login", req.url));
     }
   }
 
-  console.log("✅ Lolos middleware → lanjut");
+  // console.log("✅ Lolos middleware → lanjut");
   return NextResponse.next();
 }
 
