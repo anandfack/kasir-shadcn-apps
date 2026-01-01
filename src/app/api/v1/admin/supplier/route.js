@@ -1,10 +1,26 @@
 import { PrismaClient } from "@prisma/client";
+import jsonResponse from "@/lib/jsonResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
 const prisma = new PrismaClient();
 
 export async function GET(req) {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const supplier = await prisma.supplier.findMany({
+      select: {
+        id: true,
+        kode_supplier: true,
+        nama_supplier: true,
+        alamat_supplier: true,
+        nomor_telepon_supplier: true,
+        is_aktif: true,
+      },
       where: {
         deleted_at: null,
       },
@@ -12,20 +28,32 @@ export async function GET(req) {
         nama_supplier: "asc",
       },
     });
-    return new Response(JSON.stringify(supplier), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "OK",
+        data: supplier,
+      },
+      200
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("Error:", error);
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }
 
 export async function POST(req) {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const body = await req.json();
     const {
       kode_supplier,
@@ -33,30 +61,49 @@ export async function POST(req) {
       alamat_supplier,
       nomor_telepon_supplier,
       is_aktif,
-      created_at,
-      updated_at,
     } = body;
 
-    if (
-      !kode_supplier &&
-      !nama_supplier &&
-      !alamat_supplier &&
-      !nomor_telepon_supplier
-    ) {
-      return new Response(
-        JSON.stringify({
-          error: "semua kolom harus diisi",
-        }),
+    // validasi form input
+    const errors = {};
+    if (!kode_supplier || kode_supplier.trim() === "") {
+      errors.kode_supplier = "Kode supplier wajib diisi";
+    }
+    if (!nama_supplier || nama_supplier.trim() === "") {
+      errors.nama_supplier = "Nama supplier wajib diisi";
+    }
+    if (!alamat_supplier || alamat_supplier.trim() === "") {
+      errors.alamat_supplier = "Alamat supplier wajib diisi";
+    }
+    if (!nomor_telepon_supplier || nomor_telepon_supplier.trim() === "") {
+      errors.nomor_telepon_supplier = "Nomor telepon supplier wajib diisi";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return jsonResponse(
         {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
+          message: "Validation Error",
+          errors,
+        },
+        400
       );
     }
 
-    const nowJakarta = new Date().toLocaleString("en-US", {
-      timeZone: "Asia/Jakarta",
+    // cek duplicate kode_supplier
+    const existingKodeSupplier = await prisma.supplier.findFirst({
+      where: {
+        kode_supplier,
+        deleted_at: null,
+      },
     });
+
+    if (existingKodeSupplier) {
+      return jsonResponse(
+        {
+          message: "Kode supplier sudah digunakan",
+        },
+        409
+      );
+    }
 
     const tambahSupplier = await prisma.supplier.create({
       data: {
@@ -65,20 +112,22 @@ export async function POST(req) {
         alamat_supplier,
         nomor_telepon_supplier,
         is_aktif: is_aktif ? is_aktif : true,
-        created_at: created_at ? new Date(created_at) : nowJakarta,
-        updated_at: updated_at ? new Date(updated_at) : nowJakarta,
       },
     });
-
-    return new Response(JSON.stringify(tambahSupplier), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Supplier berhasil ditambahkan",
+        data: tambahSupplier,
+      },
+      201
+    );
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }

@@ -11,8 +11,8 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { apiRequest } from "@/app/utils/fetchOptions";
 import { Textarea } from "@/components/ui/textarea";
+import { apiRequest } from "@/lib/apiRequest";
 
 const TambahSupplierForm = ({ onSuccess, onError }) => {
   const [kodeSupplier, setKodeSupplier] = useState("");
@@ -31,8 +31,6 @@ const TambahSupplierForm = ({ onSuccess, onError }) => {
         nama_supplier: namaSupplier,
         alamat_supplier: alamatSupplier,
         nomor_telepon_supplier: nomorTeleponSupplier,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       });
 
       onSuccess();

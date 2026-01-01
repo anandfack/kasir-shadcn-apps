@@ -47,8 +47,6 @@ const UpdateSatuanProdukForm = ({
         dataToSend
       );
 
-      console.log("Data berhasil disimpan:", updatedData);
-
       // Update state dengan data baru
       setFormData((prev) => ({
         ...prev,
