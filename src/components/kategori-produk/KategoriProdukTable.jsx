@@ -38,6 +38,7 @@ import UpdateKategoriProdukForm from "./UpdateKategoriProdukForm";
 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/apiRequest";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 const KategoriProdukTable = () => {
   const { toast } = useToast();
@@ -114,7 +115,7 @@ const KategoriProdukTable = () => {
     } catch (error) {
       toast({
         title: "Gagal menghapus",
-        description: error?.response?.data?.error || "Terjadi kesalahan",
+        description: getApiErrorMessage(error),
         variant: "destructive",
       });
       console.error("Gagal menghapus:", error);
@@ -263,12 +264,9 @@ const KategoriProdukTable = () => {
               setIsDialogTambahOpen(false);
             }}
             onError={(error) => {
-              const message = error?.errors
-                ? Object.values(error.errors).join(", ")
-                : error?.message || "Terjadi kesalahan";
               toast({
                 title: "Terjadi kesalahan",
-                description: message,
+                description: getApiErrorMessage(error),
                 variant: "destructive",
               });
               console.error("Terjadi error:", error);
@@ -368,12 +366,9 @@ const KategoriProdukTable = () => {
                 setIsDialogUpdateOpen(false);
               }}
               onError={(error) => {
-                const message = error?.errors
-                  ? Object.values(error.errors).join(", ")
-                  : error?.message || "Terjadi kesalahan";
                 toast({
                   title: "Terjadi kesalahan",
-                  description: message,
+                  description: getApiErrorMessage(error),
                   variant: "destructive",
                 });
                 console.error("Terjadi error:", error);

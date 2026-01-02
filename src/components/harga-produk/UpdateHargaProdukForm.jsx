@@ -3,7 +3,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiRequest } from "@/app/utils/fetchOptions";
+import { apiRequest } from "@/lib/apiRequest";
 
 const UpdateHargaProdukForm = ({
   produkData,
@@ -38,34 +38,59 @@ const UpdateHargaProdukForm = ({
     e.preventDefault();
 
     try {
-      const dataToSend = {
-        harga_beli: parseFloat(formData.harga_beli),
-        harga_jual: parseFloat(formData.harga_jual),
-      };
+      const dataToSend = {};
 
-      // Menggunakan apiRequest untuk update harga produk
+      if (formData.harga_beli !== "" && formData.harga_beli !== undefined) {
+        dataToSend.harga_beli = Number(formData.harga_beli);
+      }
+
+      if (formData.harga_jual !== "" && formData.harga_jual !== undefined) {
+        dataToSend.harga_jual = Number(formData.harga_jual);
+      }
+
       const updatedData = await apiRequest(
         "PUT",
         `/api/v1/admin/harga-produk/${formData.id}`,
         dataToSend
       );
 
-      console.log("Data berhasil disimpan:", updatedData);
-
-      // Update state dengan data baru
-      setFormData((prev) => ({
-        ...prev,
-        produk: updatedData.produk_id,
-        harga_beli: updatedData.harga_beli.toFixed(2),
-        harga_jual: updatedData.harga_jual.toFixed(2),
-      }));
-
       if (onSubmit) onSubmit(updatedData);
     } catch (error) {
-      onError;
       console.error("Error saat menyimpan data:", error);
+      onError?.(error);
     }
   };
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+
+  //   try {
+  //     const dataToSend = {
+  //       harga_beli: parseFloat(formData.harga_beli),
+  //       harga_jual: parseFloat(formData.harga_jual),
+  //     };
+
+  //     const updatedData = await apiRequest(
+  //       "PUT",
+  //       `/api/v1/admin/harga-produk/${formData.id}`,
+  //       dataToSend
+  //     );
+
+  //     console.log("Data berhasil disimpan:", updatedData);
+
+  //     setFormData((prev) => ({
+  //       ...prev,
+  //       produk: updatedData.produk_id,
+  //       harga_beli: updatedData.harga_beli.toFixed(2),
+  //       harga_jual: updatedData.harga_jual.toFixed(2),
+  //     }));
+
+  //     if (onSubmit) onSubmit(updatedData);
+  //   } catch (error) {
+  //     console.error("Error saat menyimpan data:", error);
+  //     onError?.(error);
+  //   }
+  // };
 
   return (
     <div className="grid gap-4 py-4">

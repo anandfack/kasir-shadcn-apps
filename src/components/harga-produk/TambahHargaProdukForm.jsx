@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/app/utils/fetchOptions";
+import { apiRequest } from "@/lib/apiRequest";
 
 const TambahHargaProdukForm = ({ onSuccess, onError }) => {
   const [hargaBeli, setHargaBeli] = useState("");
@@ -42,8 +42,6 @@ const TambahHargaProdukForm = ({ onSuccess, onError }) => {
         produk_id: produkId,
         harga_beli: hargaBeliFloat,
         harga_jual: hargaJualFloat,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       });
 
       onSuccess();

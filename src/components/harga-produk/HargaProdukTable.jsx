@@ -1,10 +1,9 @@
 "use client";
-import { useState } from "react";
+import { React, useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import HargaProdukDialog from "./HargaProdukDialog";
 import HargaProdukActions from "./HargaProdukActions";
 import useFetchHargaProduk from "@/hooks/harga-produk/useFetchHargaProduk";
-import React from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -38,27 +37,42 @@ import TambahHargaProdukForm from "./TambahHargaProdukForm";
 
 import { useToast } from "@/hooks/use-toast";
 import UpdateHargaProdukForm from "./UpdateHargaProdukForm";
-import { apiRequest } from "@/app/utils/fetchOptions";
+import { apiRequest } from "@/lib/apiRequest";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 const HargaProdukTable = () => {
   const { toast } = useToast();
-  const [refreshKey, setRefreshKey] = React.useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { data, loading, error } = useFetchHargaProduk(
     "/api/v1/admin/harga-produk",
     refreshKey
   );
 
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Terjadi kesalahan",
+        description: error.message,
+        variant: "destructive",
+      });
+
+      if (error.status === 401) {
+        // redirect / logout
+      }
+    }
+  }, [error, toast]);
+
   const [isDialogUpdateOpen, setIsDialogUpdateOpen] = useState(false);
   const [editData, setEditData] = useState(null);
 
-  const [sorting, setSorting] = React.useState([]);
-  const [columnFilters, setColumnFilters] = React.useState([]);
-  const [columnVisibility, setColumnVisibility] = React.useState({});
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [deleteData, setDeleteData] = React.useState(null);
-  const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
-  const [isDialogDeleteOpen, setIsDialogDeleteOpen] = React.useState(false);
+  const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [rowSelection, setRowSelection] = useState({});
+  const [deleteData, setDeleteData] = useState(null);
+  const [isDialogTambahOpen, setIsDialogTambahOpen] = useState(false);
+  const [isDialogDeleteOpen, setIsDialogDeleteOpen] = useState(false);
   const [produkOpen, setProdukOpen] = useState(true);
 
   const { data: produkData = [], isLoading: produkLoading } = useQuery({
@@ -68,22 +82,26 @@ const HargaProdukTable = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  const dialogTitle = React.useMemo(
+  const dialogTitle = useMemo(
     () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
     [editData]
   );
 
-  const dialogDescription = React.useMemo(
+  const dialogDescription = useMemo(
     () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
     [editData]
   );
 
-  const handleError = React.useCallback((error) => {
+  const handleError = useCallback((error) => {
     console.error("Terjadi error:", error);
     setIsDialogUpdateOpen(true);
   }, []);
 
-  const handleDelete = React.useCallback(async () => {
+  const message = error?.errors
+    ? Object.values(error.errors).join(", ")
+    : error?.message || "Terjadi kesalahan";
+
+  const handleDelete = useCallback(async () => {
     if (!deleteData) return;
 
     try {
@@ -91,7 +109,6 @@ const HargaProdukTable = () => {
       toast({
         title: "Sukses!",
         description: "Data harga produk berhasil dihapus.",
-        variant: "success",
       });
       setRefreshKey((prev) => prev + 1);
       setDeleteData(null);
@@ -99,14 +116,14 @@ const HargaProdukTable = () => {
     } catch (error) {
       toast({
         title: "Gagal menghapus",
-        description: error?.response?.data?.error || "Terjadi kesalahan",
+        description: message,
         variant: "destructive",
       });
       console.error("Gagal menghapus:", error);
     }
-  }, [deleteData, toast]);
+  }, [deleteData, toast, message]);
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     () => [
       {
         id: "no",
@@ -196,64 +213,22 @@ const HargaProdukTable = () => {
                 onEdit={() => {
                   setEditData(loadData);
                   setIsDialogUpdateOpen(true);
-                  console.log("klik edit");
                 }}
                 onDelete={() => {
-                  setDeleteData(loadData); // ✅ Set data yang mau dihapus
-                  setIsDialogDeleteOpen(true); // ✅ Buka dialog konfirmasi
+                  setDeleteData(loadData);
+                  setIsDialogDeleteOpen(true);
                 }}
               />
-              {/* <HargaProdukDialog
-                isOpen={isDialogUpdateOpen}
-                onOpenChange={setIsDialogUpdateOpen}
-                title={dialogTitle}
-                description={dialogDescription}
-              >
-                {editData && (
-                  <UpdateHargaProdukForm
-                    produkData={produkData}
-                    onSubmit={() => {
-                      toast({
-                        title: "Sukses!",
-                        description: "Data harga produk berhasil diupdate.",
-                        variant: "success",
-                      });
-                      setRefreshKey((prev) => prev + 1);
-                      setIsDialogUpdateOpen(false);
-                    }}
-                    onError={(error) => {
-                      toast({
-                        title: "Terjadi kesalahan",
-                        description:
-                          error?.response?.data?.error || "Terjadi kesalahan",
-                        variant: "destructive",
-                      });
-                      console.error("Terjadi error:", error);
-                      setIsDialogTambahOpen(true);
-                    }}
-                    isLoading={false}
-                    initialData={editData}
-                  />
-                )}
-              </HargaProdukDialog> */}
             </div>
           );
         },
       },
     ],
-    [
-      // editData,
-      // toast,
-      // isDialogUpdateOpen,
-      // setIsDialogUpdateOpen,
-      // dialogDescription,
-      // dialogTitle,
-      // produkData,
-    ]
+    []
   );
 
   const table = useReactTable({
-    data,
+    data: data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -286,7 +261,7 @@ const HargaProdukTable = () => {
           <div>Gagal memuat data</div>
         </div>
         <div className="flex items-center justify-center text-zinc-300 text-xs">
-          {error}
+          {error.message}
         </div>
       </div>
     );
@@ -311,7 +286,6 @@ const HargaProdukTable = () => {
               toast({
                 title: "Sukses!",
                 description: "Data produk berhasil ditambahkan.",
-                variant: "success",
               });
               setRefreshKey((prev) => prev + 1);
               setIsDialogTambahOpen(false);
@@ -319,8 +293,7 @@ const HargaProdukTable = () => {
             onError={(error) => {
               toast({
                 title: "Terjadi kesalahan",
-                description:
-                  error?.response?.data?.error || "Terjadi kesalahan",
+                description: message,
                 variant: "destructive",
               });
               console.error("Terjadi error:", error);
@@ -415,7 +388,6 @@ const HargaProdukTable = () => {
                 toast({
                   title: "Sukses!",
                   description: "Data harga produk berhasil diupdate.",
-                  variant: "success",
                 });
                 setRefreshKey((prev) => prev + 1);
                 setIsDialogUpdateOpen(false);
@@ -423,8 +395,7 @@ const HargaProdukTable = () => {
               onError={(error) => {
                 toast({
                   title: "Terjadi kesalahan",
-                  description:
-                    error?.response?.data?.error || "Terjadi kesalahan",
+                  description: getApiErrorMessage(error),
                   variant: "destructive",
                 });
                 console.error("Terjadi error:", error);
