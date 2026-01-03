@@ -1,13 +1,13 @@
 "use client";
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, useMemo, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiRequest } from "@/app/utils/fetchOptions";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { Textarea } from "../ui/textarea";
 import { Switch } from "../ui/switch";
+import { apiRequest } from "@/lib/apiRequest";
 
 const UpdateProdukForm = ({
   kategoriData,
@@ -18,21 +18,44 @@ const UpdateProdukForm = ({
   isLoading,
   onError,
 }) => {
-  const [formData, setFormData] = React.useState(initialData ?? {});
-  const [isChanged, setIsChanged] = React.useState(false);
+  const [formData, setFormData] = useState(initialData ?? {});
+  const [isChanged, setIsChanged] = useState(false);
 
-  React.useEffect(() => {
+  const kategoriList = useMemo(() => {
+    return Array.isArray(kategoriData)
+      ? kategoriData
+      : kategoriData?.data ?? [];
+  }, [kategoriData]);
+
+  const satuanList = useMemo(() => {
+    return Array.isArray(satuanData) ? satuanData : satuanData?.data ?? [];
+  }, [satuanData]);
+
+  const supplierList = useMemo(() => {
+    return Array.isArray(supplierData)
+      ? supplierData
+      : supplierData?.data ?? [];
+  }, [supplierData]);
+
+  useEffect(() => {
     if (initialData) {
       setFormData({
         ...initialData,
-        kategori: initialData.kategori?.id || "",
-        satuan: initialData.satuan?.id || "",
-        supplier: initialData.supplier?.id || "",
+        // kategori: initialData.kategori?.id || "",
+        // satuan: initialData.satuan?.id || "",
+        // supplier: initialData.supplier?.id || "",
+        kategori:
+          kategoriList.find((k) => k.id === initialData.kategori?.id) || null,
+        satuan:
+          satuanList.find((s) => s.id === initialData.satuan_produk?.id) ||
+          null,
+        supplier:
+          supplierList.find((s) => s.id === initialData.supplier?.id) || null,
       });
     }
-  }, [initialData]);
+  }, [initialData, kategoriList, satuanList, supplierList]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setIsChanged(
       JSON.stringify(formData) !==
         JSON.stringify({
@@ -70,16 +93,12 @@ const UpdateProdukForm = ({
         deskripsi_produk: formData.deskripsi_produk,
         is_aktif: formData.is_aktif,
       };
-      // Menggunakan apiRequest untuk update harga produk
       const updatedData = await apiRequest(
         "PUT",
         `/api/v1/admin/produk/${formData.id}`,
         dataToSend
       );
 
-      console.log("Data berhasil disimpan:", updatedData);
-
-      // Update state dengan data baru
       setFormData((prev) => ({
         ...prev,
         kategori: updatedData.kategori_id,
@@ -105,7 +124,7 @@ const UpdateProdukForm = ({
           Kategori Produk <i className="text-red-500">*</i>
         </Label>
         <div className="col-span-3">
-          <Listbox
+          {/* <Listbox
             value={formData.kategori}
             onChange={(kategori) => {
               if (kategori.id !== formData.kategori) {
@@ -113,12 +132,21 @@ const UpdateProdukForm = ({
                 setFormData((prev) => ({ ...prev, kategori: kategori.id }));
               }
             }}
+          > */}
+          <Listbox
+            value={formData.kategori}
+            onChange={(kategori) =>
+              setFormData((prev) => ({ ...prev, kategori }))
+            }
           >
             <div className="relative mt-1">
               <Listbox.Button className="relative w-full h-10 cursor-default rounded-md bg-background py-2 pl-3 pr-10 text-left border border-input shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input sm:text-sm">
-                <span className="block truncate">
+                {/* <span className="block truncate">
                   {kategoriData.find((k) => k.id === formData.kategori)
                     ?.nama_kategori || "Pilih Kategori Produk"}
+                </span> */}
+                <span className="block truncate">
+                  {formData.kategori?.nama_kategori || "Pilih Kategori Produk"}
                 </span>
 
                 <span className="absolute inset-y-0 right-0 flex items-center pr-2">
@@ -127,8 +155,8 @@ const UpdateProdukForm = ({
               </Listbox.Button>
               <Transition as={Fragment} leave="transition-opacity duration-100">
                 <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
-                  {kategoriData.length > 0 ? (
-                    kategoriData.map((kategori) => (
+                  {kategoriList.length > 0 ? (
+                    kategoriList.map((kategori) => (
                       <Listbox.Option
                         key={kategori.id}
                         value={kategori}
@@ -207,7 +235,7 @@ const UpdateProdukForm = ({
           Satuan Produk <i className="text-red-500">*</i>
         </Label>
         <div className="col-span-3">
-          <Listbox
+          {/* <Listbox
             value={formData.satuan}
             onChange={(satuan) => {
               if (satuan.id !== formData.satuan) {
@@ -215,12 +243,19 @@ const UpdateProdukForm = ({
                 setFormData((prev) => ({ ...prev, satuan: satuan.id }));
               }
             }}
+          > */}
+          <Listbox
+            value={formData.satuan}
+            onChange={(satuan) => setFormData((prev) => ({ ...prev, satuan }))}
           >
             <div className="relative mt-1">
               <Listbox.Button className="relative w-full h-10 cursor-default rounded-md bg-background py-2 pl-3 pr-10 text-left border border-input shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input sm:text-sm">
-                <span className="block truncate">
+                {/* <span className="block truncate">
                   {satuanData.find((s) => s.id === formData.satuan)
                     ?.nama_satuan || "Pilih Satuan Produk"}
+                </span> */}
+                <span className="block truncate">
+                  {formData.satuan?.nama_satuan || "Pilih Satuan Produk"}
                 </span>
 
                 <span className="absolute inset-y-0 right-0 flex items-center pr-2">
@@ -229,8 +264,8 @@ const UpdateProdukForm = ({
               </Listbox.Button>
               <Transition as={Fragment} leave="transition-opacity duration-100">
                 <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
-                  {satuanData.length > 0 ? (
-                    satuanData.map((satuan) => (
+                  {satuanList.length > 0 ? (
+                    satuanList.map((satuan) => (
                       <Listbox.Option
                         key={satuan.id}
                         value={satuan}
@@ -285,7 +320,7 @@ const UpdateProdukForm = ({
           Supplier Produk <i className="text-red-500">*</i>
         </Label>
         <div className="col-span-3">
-          <Listbox
+          {/* <Listbox
             value={formData.supplier}
             onChange={(supplier) => {
               if (supplier.id !== formData.supplier) {
@@ -293,12 +328,17 @@ const UpdateProdukForm = ({
                 setFormData((prev) => ({ ...prev, supplier: supplier.id }));
               }
             }}
+          > */}
+          <Listbox
+            value={formData.supplier}
+            onChange={(supplier) =>
+              setFormData((prev) => ({ ...prev, supplier }))
+            }
           >
             <div className="relative mt-1">
               <Listbox.Button className="relative w-full h-10 cursor-default rounded-md bg-background py-2 pl-3 pr-10 text-left border border-input shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input sm:text-sm">
                 <span className="block truncate">
-                  {supplierData.find((s) => s.id === formData.supplier)
-                    ?.nama_supplier || "Pilih Supplier"}
+                  {formData.supplier?.nama_supplier || "Pilih Supplier"}
                 </span>
 
                 <span className="absolute inset-y-0 right-0 flex items-center pr-2">
@@ -307,8 +347,8 @@ const UpdateProdukForm = ({
               </Listbox.Button>
               <Transition as={Fragment} leave="transition-opacity duration-100">
                 <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
-                  {supplierData.length > 0 ? (
-                    supplierData.map((supplier) => (
+                  {supplierList.length > 0 ? (
+                    supplierList.map((supplier) => (
                       <Listbox.Option
                         key={supplier.id}
                         value={supplier}

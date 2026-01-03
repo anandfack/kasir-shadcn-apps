@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import { React, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,10 +12,10 @@ const UpdateHargaProdukForm = ({
   isLoading,
   onError,
 }) => {
-  const [formData, setFormData] = React.useState(initialData ?? {});
-  const [isChanged, setIsChanged] = React.useState(false);
+  const [formData, setFormData] = useState(initialData ?? {});
+  const [isChanged, setIsChanged] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialData) {
       setFormData({
         ...initialData,
@@ -24,7 +24,7 @@ const UpdateHargaProdukForm = ({
     }
   }, [initialData]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setIsChanged(
       JSON.stringify(formData) !==
         JSON.stringify({

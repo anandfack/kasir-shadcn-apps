@@ -13,8 +13,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
-import { apiRequest } from "@/app/utils/fetchOptions";
 import { Textarea } from "../ui/textarea";
+import { apiRequest } from "@/lib/apiRequest";
 
 const ProdukForm = ({
   onSuccess,
@@ -40,6 +40,18 @@ const ProdukForm = ({
   const [deskripsiProduk, setDeskripsiProduk] = useState("");
   const [kodeProduk, setKodeProduk] = useState("");
 
+  const kategoriList = Array.isArray(kategoriData)
+    ? kategoriData
+    : kategoriData?.data ?? [];
+
+  const satuanList = Array.isArray(satuanData)
+    ? satuanData
+    : satuanData?.data ?? [];
+
+  const supplierList = Array.isArray(supplierData)
+    ? supplierData
+    : supplierData?.data ?? [];
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -64,7 +76,7 @@ const ProdukForm = ({
     }
   };
   return (
-    <DialogContent className="sm:max-w-4xl">
+    <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>Tambah Produk</DialogTitle>
         <DialogDescription>
@@ -113,8 +125,8 @@ const ProdukForm = ({
                         <div className="py-2 px-4 text-muted-foreground italic">
                           Loading...
                         </div>
-                      ) : kategoriData && kategoriData.length > 0 ? (
-                        kategoriData.map((kategori) => (
+                      ) : kategoriList.length > 0 ? (
+                        kategoriList.map((kategori) => (
                           <Listbox.Option
                             key={kategori.id}
                             className={({ active }) =>
@@ -221,8 +233,8 @@ const ProdukForm = ({
                         <div className="py-2 px-4 text-muted-foreground italic">
                           Loading...
                         </div>
-                      ) : satuanData && satuanData.length > 0 ? (
-                        satuanData.map((satuan) => (
+                      ) : satuanList.length > 0 ? (
+                        satuanList.map((satuan) => (
                           <Listbox.Option
                             key={satuan.id}
                             className={({ active }) =>
@@ -306,8 +318,8 @@ const ProdukForm = ({
                         <div className="py-2 px-4 text-muted-foreground italic">
                           Loading...
                         </div>
-                      ) : supplierData && supplierData.length > 0 ? (
-                        supplierData.map((supplier) => (
+                      ) : supplierList.length > 0 ? (
+                        supplierList.map((supplier) => (
                           <Listbox.Option
                             key={supplier.id}
                             className={({ active }) =>

@@ -97,10 +97,6 @@ const HargaProdukTable = () => {
     setIsDialogUpdateOpen(true);
   }, []);
 
-  const message = error?.errors
-    ? Object.values(error.errors).join(", ")
-    : error?.message || "Terjadi kesalahan";
-
   const handleDelete = useCallback(async () => {
     if (!deleteData) return;
 
@@ -116,12 +112,12 @@ const HargaProdukTable = () => {
     } catch (error) {
       toast({
         title: "Gagal menghapus",
-        description: message,
+        description: getApiErrorMessage(error),
         variant: "destructive",
       });
       console.error("Gagal menghapus:", error);
     }
-  }, [deleteData, toast, message]);
+  }, [deleteData, toast]);
 
   const columns = useMemo(
     () => [
@@ -293,7 +289,7 @@ const HargaProdukTable = () => {
             onError={(error) => {
               toast({
                 title: "Terjadi kesalahan",
-                description: message,
+                description: getApiErrorMessage(error),
                 variant: "destructive",
               });
               console.error("Terjadi error:", error);
