@@ -41,14 +41,9 @@ const UpdateProdukForm = ({
     if (initialData) {
       setFormData({
         ...initialData,
-        // kategori: initialData.kategori?.id || "",
-        // satuan: initialData.satuan?.id || "",
-        // supplier: initialData.supplier?.id || "",
         kategori:
           kategoriList.find((k) => k.id === initialData.kategori?.id) || null,
-        satuan:
-          satuanList.find((s) => s.id === initialData.satuan_produk?.id) ||
-          null,
+        satuan: satuanList.find((s) => s.id === initialData.satuan?.id) || null,
         supplier:
           supplierList.find((s) => s.id === initialData.supplier?.id) || null,
       });
@@ -56,15 +51,18 @@ const UpdateProdukForm = ({
   }, [initialData, kategoriList, satuanList, supplierList]);
 
   useEffect(() => {
-    setIsChanged(
-      JSON.stringify(formData) !==
-        JSON.stringify({
-          ...initialData,
-          kategori: initialData.kategori?.id || "",
-          satuan: initialData.satuan_produk?.id || "",
-          supplier: initialData.supplier?.id || "",
-        })
-    );
+    if (!initialData) return;
+
+    const isSame =
+      formData.nama_produk === initialData.nama_produk &&
+      formData.kode_produk === initialData.kode_produk &&
+      formData.deskripsi_produk === initialData.deskripsi_produk &&
+      formData.is_aktif === initialData.is_aktif &&
+      formData.kategori?.id === initialData.kategori?.id &&
+      formData.satuan?.id === initialData.satuan?.id &&
+      formData.supplier?.id === initialData.supplier?.id;
+
+    setIsChanged(!isSame);
   }, [formData, initialData]);
 
   const handleChange = (e) => {
@@ -85,9 +83,9 @@ const UpdateProdukForm = ({
 
     try {
       const dataToSend = {
-        kategori_id: formData.kategori,
-        satuan_produk_id: formData.satuan,
-        supplier_id: formData.supplier,
+        kategori_id: formData.kategori?.id,
+        satuan_produk_id: formData.satuan?.id,
+        supplier_id: formData.supplier?.id,
         kode_produk: formData.kode_produk,
         nama_produk: formData.nama_produk,
         deskripsi_produk: formData.deskripsi_produk,
@@ -101,12 +99,16 @@ const UpdateProdukForm = ({
 
       setFormData((prev) => ({
         ...prev,
-        kategori: updatedData.kategori_id,
-        satuan: updatedData.satuan_produk_id,
-        supplier: updatedData.supplier_id,
+        kategori:
+          kategoriList.find((k) => k.id === updatedData.kategori_id) || null,
+        satuan:
+          satuanList.find((s) => s.id === updatedData.satuan_produk_id) || null,
+        supplier:
+          supplierList.find((s) => s.id === updatedData.supplier_id) || null,
         kode_produk: updatedData.kode_produk,
         nama_produk: updatedData.nama_produk,
         deskripsi_produk: updatedData.deskripsi_produk,
+        is_aktif: updatedData.is_aktif,
       }));
 
       if (onSubmit) onSubmit(updatedData);
@@ -124,15 +126,6 @@ const UpdateProdukForm = ({
           Kategori Produk <i className="text-red-500">*</i>
         </Label>
         <div className="col-span-3">
-          {/* <Listbox
-            value={formData.kategori}
-            onChange={(kategori) => {
-              if (kategori.id !== formData.kategori) {
-                console.log("Kategori dipilih:", kategori);
-                setFormData((prev) => ({ ...prev, kategori: kategori.id }));
-              }
-            }}
-          > */}
           <Listbox
             value={formData.kategori}
             onChange={(kategori) =>
@@ -141,10 +134,6 @@ const UpdateProdukForm = ({
           >
             <div className="relative mt-1">
               <Listbox.Button className="relative w-full h-10 cursor-default rounded-md bg-background py-2 pl-3 pr-10 text-left border border-input shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input sm:text-sm">
-                {/* <span className="block truncate">
-                  {kategoriData.find((k) => k.id === formData.kategori)
-                    ?.nama_kategori || "Pilih Kategori Produk"}
-                </span> */}
                 <span className="block truncate">
                   {formData.kategori?.nama_kategori || "Pilih Kategori Produk"}
                 </span>
@@ -235,25 +224,12 @@ const UpdateProdukForm = ({
           Satuan Produk <i className="text-red-500">*</i>
         </Label>
         <div className="col-span-3">
-          {/* <Listbox
-            value={formData.satuan}
-            onChange={(satuan) => {
-              if (satuan.id !== formData.satuan) {
-                console.log("Satuan dipilih:", satuan);
-                setFormData((prev) => ({ ...prev, satuan: satuan.id }));
-              }
-            }}
-          > */}
           <Listbox
             value={formData.satuan}
             onChange={(satuan) => setFormData((prev) => ({ ...prev, satuan }))}
           >
             <div className="relative mt-1">
               <Listbox.Button className="relative w-full h-10 cursor-default rounded-md bg-background py-2 pl-3 pr-10 text-left border border-input shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input sm:text-sm">
-                {/* <span className="block truncate">
-                  {satuanData.find((s) => s.id === formData.satuan)
-                    ?.nama_satuan || "Pilih Satuan Produk"}
-                </span> */}
                 <span className="block truncate">
                   {formData.satuan?.nama_satuan || "Pilih Satuan Produk"}
                 </span>
@@ -320,15 +296,6 @@ const UpdateProdukForm = ({
           Supplier Produk <i className="text-red-500">*</i>
         </Label>
         <div className="col-span-3">
-          {/* <Listbox
-            value={formData.supplier}
-            onChange={(supplier) => {
-              if (supplier.id !== formData.supplier) {
-                console.log("Supplier dipilih:", supplier);
-                setFormData((prev) => ({ ...prev, supplier: supplier.id }));
-              }
-            }}
-          > */}
           <Listbox
             value={formData.supplier}
             onChange={(supplier) =>
