@@ -1,35 +1,32 @@
 "use client";
-import React from "react";
+import { React, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiRequest } from "@/app/utils/fetchOptions";
+import { apiRequest } from "@/lib/apiRequest";
 
 const UpdateStockProdukForm = ({
-  //   produkData,
   initialData,
   onSubmit,
   isLoading,
   onError,
 }) => {
-  const [formData, setFormData] = React.useState(initialData ?? {});
-  const [isChanged, setIsChanged] = React.useState(false);
+  const [formData, setFormData] = useState(initialData ?? {});
+  const [isChanged, setIsChanged] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialData) {
       setFormData({
         ...initialData,
-        // produk: initialData.produk?.id || "",
       });
     }
   }, [initialData]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setIsChanged(
       JSON.stringify(formData) !==
         JSON.stringify({
           ...initialData,
-          //   produk: initialData?.produk?.id || "",
         })
     );
   }, [formData, initialData]);

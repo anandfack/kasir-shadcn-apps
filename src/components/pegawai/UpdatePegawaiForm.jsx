@@ -77,8 +77,6 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
         dataToSend
       );
 
-      console.log("Data berhasil disimpan:", updatedData);
-
       setFormData((prev) => ({
         ...prev,
         nip_pegawai: updatedData.nip_pegawai,

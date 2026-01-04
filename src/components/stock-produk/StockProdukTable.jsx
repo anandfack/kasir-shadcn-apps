@@ -1,10 +1,9 @@
 "use client";
-import { useState } from "react";
+import { React, useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import StockProdukDialog from "./StockProdukDialog";
 import StockProdukActions from "./StockProdukActions";
 import useFetchStockProduk from "@/hooks/stock-produk/useFetchStockProduk";
-import React from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -34,36 +33,49 @@ import {
 } from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
-// import TambahStockProdukForm from "./TambahStockProdukForm";
 
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "../ui/badge";
 import UpdateStockProdukForm from "./UpdateStockProdukForm";
 import PenyesuaianStockForm from "./PenyesuaianStockForm";
-// import { apiRequest } from "@/app/utils/fetchOptions";
+import { apiRequest } from "@/lib/apiRequest";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 const StockProdukTable = () => {
   const { toast } = useToast();
-  const [refreshKey, setRefreshKey] = React.useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { data, loading, error } = useFetchStockProduk(
     "/api/v1/admin/stock",
     refreshKey
   );
 
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Terjadi kesalahan",
+        description: error.message,
+        variant: "destructive",
+      });
+
+      if (error.status === 401) {
+        // redirect / logout
+      }
+    }
+  }, [error, toast]);
+
   const [isDialogUpdateOpen, setIsDialogUpdateOpen] = useState(false);
   const [editData, setEditData] = useState(null);
 
-  const [sorting, setSorting] = React.useState([]);
-  const [columnFilters, setColumnFilters] = React.useState([]);
-  const [columnVisibility, setColumnVisibility] = React.useState({});
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [deleteData, setDeleteData] = React.useState(null);
-  const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
-  const [isDialogDeleteOpen, setIsDialogDeleteOpen] = React.useState(false);
-  const [penyesuaianData, setPenyesuaianData] = React.useState(null);
-  const [isDialogPenyesuaianOpen, setIsDialogPenyesuaianOpen] =
-    React.useState(false);
+  const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [rowSelection, setRowSelection] = useState({});
+  const [deleteData, setDeleteData] = useState(null);
+  const [isDialogTambahOpen, setIsDialogTambahOpen] = useState(false);
+  const [isDialogDeleteOpen, setIsDialogDeleteOpen] = useState(false);
+  const [penyesuaianData, setPenyesuaianData] = useState(null);
+  const [isDialogPenyesuaianOpen, setIsDialogPenyesuaianOpen] = useState(false);
 
   // const [produkOpen, setProdukOpen] = useState(true);
 
@@ -74,43 +86,20 @@ const StockProdukTable = () => {
   //   staleTime: 1000 * 60 * 5,
   // });
 
-  // const dialogTitle = React.useMemo(
+  // const dialogTitle = useMemo(
   //   () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
   //   [editData]
   // );
 
-  // const dialogDescription = React.useMemo(
+  // const dialogDescription = useMemo(
   //   () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
   //   [editData]
   // );
 
-  const handleError = React.useCallback((error) => {
+  const handleError = useCallback((error) => {
     console.error("Terjadi error:", error);
     setIsDialogUpdateOpen(true);
   }, []);
-
-  // const handleDelete = React.useCallback(async () => {
-  //   if (!deleteData) return;
-
-  //   try {
-  //     await apiRequest("DELETE", `/api/v1/admin/harga-produk/${deleteData.id}`);
-  //     toast({
-  //       title: "Sukses!",
-  //       description: "Data harga produk berhasil dihapus.",
-  //       variant: "success",
-  //     });
-  //     setRefreshKey((prev) => prev + 1);
-  //     setDeleteData(null);
-  //     setIsDialogDeleteOpen(false);
-  //   } catch (error) {
-  //     toast({
-  //       title: "Gagal menghapus",
-  //       description: error?.response?.data?.error || "Terjadi kesalahan",
-  //       variant: "destructive",
-  //     });
-  //     console.error("Gagal menghapus:", error);
-  //   }
-  // }, [deleteData, toast]);
 
   const statusBadgeMap = {
     "Belum Diatur": {
@@ -135,7 +124,7 @@ const StockProdukTable = () => {
     },
   };
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     () => [
       {
         id: "no",
@@ -280,10 +269,6 @@ const StockProdukTable = () => {
                   setIsDialogUpdateOpen(true);
                   console.log("klik edit");
                 }}
-                // onDelete={() => {
-                //   setDeleteData(loadData); // ✅ Set data yang mau dihapus
-                //   setIsDialogDeleteOpen(true); // ✅ Buka dialog konfirmasi
-                // }}
                 onAdjustment={() => {
                   setPenyesuaianData(loadData);
                   setIsDialogPenyesuaianOpen(true);
@@ -303,7 +288,6 @@ const StockProdukTable = () => {
                       toast({
                         title: "Sukses!",
                         description: "Data harga produk berhasil diupdate.",
-                        variant: "success",
                       });
                       setRefreshKey((prev) => prev + 1);
                       setIsDialogUpdateOpen(false);
@@ -311,8 +295,7 @@ const StockProdukTable = () => {
                     onError={(error) => {
                       toast({
                         title: "Terjadi kesalahan",
-                        description:
-                          error?.response?.data?.error || "Terjadi kesalahan",
+                        description: getApiErrorMessage(error),
                         variant: "destructive",
                       });
                       console.error("Terjadi error:", error);
@@ -341,7 +324,7 @@ const StockProdukTable = () => {
   );
 
   const table = useReactTable({
-    data,
+    data: data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -374,7 +357,7 @@ const StockProdukTable = () => {
           <div>Gagal memuat data</div>
         </div>
         <div className="flex items-center justify-center text-zinc-300 text-xs">
-          {error}
+          {error.message}
         </div>
       </div>
     );
@@ -382,40 +365,6 @@ const StockProdukTable = () => {
   return (
     <div className="w-full">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between py-4">
-        {/* <Dialog
-          open={isDialogTambahOpen}
-          onOpenChange={(isOpen) => setIsDialogTambahOpen(isOpen)}
-        >
-          <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              className="font-semibold text-xs md:text-sm"
-            >
-              <CirclePlus /> Tambah Produk
-            </Button>
-          </DialogTrigger>
-          <TambahHargaProdukForm
-            onSuccess={() => {
-              toast({
-                title: "Sukses!",
-                description: "Data produk berhasil ditambahkan.",
-                variant: "success",
-              });
-              setRefreshKey((prev) => prev + 1);
-              setIsDialogTambahOpen(false);
-            }}
-            onError={(error) => {
-              toast({
-                title: "Terjadi kesalahan",
-                description:
-                  error?.response?.data?.error || "Terjadi kesalahan",
-                variant: "destructive",
-              });
-              console.error("Terjadi error:", error);
-              setIsDialogTambahOpen(true);
-            }}
-          />
-        </Dialog> */}
         <Input
           placeholder="Cari Produk ..."
           className="max-w-sm text-xs md:text-sm"
@@ -464,29 +413,6 @@ const StockProdukTable = () => {
           </TableBody>
         </Table>
       </div>
-      {/* ✅ Dialog Konfirmasi Delete */}
-      {/* <Dialog open={isDialogDeleteOpen} onOpenChange={setIsDialogDeleteOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Hapus Data</DialogTitle>
-            <DialogDescription>
-              Apakah kamu yakin ingin menghapus harga untuk produk{" "}
-              <strong>{deleteData?.produk?.nama_produk}</strong>?
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex justify-end gap-2 mt-4">
-            <Button
-              variant="outline"
-              onClick={() => setIsDialogDeleteOpen(false)}
-            >
-              Batal
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
-              Hapus
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog> */}
       {/* ✅ Dialog Update Harga Produk */}
       <Dialog open={isDialogUpdateOpen} onOpenChange={setIsDialogUpdateOpen}>
         <DialogContent className="sm:max-w-lg">
@@ -503,7 +429,6 @@ const StockProdukTable = () => {
                 toast({
                   title: "Sukses!",
                   description: "Data harga produk berhasil diupdate.",
-                  variant: "success",
                 });
                 setRefreshKey((prev) => prev + 1);
                 setIsDialogUpdateOpen(false);
@@ -511,8 +436,7 @@ const StockProdukTable = () => {
               onError={(error) => {
                 toast({
                   title: "Terjadi kesalahan",
-                  description:
-                    error?.response?.data?.error || "Terjadi kesalahan",
+                  description: getApiErrorMessage(error),
                   variant: "destructive",
                 });
                 console.error("Terjadi error:", error);
@@ -540,7 +464,6 @@ const StockProdukTable = () => {
                 toast({
                   title: "Sukses!",
                   description: "Berhasil menyesuaikan stok produk.",
-                  variant: "success",
                 });
                 setRefreshKey((prev) => prev + 1);
                 setIsDialogPenyesuaianOpen(false);
@@ -548,8 +471,7 @@ const StockProdukTable = () => {
               onError={(error) => {
                 toast({
                   title: "Terjadi kesalahan",
-                  description:
-                    error?.response?.data?.error || "Terjadi kesalahan",
+                  description: getApiErrorMessage(error),
                   variant: "destructive",
                 });
               }}

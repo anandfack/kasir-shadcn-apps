@@ -4,13 +4,9 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiRequest } from "@/app/utils/fetchOptions";
+import { apiRequest } from "@/lib/apiRequest";
 
-const PenyesuaianStockForm = ({
-  initialData, // { produk_id, nama_produk, jumlah_stok }
-  onSubmit,
-  onError,
-}) => {
+const PenyesuaianStockForm = ({ initialData, onSubmit, onError }) => {
   const [stokFisik, setStokFisik] = useState("");
   const [alasan, setAlasan] = useState("");
   const [loading, setLoading] = useState(false);
@@ -39,12 +35,12 @@ const PenyesuaianStockForm = ({
     try {
       setLoading(true);
 
-      console.log("SEND DATA:", {
-        produk_id: initialData?.id,
-        stok_fisik: stokFisik,
-      });
+      // console.log("SEND DATA:", {
+      //   produk_id: initialData?.id,
+      //   stok_fisik: stokFisik,
+      // });
 
-      console.log("initial data produk id:", initialData);
+      // console.log("initial data produk id:", initialData);
 
       await apiRequest("POST", "/api/v1/admin/stock/penyesuaian", {
         produk_id: initialData.id,
@@ -56,8 +52,7 @@ const PenyesuaianStockForm = ({
       setAlasan("");
       onSubmit?.();
     } catch (error) {
-      console.error(error);
-      onError?.("Gagal menyimpan penyesuaian stok");
+      onError(error);
     } finally {
       setLoading(false);
     }

@@ -1,9 +1,17 @@
 import { PrismaClient } from "@prisma/client";
+import jsonResponse from "@/lib/jsonResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
 const prisma = new PrismaClient();
 
 export async function POST(req) {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const body = await req.json();
     const {
       produk_id,
@@ -22,9 +30,11 @@ export async function POST(req) {
     });
 
     if (!satuan) {
-      return Response.json(
-        { error: "Satuan tidak ditemukan" },
-        { status: 404 }
+      return jsonResponse(
+        {
+          message: "Satuan tidak ditemukan",
+        },
+        400
       );
     }
 
@@ -34,7 +44,12 @@ export async function POST(req) {
     });
 
     if (!stok || stok.jumlah_stok < jumlah) {
-      return Response.json({ error: "Stok tidak mencukupi" }, { status: 400 });
+      return jsonResponse(
+        {
+          message: "Stock tidak mencukupi",
+        },
+        400
+      );
     }
 
     // Tambahkan mutasi stok keluar
@@ -61,16 +76,22 @@ export async function POST(req) {
         jumlah_stok: {
           decrement: jumlah,
         },
-        updated_at: new Date(),
       },
     });
 
-    return Response.json({ message: "Stok keluar berhasil" });
+    return jsonResponse(
+      {
+        message: "Stock keluar berhasil ditambahkan",
+      },
+      201
+    );
   } catch (error) {
     console.error(error);
-    return Response.json(
-      { error: "Terjadi kesalahan server" },
-      { status: 500 }
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
     );
   }
 }

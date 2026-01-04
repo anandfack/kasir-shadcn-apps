@@ -1,9 +1,17 @@
 import { PrismaClient } from "@prisma/client";
+import jsonResponse from "@/lib/jsonResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
 const prisma = new PrismaClient();
 
 export async function GET(req) {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     function getStatus(stok) {
       if (!stok) return "Belum Diatur";
       if (stok.jumlah_stok <= 0) return "Habis";
@@ -20,7 +28,7 @@ export async function GET(req) {
         nama_produk: "asc",
       },
       include: {
-        Stok: true, // ⬅️ relasi stok (nullable)
+        Stok: true,
       },
     });
 
@@ -42,80 +50,20 @@ export async function GET(req) {
       };
     });
 
-    return new Response(JSON.stringify(result), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "OK",
+        data: result,
+      },
+      200
+    );
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }
-
-// export async function POST(req) {
-//   try {
-//     const body = await req.json();
-//     const {
-//       kategori_id,
-//       satuan_produk_id,
-//       supplier_id,
-//       kode_produk,
-//       nama_produk,
-//       deskripsi_produk,
-//       is_aktif,
-//       created_at,
-//       updated_at,
-//     } = body;
-
-//     if (
-//       !kategori_id &&
-//       !satuan_produk_id &&
-//       !supplier_id &&
-//       !kode_produk &&
-//       !nama_produk &&
-//       !deskripsi_produk
-//     ) {
-//       return new Response(
-//         JSON.stringify({
-//           error: "semua kolom harus diisi",
-//         }),
-//         {
-//           status: 400,
-//           headers: { "Content-Type": "application/json" },
-//         }
-//       );
-//     }
-
-//     const nowJakarta = new Date().toLocaleString("en-US", {
-//       timeZone: "Asia/Jakarta",
-//     });
-
-//     const tambahProduk = await prisma.produk.create({
-//       data: {
-//         kategori_id,
-//         satuan_produk_id,
-//         supplier_id,
-//         kode_produk,
-//         nama_produk,
-//         deskripsi_produk,
-//         is_aktif: is_aktif ? is_aktif : true,
-//         created_at: created_at ? new Date(created_at) : nowJakarta,
-//         updated_at: updated_at ? new Date(updated_at) : nowJakarta,
-//       },
-//     });
-
-//     return new Response(JSON.stringify(tambahProduk), {
-//       status: 201,
-//       headers: { "Content-Type": "application/json" },
-//     });
-//   } catch (error) {
-//     console.error("Error:", error);
-//     return new Response(JSON.stringify({ error: error.message }), {
-//       status: 500,
-//       headers: { "Content-Type": "application/json" },
-//     });
-//   }
-// }
