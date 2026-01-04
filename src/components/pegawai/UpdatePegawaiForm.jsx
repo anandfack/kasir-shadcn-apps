@@ -1,13 +1,11 @@
 "use client";
-import React, { useState, useEffect, Fragment } from "react";
+import { React, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiRequest } from "@/app/utils/fetchOptions";
-import { Listbox, Transition } from "@headlessui/react";
-import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { Textarea } from "../ui/textarea";
 import { Switch } from "../ui/switch";
+import { apiRequest } from "@/lib/apiRequest";
 import {
   Select,
   SelectContent,
@@ -19,15 +17,15 @@ import {
 } from "@/components/ui/select";
 
 const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
-  const [formData, setFormData] = React.useState(initialData ?? {});
-  const [isChanged, setIsChanged] = React.useState(false);
+  const [formData, setFormData] = useState(initialData ?? {});
+  const [isChanged, setIsChanged] = useState(false);
 
   const formatDateForInput = (date) => {
     if (!date) return "";
     return new Date(date).toISOString().split("T")[0];
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (initialData) {
       setFormData({
         ...initialData,
@@ -36,7 +34,7 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
     }
   }, [initialData]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setIsChanged(
       JSON.stringify(formData) !==
         JSON.stringify({
@@ -73,7 +71,6 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
         jabatan_pegawai: formData.jabatan_pegawai,
         is_aktif: formData.is_aktif,
       };
-      // Menggunakan apiRequest untuk update harga produk
       const updatedData = await apiRequest(
         "PUT",
         `/api/v1/admin/pegawai/${formData.id}`,
@@ -82,7 +79,6 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
 
       console.log("Data berhasil disimpan:", updatedData);
 
-      // Update state dengan data baru
       setFormData((prev) => ({
         ...prev,
         nip_pegawai: updatedData.nip_pegawai,

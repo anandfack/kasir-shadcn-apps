@@ -1,7 +1,6 @@
 "use client";
 
-import { useState, Fragment } from "react";
-import React from "react";
+import { React, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -11,9 +10,6 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Listbox, Transition } from "@headlessui/react";
-import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
-import { apiRequest } from "@/app/utils/fetchOptions";
 import { Textarea } from "../ui/textarea";
 import {
   Select,
@@ -24,20 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { apiRequest } from "@/lib/apiRequest";
 
-const TambahPegawaiForm = ({
-  onSuccess,
-  onError,
-  //   kategoriData,
-  //   satuanData,
-  //   supplierData,
-  //   setKategoriOpen,
-  //   setSatuanOpen,
-  //   setSupplierOpen,
-  //   kategoriLoading,
-  //   satuanLoading,
-  //   supplierLoading,
-}) => {
+const TambahPegawaiForm = ({ onSuccess, onError }) => {
   const [loading, setLoading] = useState(false);
   const [nipPegawai, setNipPegawai] = useState("");
   const [namaPegawai, setNamaPegawai] = useState("");
@@ -47,7 +32,6 @@ const TambahPegawaiForm = ({
   const [nomorTeleponPegawai, setNomorTeleponPegawai] = useState("");
   const [emailPegawai, setEmailPegawai] = useState("");
   const [jabatanPegawai, setJabatanPegawai] = useState("");
-  //   const [isAktif, setIsAktif] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -63,9 +47,6 @@ const TambahPegawaiForm = ({
         nomor_telepon_pegawai: nomorTeleponPegawai,
         email_pegawai: emailPegawai,
         jabatan_pegawai: jabatanPegawai,
-        // is_aktif: isAktif,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       });
 
       onSuccess();

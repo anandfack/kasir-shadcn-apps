@@ -1,10 +1,9 @@
 "use client";
-import { useState } from "react";
+import { React, useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import PegawaiDialog from "./PegawaiDialog";
 import PegawaiActions from "./PegawaiActions";
 import useFetchPegawai from "@/hooks/pegawai/useFetchPegawai";
-import React from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -38,36 +37,51 @@ import TambahPegawaiForm from "./TambahPegawaiForm";
 
 import { useToast } from "@/hooks/use-toast";
 import UpdatePegawaiForm from "./UpdatePegawaiForm";
-import { apiRequest } from "@/app/utils/fetchOptions";
 import { Badge } from "../ui/badge";
-import { set } from "react-hook-form";
+import { get, set } from "react-hook-form";
 import DetailPegawai from "./DetailPegawai";
+import { apiRequest } from "@/lib/apiRequest";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 const PegawaiTable = () => {
   const { toast } = useToast();
-  const [refreshKey, setRefreshKey] = React.useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { data, loading, error } = useFetchPegawai(
     "/api/v1/admin/pegawai",
     refreshKey
   );
 
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Terjadi kesalahan",
+        description: error.message,
+        variant: "destructive",
+      });
+
+      if (error.status === 401) {
+        // redirect / logout
+      }
+    }
+  }, [error, toast]);
+
   const [isDialogUpdateOpen, setIsDialogUpdateOpen] = useState(false);
   const [editData, setEditData] = useState(null);
 
-  const [sorting, setSorting] = React.useState([]);
-  const [columnFilters, setColumnFilters] = React.useState([]);
-  const [columnVisibility, setColumnVisibility] = React.useState({});
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [deleteData, setDeleteData] = React.useState(null);
-  const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
-  const [isDialogDeleteOpen, setIsDialogDeleteOpen] = React.useState(false);
+  const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [rowSelection, setRowSelection] = useState({});
+  const [deleteData, setDeleteData] = useState(null);
+  const [isDialogTambahOpen, setIsDialogTambahOpen] = useState(false);
+  const [isDialogDeleteOpen, setIsDialogDeleteOpen] = useState(false);
   const [detailPegawaiData, setDetailPegawaiData] = useState(null);
   const [isDetailPegawaiLoading, setIsDetailPegawaiLoading] = useState(false);
   const [isDetailPegawaiDialogOpen, setIsDetailPegawaiDialogOpen] =
     useState(false);
 
-  const fetchDetailPegawai = React.useCallback(
+  const fetchDetailPegawai = useCallback(
     async (id) => {
       setIsDetailPegawaiLoading(true);
       try {
@@ -77,7 +91,7 @@ const PegawaiTable = () => {
       } catch (err) {
         toast({
           title: "Gagal mengambil detail pegawai",
-          description: err?.message || "Terjadi kesalahan",
+          description: getApiErrorMessage(err),
           variant: "destructive",
         });
       } finally {
@@ -87,22 +101,22 @@ const PegawaiTable = () => {
     [toast]
   );
 
-  //   const dialogTitle = React.useMemo(
+  //   const dialogTitle = useMemo(
   //     () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
   //     [editData]
   //   );
 
-  //   const dialogDescription = React.useMemo(
+  //   const dialogDescription = useMemo(
   //     () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
   //     [editData]
   //   );
 
-  const handleError = React.useCallback((error) => {
+  const handleError = useCallback((error) => {
     console.error("Terjadi error:", error);
     setIsDialogUpdateOpen(true);
   }, []);
 
-  const handleDelete = React.useCallback(async () => {
+  const handleDelete = useCallback(async () => {
     if (!deleteData) return;
 
     try {
@@ -110,7 +124,6 @@ const PegawaiTable = () => {
       toast({
         title: "Sukses!",
         description: "Data pegawai berhasil dihapus.",
-        variant: "success",
       });
       setRefreshKey((prev) => prev + 1);
       setDeleteData(null);
@@ -118,14 +131,14 @@ const PegawaiTable = () => {
     } catch (error) {
       toast({
         title: "Gagal menghapus",
-        description: error?.response?.data?.error || "Terjadi kesalahan",
+        description: getApiErrorMessage(error),
         variant: "destructive",
       });
       console.error("Gagal menghapus:", error);
     }
   }, [deleteData, toast]);
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     () => [
       {
         id: "no",
@@ -289,11 +302,10 @@ const PegawaiTable = () => {
       },
     ],
     [fetchDetailPegawai, isDetailPegawaiLoading]
-    // [fetchMutasiStok, isMutasiLoading]
   );
 
   const table = useReactTable({
-    data,
+    data: data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -326,7 +338,7 @@ const PegawaiTable = () => {
           <div>Gagal memuat data</div>
         </div>
         <div className="flex items-center justify-center text-zinc-300 text-xs">
-          {error}
+          {error.message}
         </div>
       </div>
     );
@@ -351,7 +363,6 @@ const PegawaiTable = () => {
               toast({
                 title: "Sukses!",
                 description: "Data produk berhasil ditambahkan.",
-                variant: "success",
               });
               setRefreshKey((prev) => prev + 1);
               setIsDialogTambahOpen(false);
@@ -359,22 +370,12 @@ const PegawaiTable = () => {
             onError={(error) => {
               toast({
                 title: "Terjadi kesalahan",
-                description:
-                  error?.response?.data?.error || "Terjadi kesalahan",
+                description: getApiErrorMessage(error),
                 variant: "destructive",
               });
               console.error("Terjadi error:", error);
               setIsDialogTambahOpen(true);
             }}
-            // kategoriData={kategoriData}
-            // supplierData={supplierData}
-            // satuanData={satuanData}
-            // setKategoriOpen={setKategoriOpen}
-            // setSatuanOpen={setSatuanOpen}
-            // setSupplierOpen={setSupplierOpen}
-            // kategoriLoading={kategoriLoading}
-            // supplierLoading={supplierLoading}
-            // satuanLoading={satuanLoading}
           />
         </Dialog>
         <Input
@@ -463,7 +464,6 @@ const PegawaiTable = () => {
                 toast({
                   title: "Sukses!",
                   description: "Data pegawai berhasil diupdate.",
-                  variant: "success",
                 });
                 setRefreshKey((prev) => prev + 1);
                 setIsDialogUpdateOpen(false);
@@ -471,8 +471,7 @@ const PegawaiTable = () => {
               onError={(error) => {
                 toast({
                   title: "Terjadi kesalahan",
-                  description:
-                    error?.response?.data?.error || "Terjadi kesalahan",
+                  description: getApiErrorMessage(error),
                   variant: "destructive",
                 });
                 console.error("Terjadi error:", error);
@@ -510,11 +509,6 @@ const PegawaiTable = () => {
         onOpenChange={setIsDetailPegawaiDialogOpen}
         data={detailPegawaiData}
       />
-      {/* <MutasiStokBarang
-        open={isMutasiDialogOpen}
-        onOpenChange={setIsMutasiDialogOpen}
-        data={mutasiData}
-      /> */}
     </div>
   );
 };

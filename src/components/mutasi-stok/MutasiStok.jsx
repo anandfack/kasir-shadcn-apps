@@ -16,7 +16,9 @@ export default function MutasiStokBarang({ open, onOpenChange, data }) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const filteredData = data?.filter((item) => {
+  const rows = data?.data || [];
+
+  const filteredData = rows.filter((item) => {
     if (!startDate && !endDate) return true;
 
     const tgl = new Date(item.tanggal_mutasi);

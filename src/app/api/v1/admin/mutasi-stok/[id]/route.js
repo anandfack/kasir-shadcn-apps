@@ -1,9 +1,17 @@
 import { PrismaClient } from "@prisma/client";
+import jsonResponse from "@/lib/jsonResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
 const prisma = new PrismaClient();
 
 export async function GET(req, { params }) {
   try {
+    // const auth = verifyAuth(req);
+
+    // if (auth.error) {
+    //   return jsonResponse({ message: auth.error }, 401);
+    // }
+
     const produkId = parseInt(params.id);
 
     const mutasiStok = await prisma.mutasiStok.findMany({
@@ -36,71 +44,23 @@ export async function GET(req, { params }) {
             },
           },
         },
-
-        // DetailPembelian: {
-        //   select: {
-        //     id: true,
-        //     harga_satuan: true,
-        //     jumlah_produk: true,
-        //     harga_produk: true,
-        //     total_harga: true,
-        //     produk: {
-        //       select: {
-        //         id: true,
-        //         nama_produk: true,
-        //         kode_produk: true,
-        //         satuan: {
-        //           select: {
-        //             id: true,
-        //             nama_satuan: true,
-        //           },
-        //         },
-        //       },
-        //     },
-        //   },
-        // },
-        // supplier: {
-        //   select: {
-        //     id: true,
-        //     nama_supplier: true,
-        //     alamat_supplier: true,
-        //   },
-        // },
-        // ReturPembelian: {
-        //   select: {
-        //     id: true,
-        //     nomor_retur: true,
-        //     tanggal_retur: true,
-        //     total_harga: true,
-        //     keterangan_retur: true,
-        //     DetailReturPembelian: {
-        //       select: {
-        //         id: true,
-        //         harga_satuan: true,
-        //         jumlah_produk: true,
-        //         total_harga: true,
-        //         produk: {
-        //           select: {
-        //             id: true,
-        //             nama_produk: true,
-        //             kode_produk: true,
-        //           },
-        //         },
-        //       },
-        //     },
-        //   },
-        // },
       },
     });
 
-    return new Response(JSON.stringify(mutasiStok), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "OK",
+        data: mutasiStok,
+      },
+      200
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("Eror:", error);
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }

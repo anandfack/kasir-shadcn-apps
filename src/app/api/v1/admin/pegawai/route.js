@@ -1,12 +1,17 @@
 import { PrismaClient } from "@prisma/client";
-// import { jwtVerify } from "jose";
-import { NextResponse } from "next/server";
+import jsonResponse from "@/lib/jsonResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
 const prisma = new PrismaClient();
-const SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function GET(req) {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const { searchParams } = new URL(req.url);
     const withoutLogin = searchParams.get("without_login");
 
@@ -21,24 +26,50 @@ export async function GET(req) {
     }
 
     const pegawai = await prisma.pegawai.findMany({
+      select: {
+        id: true,
+        nip_pegawai: true,
+        nama_pegawai: true,
+        tanggal_lahir: true,
+        jenis_kelamin: true,
+        alamat_pegawai: true,
+        nomor_telepon_pegawai: true,
+        email_pegawai: true,
+        jabatan_pegawai: true,
+        is_aktif: true,
+      },
       where: whereCondition,
       orderBy: {
         nama_pegawai: "asc",
       },
     });
 
-    return NextResponse.json(pegawai, { status: 200 });
+    return jsonResponse(
+      {
+        message: "OK",
+        data: pegawai,
+      },
+      200
+    );
   } catch (error) {
-    console.error("API ERROR:", error);
-    return NextResponse.json(
-      { message: "Terjadi kesalahan pada server" },
-      { status: 500 }
+    console.error("Error:", error);
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
     );
   }
 }
 
 export async function POST(req) {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const body = await req.json();
     const {
       nip_pegawai,
@@ -50,34 +81,48 @@ export async function POST(req) {
       email_pegawai,
       jabatan_pegawai,
       is_aktif,
-      created_at,
-      updated_at,
     } = body;
 
-    const requiredFields = [
-      { key: "nip_pegawai", label: "NIP pegawai" },
-      { key: "nama_pegawai", label: "Nama pegawai" },
-      { key: "tanggal_lahir", label: "Tanggal lahir" },
-      { key: "jenis_kelamin", label: "Jenis kelamin" },
-      { key: "alamat_pegawai", label: "Alamat pegawai" },
-      { key: "nomor_telepon_pegawai", label: "Nomor telepon pegawai" },
-      { key: "email_pegawai", label: "Email pegawai" },
-      { key: "jabatan_pegawai", label: "Jabatan pegawai" },
-    ];
+    const errors = {};
+    if (!nip_pegawai || nip_pegawai.trim() === "") {
+      errors.nip_pegawai = "NIP Pegawai wajib diisi";
+    }
+    if (!nama_pegawai || nama_pegawai.trim() === "") {
+      errors.nama_pegawai = "Nama Pegawai wajib diisi";
+    }
+    if (!tanggal_lahir || tanggal_lahir.trim() === "") {
+      errors.tanggal_lahir = "Tanggal Lahir wajib diisi";
+    }
+    if (!jenis_kelamin || jenis_kelamin.trim() === "") {
+      errors.jenis_kelamin = "Jenis Kelamin wajib diisi";
+    }
+    if (!alamat_pegawai || alamat_pegawai.trim() === "") {
+      errors.alamat_pegawai = "Alamat Pegawai wajib diisi";
+    }
+    if (!nomor_telepon_pegawai || nomor_telepon_pegawai.trim() === "") {
+      errors.nomor_telepon_pegawai = "Nomor Telepon Pegawai wajib diisi";
+    }
+    if (!email_pegawai || email_pegawai.trim() === "") {
+      errors.email_pegawai = "Email Pegawai wajib diisi";
+    }
+    if (!jabatan_pegawai || jabatan_pegawai.trim() === "") {
+      errors.jabatan_pegawai = "Jabatan Pegawai wajib diisi";
+    }
 
-    const missingFields = requiredFields.filter((field) => !body[field.key]);
-
-    if (missingFields.length > 0) {
-      return new Response(
-        JSON.stringify({
-          error: `${missingFields[0].label} harus diisi`,
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+    if (Object.keys(errors).length > 0) {
+      return jsonResponse(
+        {
+          message: "Validation Error",
+          errors,
+        },
+        400
       );
     }
+
     const nowJakarta = new Date().toLocaleString("en-US", {
       timeZone: "Asia/Jakarta",
     });
+
     const newPegawai = await prisma.pegawai.create({
       data: {
         nip_pegawai,
@@ -89,20 +134,23 @@ export async function POST(req) {
         email_pegawai,
         jabatan_pegawai,
         is_aktif: is_aktif ? is_aktif : true,
-        created_at: created_at ? new Date(created_at) : nowJakarta,
-        updated_at: updated_at ? new Date(updated_at) : nowJakarta,
       },
     });
 
-    return new Response(JSON.stringify(newPegawai), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Pegawai berhasil ditambahkan",
+        data: newPegawai,
+      },
+      201
+    );
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }

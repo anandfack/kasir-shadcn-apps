@@ -3,18 +3,16 @@
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { useState } from "react";
-import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Badge } from "@/components/ui/badge";
 
 export default function DetailPegawai({ open, onOpenChange, data }) {
-  if (!data) return null;
+  const rows = data?.data || [];
+  if (!rows) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -23,44 +21,44 @@ export default function DetailPegawai({ open, onOpenChange, data }) {
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <div>
-              <p className="text-lg font-semibold">{data.nama_pegawai}</p>
+              <p className="text-lg font-semibold">{rows.nama_pegawai}</p>
               <p className="text-sm text-muted-foreground">
-                {data.jabatan_pegawai}
+                {rows.jabatan_pegawai}
               </p>
             </div>
 
-            <Badge variant={data.is_aktif ? "default" : "destructive"}>
-              {data.is_aktif ? "Aktif" : "Nonaktif"}
+            <Badge variant={rows.is_aktif ? "default" : "destructive"}>
+              {rows.is_aktif ? "Aktif" : "Nonaktif"}
             </Badge>
           </DialogTitle>
         </DialogHeader>
 
         {/* IDENTITAS */}
         <Section title="Identitas Pegawai">
-          <Item label="NIP" value={data.nip_pegawai} />
-          <Item label="Jenis Kelamin" value={data.jenis_kelamin} />
+          <Item label="NIP" value={rows.nip_pegawai} />
+          <Item label="Jenis Kelamin" value={rows.jenis_kelamin} />
           <Item
             label="Tanggal Lahir"
-            value={new Date(data.tanggal_lahir).toLocaleDateString()}
+            value={new Date(rows.tanggal_lahir).toLocaleDateString()}
           />
         </Section>
 
         {/* KONTAK */}
         <Section title="Kontak & Alamat">
-          <Item label="Email" value={data.email_pegawai} />
-          <Item label="No Telepon" value={data.nomor_telepon_pegawai} />
-          <Item label="Alamat" value={data.alamat_pegawai} />
+          <Item label="Email" value={rows.email_pegawai} />
+          <Item label="No Telepon" value={rows.nomor_telepon_pegawai} />
+          <Item label="Alamat" value={rows.alamat_pegawai} />
         </Section>
 
         {/* SISTEM */}
         <Section title="Informasi Sistem">
           <Item
             label="Dibuat"
-            value={new Date(data.created_at).toLocaleString()}
+            value={new Date(rows.created_at).toLocaleString()}
           />
           <Item
             label="Terakhir Diupdate"
-            value={new Date(data.updated_at).toLocaleString()}
+            value={new Date(rows.updated_at).toLocaleString()}
           />
         </Section>
 

@@ -42,6 +42,7 @@ import MutasiStokBarang from "@/components/mutasi-stok/MutasiStok";
 import { ArrowLeftRight } from "lucide-react";
 import { apiRequest } from "@/lib/apiRequest";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import { get } from "react-hook-form";
 
 const ProdukTable = () => {
   const { toast } = useToast();
@@ -114,7 +115,7 @@ const ProdukTable = () => {
       } catch (err) {
         toast({
           title: "Gagal mengambil mutasi stok",
-          description: err?.message || "Terjadi kesalahan",
+          description: getApiErrorMessage(err),
           variant: "destructive",
         });
       } finally {

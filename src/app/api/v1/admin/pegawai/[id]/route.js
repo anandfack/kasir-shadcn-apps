@@ -1,9 +1,17 @@
 import { PrismaClient } from "@prisma/client";
+import jsonResponse from "@/lib/jsonResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
 const prisma = new PrismaClient();
 
 export async function GET(req, { params }) {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const pegawaiId = parseInt(params.id);
 
     const detailPegawai = await prisma.pegawai.findUnique({
@@ -27,20 +35,32 @@ export async function GET(req, { params }) {
       },
     });
 
-    return new Response(JSON.stringify(detailPegawai), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "OK",
+        data: detailPegawai,
+      },
+      200
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("Error:", error);
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }
 
 export const PUT = async (req, { params }) => {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const { id } = params;
     const body = await req.json();
     const {
@@ -55,33 +75,49 @@ export const PUT = async (req, { params }) => {
       is_aktif,
     } = body;
 
-    const requiredFields = [
-      { key: "nip_pegawai", label: "NIP pegawai" },
-      { key: "nama_pegawai", label: "Nama pegawai" },
-      { key: "tanggal_lahir", label: "Tanggal lahir" },
-      { key: "jenis_kelamin", label: "Jenis kelamin" },
-      { key: "alamat_pegawai", label: "Alamat pegawai" },
-      { key: "nomor_telepon_pegawai", label: "Nomor telepon pegawai" },
-      { key: "email_pegawai", label: "Email pegawai" },
-      { key: "jabatan_pegawai", label: "Jabatan pegawai" },
-    ];
+    const errors = {};
+    if (!nip_pegawai || nip_pegawai.trim() === "") {
+      errors.nip_pegawai = "NIP Pegawai wajib diisi";
+    }
+    if (!nama_pegawai || nama_pegawai.trim() === "") {
+      errors.nama_pegawai = "Nama Pegawai wajib diisi";
+    }
+    if (!tanggal_lahir || tanggal_lahir.trim() === "") {
+      errors.tanggal_lahir = "Tanggal Lahir wajib diisi";
+    }
+    if (!jenis_kelamin || jenis_kelamin.trim() === "") {
+      errors.jenis_kelamin = "Jenis Kelamin wajib diisi";
+    }
+    if (!alamat_pegawai || alamat_pegawai.trim() === "") {
+      errors.alamat_pegawai = "Alamat Pegawai wajib diisi";
+    }
+    if (!nomor_telepon_pegawai || nomor_telepon_pegawai.trim() === "") {
+      errors.nomor_telepon_pegawai = "Nomor Telepon Pegawai wajib diisi";
+    }
+    if (!email_pegawai || email_pegawai.trim() === "") {
+      errors.email_pegawai = "Email Pegawai wajib diisi";
+    }
+    if (!jabatan_pegawai || jabatan_pegawai.trim() === "") {
+      errors.jabatan_pegawai = "Jabatan Pegawai wajib diisi";
+    }
 
-    const missingFields = requiredFields.filter((field) => !body[field.key]);
-
-    if (missingFields.length > 0) {
-      return new Response(
-        JSON.stringify({
-          error: `${missingFields[0].label} harus diisi`,
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+    if (Object.keys(errors).length > 0) {
+      return jsonResponse(
+        {
+          message: "Validation Error",
+          errors,
+        },
+        400
       );
     }
 
     const parsedTanggalLahir = new Date(tanggal_lahir);
     if (isNaN(parsedTanggalLahir)) {
-      return new Response(
-        JSON.stringify({ error: "Format tanggal lahir tidak valid" }),
-        { status: 400 }
+      return jsonResponse(
+        {
+          message: "Validation Error",
+        },
+        400
       );
     }
 
@@ -97,36 +133,53 @@ export const PUT = async (req, { params }) => {
         email_pegawai,
         jabatan_pegawai,
         is_aktif,
-        updated_at: new Date(),
       },
     });
-    return new Response(JSON.stringify(updatePegawai), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Pegawai berhasil diperbarui",
+        data: updatePegawai,
+      },
+      200
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("Error:", error);
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 };
 
 export const DELETE = async (req, { params }) => {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const { id } = params;
     const deletePegawai = await prisma.pegawai.update({
       where: { id: parseInt(id) },
       data: { deleted_at: new Date() },
     });
-    return new Response(JSON.stringify(deletePegawai), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Pegawai berhasil dihapus",
+        data: deletePegawai,
+      },
+      200
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("Error:", error);
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 };
