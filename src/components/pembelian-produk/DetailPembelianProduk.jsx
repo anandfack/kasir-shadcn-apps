@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/dialog";
 
 export default function DetailPembelianProduk({ open, onOpenChange, data }) {
+  const rows = data?.data || [];
+
   const formatRupiah = (value) =>
     new Intl.NumberFormat("id-ID", {
       style: "currency",
@@ -17,7 +19,7 @@ export default function DetailPembelianProduk({ open, onOpenChange, data }) {
 
   // Buat index retur berdasarkan produk_id
   const returMap = {};
-  data?.ReturPembelian?.forEach((retur) => {
+  rows?.ReturPembelian?.forEach((retur) => {
     retur.DetailReturPembelian?.forEach((detail) => {
       const idProduk = detail.produk?.id;
       if (!returMap[idProduk]) returMap[idProduk] = [];
@@ -26,8 +28,8 @@ export default function DetailPembelianProduk({ open, onOpenChange, data }) {
     });
   });
 
-  const totalAwal = data?.total_harga || 0;
-  const totalRetur = data?.ReturPembelian?.reduce((acc, retur) => {
+  const totalAwal = rows?.total_harga || 0;
+  const totalRetur = rows?.ReturPembelian?.reduce((acc, retur) => {
     return acc + (retur.total_harga || 0);
   }, 0);
   const totalSetelahRetur = totalAwal - totalRetur;
@@ -38,21 +40,21 @@ export default function DetailPembelianProduk({ open, onOpenChange, data }) {
           <DialogHeader>
             <DialogTitle>Detail Pembelian</DialogTitle>
             <DialogDescription>
-              {data?.nomor_pembelian || "-"} | {data?.tanggal_pembelian}
+              {rows?.nomor_pembelian || "-"} | {rows?.tanggal_pembelian}
             </DialogDescription>
           </DialogHeader>
           <div>
-            <strong>Nomor Faktur:</strong> {data?.nomor_faktur}
+            <strong>Nomor Faktur:</strong> {rows?.nomor_faktur}
           </div>
           <div>
-            <strong>Supplier:</strong> {data?.supplier?.nama_supplier || "-"}
+            <strong>Supplier:</strong> {rows?.supplier?.nama_supplier || "-"}
           </div>
           <div>
             <strong>Total Harga Pembelian:</strong>{" "}
-            {formatRupiah(data?.total_harga || 0)}
+            {formatRupiah(rows?.total_harga || 0)}
           </div>
           <div>
-            <strong>Status:</strong> {data?.status_pembelian}
+            <strong>Status:</strong> {rows?.status_pembelian}
           </div>
 
           {/* Tabel Produk */}
@@ -70,7 +72,7 @@ export default function DetailPembelianProduk({ open, onOpenChange, data }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {data?.DetailPembelian?.map((item, index) => (
+                  {rows?.DetailPembelian?.map((item, index) => (
                     <>
                       <tr key={`produk-${index}`}>
                         <td className="p-2 border align-top">{index + 1}</td>
@@ -111,7 +113,7 @@ export default function DetailPembelianProduk({ open, onOpenChange, data }) {
                 </tbody>
               </table>
             </div>
-            {data?.ReturPembelian?.length > 0 && (
+            {rows?.ReturPembelian?.length > 0 && (
               <div className="mt-4 text-sm space-y-1">
                 <div>
                   <strong>Total Awal:</strong> {formatRupiah(totalAwal)}

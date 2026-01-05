@@ -1,8 +1,7 @@
 "use client";
-import { useState } from "react";
+import { React, useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 // import HargaProdukActions from "./HargaProdukActions";
-import React from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -41,26 +40,41 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/app/utils/fetchOptions";
+import { apiRequest } from "@/lib/apiRequest";
 import useFetchPembelianProduk from "@/hooks/pembelian-produk/useFetchPembelianProduk";
 import TambahPembelianProduk from "./TambahPembelianProduk";
 import DetailPembelianProduk from "./DetailPembelianProduk";
 import ReturPembelianProduk from "./ReturPembelianProduk";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 const PembelianProdukTable = () => {
   const { toast } = useToast();
-  const [refreshKey, setRefreshKey] = React.useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { data, loading, error } = useFetchPembelianProduk(
     "/api/v1/admin/pembelian-produk",
     refreshKey
   );
 
-  const [sorting, setSorting] = React.useState([]);
-  const [columnFilters, setColumnFilters] = React.useState([]);
-  const [columnVisibility, setColumnVisibility] = React.useState({});
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Terjadi kesalahan",
+        description: error.message,
+        variant: "destructive",
+      });
+
+      if (error.status === 401) {
+        // redirect / logout
+      }
+    }
+  }, [error, toast]);
+
+  const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [rowSelection, setRowSelection] = useState({});
+  const [isDialogTambahOpen, setIsDialogTambahOpen] = useState(false);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [detailData, setDetailData] = useState(null);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
@@ -68,27 +82,30 @@ const PembelianProdukTable = () => {
   const [isDialogReturOpen, setIsDialogReturOpen] = useState(false);
   const [selectedReturId, setSelectedReturId] = useState(null);
 
-  const fetchDetailPembelian = React.useCallback(
+  const fetchDetailPembelian = useCallback(
     async (id) => {
       setIsDetailLoading(true);
       try {
-        const res = await apiRequest("GET", `/api/v1/admin/pembelian-produk/${id}`);
+        const res = await apiRequest(
+          "GET",
+          `/api/v1/admin/pembelian-produk/${id}`
+        );
         setDetailData(res);
         setIsDetailDialogOpen(true);
       } catch (err) {
         toast({
           title: "Gagal mengambil detail",
-          description: err?.message || "Terjadi kesalahan saat memuat detail",
+          description: getApiErrorMessage(error),
           variant: "destructive",
         });
       } finally {
         setIsDetailLoading(false);
       }
     },
-    [toast]
+    [toast, error]
   );
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     () => [
       {
         id: "no",
@@ -226,7 +243,7 @@ const PembelianProdukTable = () => {
                 className="text-xs"
                 title="Detail"
                 onClick={() => {
-                  fetchDetailPembelian(loadData.id); // load berdasarkan id
+                  fetchDetailPembelian(loadData.id);
                 }}
               >
                 <EyeIcon />
@@ -251,7 +268,7 @@ const PembelianProdukTable = () => {
   );
 
   const table = useReactTable({
-    data,
+    data: data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -284,7 +301,7 @@ const PembelianProdukTable = () => {
           <div>Gagal memuat data</div>
         </div>
         <div className="flex items-center justify-center text-zinc-300 text-xs">
-          {error}
+          {error.message}
         </div>
       </div>
     );
@@ -310,7 +327,6 @@ const PembelianProdukTable = () => {
               toast({
                 title: "Sukses!",
                 description: "Data pembelian produk berhasil ditambahkan.",
-                variant: "success",
               });
               setRefreshKey((prev) => prev + 1);
               setIsDialogTambahOpen(false);
@@ -318,8 +334,7 @@ const PembelianProdukTable = () => {
             onError={(error) => {
               toast({
                 title: "Terjadi kesalahan",
-                description:
-                  error?.response?.data?.error || "Terjadi kesalahan",
+                description: getApiErrorMessage(error),
                 variant: "destructive",
               });
               console.error("Terjadi error:", error);
@@ -419,7 +434,6 @@ const PembelianProdukTable = () => {
             toast({
               title: "Sukses!",
               description: "Data pembelian produk berhasil ditambahkan.",
-              variant: "success",
             });
             setRefreshKey((prev) => prev + 1);
             setIsDialogReturOpen(false);

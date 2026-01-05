@@ -1,9 +1,17 @@
 import { PrismaClient } from "@prisma/client";
+import jsonResponse from "@/lib/jsonResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
 const prisma = new PrismaClient();
 
 export async function GET(req, { params }) {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const id = parseInt(params.id);
 
     const detailPembelianProduk = await prisma.pembelian.findUnique({
@@ -74,14 +82,20 @@ export async function GET(req, { params }) {
       },
     });
 
-    return new Response(JSON.stringify(detailPembelianProduk), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "OK",
+        data: detailPembelianProduk,
+      },
+      200
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("Error:", error);
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }

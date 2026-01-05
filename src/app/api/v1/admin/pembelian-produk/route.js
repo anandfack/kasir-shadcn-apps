@@ -1,26 +1,52 @@
 import { PrismaClient } from "@prisma/client";
+import jsonResponse from "@/lib/jsonResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
 const prisma = new PrismaClient();
 
 export async function GET(req) {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const pembelianProduk = await prisma.pembelian.findMany({
+      select: {
+        id: true,
+        nomor_pembelian: true,
+        nomor_faktur: true,
+        tanggal_pembelian: true,
+        status_pembelian: true,
+        total_harga: true,
+        supplier: {
+          select: {
+            id: true,
+            kode_supplier: true,
+            nama_supplier: true,
+          },
+        },
+      },
       where: {
         deleted_at: null,
       },
-      include: {
-        supplier: true,
+    });
+    return jsonResponse(
+      {
+        message: "OK",
+        data: pembelianProduk,
       },
-    });
-    return new Response(JSON.stringify(pembelianProduk), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+      200
+    );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("Error:", error);
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }
 
@@ -28,6 +54,12 @@ export async function GET(req) {
 
 export async function POST(req) {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const body = await req.json();
     const {
       supplier_id,
@@ -35,19 +67,38 @@ export async function POST(req) {
       nomor_faktur,
       tanggal_pembelian,
       total_harga,
-      created_at,
-      updated_at,
       detail_items,
     } = body;
 
-    if (!supplier_id || !nomor_pembelian || !total_harga || !nomor_faktur) {
-      return new Response(
-        JSON.stringify({ error: "Semua kolom wajib diisi." }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+    if (!supplier_id) {
+      errors.supplier_id = "Supplier wajib diisi";
+    } else if (isNaN(Number(supplier_id))) {
+      errors.supplier_id = "Supplier tidak valid";
+    }
+
+    if (!nomor_pembelian || nomor_pembelian.trim() === "") {
+      errors.nomor_pembelian = "Nomor pembelian wajib diisi";
+    }
+    if (!nomor_faktur || nomor_faktur.trim() === "") {
+      errors.nomor_faktur = "Nomor faktur wajib diisi";
+    }
+    if (!tanggal_pembelian || tanggal_pembelian.trim() === "") {
+      errors.tanggal_pembelian = "Tanggal pembelian wajib diisi";
+    }
+    if (!tanggal_pembelian || tanggal_pembelian.trim() === "") {
+      errors.tanggal_pembelian = "Tanggal pembelian wajib diisi";
+    }
+
+    if (
+      total_harga === undefined ||
+      total_harga === null ||
+      total_harga === ""
+    ) {
+      errors.total_harga = "Total harga wajib diisi";
+    } else if (isNaN(Number(total_harga))) {
+      errors.total_harga = "Total harga harus berupa angka";
+    } else if (Number(total_harga) < 0) {
+      errors.total_harga = "Total harga tidak boleh kurang dari 0";
     }
 
     const now = new Date();
@@ -95,8 +146,8 @@ export async function POST(req) {
           tanggal_pembelian: tanggal_pembelian
             ? new Date(tanggal_pembelian)
             : nowJakarta,
-          created_at: created_at ? new Date(created_at) : nowJakarta,
-          updated_at: updated_at ? new Date(updated_at) : nowJakarta,
+          // created_at: created_at ? new Date(created_at) : nowJakarta,
+          // updated_at: updated_at ? new Date(updated_at) : nowJakarta,
         },
       });
 
@@ -111,8 +162,8 @@ export async function POST(req) {
                 harga_satuan: item.harga_satuan,
                 harga_produk: item.harga_produk,
                 total_harga: item.total_harga,
-                created_at: created_at ? new Date(created_at) : nowJakarta,
-                updated_at: updated_at ? new Date(updated_at) : nowJakarta,
+                // created_at: created_at ? new Date(created_at) : nowJakarta,
+                // updated_at: updated_at ? new Date(updated_at) : nowJakarta,
               },
             });
 
@@ -153,8 +204,8 @@ export async function POST(req) {
                   jumlah_stok: item.jumlah_produk,
                   minimal_stok: 0,
                   maksimal_stok: 0,
-                  created_at: nowJakarta,
-                  updated_at: nowJakarta,
+                  // created_at: nowJakarta,
+                  // updated_at: nowJakarta,
                 },
               });
             }
@@ -164,16 +215,25 @@ export async function POST(req) {
 
       return pembelian;
     });
+    return jsonResponse(
+      {
+        message: "Data pembelian berhasil ditambahkan",
+        data: result,
+      },
+      201
+    );
 
-    return new Response(JSON.stringify(result), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
+    // return new Response(JSON.stringify(result), {
+    //   status: 201,
+    //   headers: { "Content-Type": "application/json" },
+    // });
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }
