@@ -125,15 +125,15 @@ const ProdukTable = () => {
     [toast]
   );
 
-  const dialogTitle = useMemo(
-    () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
-    [editData]
-  );
+  const dialogTitle = useMemo(() => {
+    if (!editData) return "Ubah Produk";
+    return `Ubah Produk ${editData.nama_produk}`;
+  }, [editData]);
 
-  const dialogDescription = useMemo(
-    () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
-    [editData]
-  );
+  const dialogDescription = useMemo(() => {
+    if (!editData) return "Silakan ubah data produk di sini";
+    return `Silakan ubah data produk ${editData.nama_produk} di sini`;
+  }, [editData]);
 
   const handleError = useCallback((error) => {
     console.error("Terjadi error:", error);
@@ -468,8 +468,8 @@ const ProdukTable = () => {
           <DialogHeader>
             <DialogTitle>Hapus Data</DialogTitle>
             <DialogDescription>
-              Apakah kamu yakin ingin menghapus harga untuk produk{" "}
-              <strong>{deleteData?.produk?.nama_produk}</strong>?
+              Apakah kamu yakin ingin menghapus{" "}
+              <strong>{deleteData?.nama_produk}</strong>?
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 mt-4">
@@ -487,7 +487,7 @@ const ProdukTable = () => {
       </Dialog>
       {/* ✅ Dialog Update Harga Produk */}
       <Dialog open={isDialogUpdateOpen} onOpenChange={setIsDialogUpdateOpen}>
-        <DialogContent className="sm:max-w-4xl">
+        <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{dialogTitle}</DialogTitle>
             <DialogDescription>{dialogDescription}</DialogDescription>

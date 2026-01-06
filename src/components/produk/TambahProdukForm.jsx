@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Fragment } from "react";
+import { useState, Fragment, useMemo } from "react";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,18 +39,52 @@ const ProdukForm = ({
   const [namaProduk, setNamaProduk] = useState("");
   const [deskripsiProduk, setDeskripsiProduk] = useState("");
   const [kodeProduk, setKodeProduk] = useState("");
+  const [searchKategori, setSearchKategori] = useState("");
+  const [searchSatuan, setSearchSatuan] = useState("");
+  const [searchSupplier, setSearchSupplier] = useState("");
 
-  const kategoriList = Array.isArray(kategoriData)
-    ? kategoriData
-    : kategoriData?.data ?? [];
+  const kategoriList = useMemo(() => {
+    if (Array.isArray(kategoriData)) return kategoriData;
+    if (Array.isArray(kategoriData?.data)) return kategoriData.data;
+    return [];
+  }, [kategoriData]);
+  const satuanList = useMemo(() => {
+    if (Array.isArray(satuanData)) return satuanData;
+    if (Array.isArray(satuanData?.data)) return satuanData.data;
+    return [];
+  }, [satuanData]);
+  const supplierList = useMemo(() => {
+    if (Array.isArray(supplierData)) return supplierData;
+    if (Array.isArray(supplierData?.data)) return supplierData.data;
+    return [];
+  }, [supplierData]);
 
-  const satuanList = Array.isArray(satuanData)
-    ? satuanData
-    : satuanData?.data ?? [];
+  const filteredKategori = useMemo(() => {
+    if (!kategoriList) return [];
+    if (!searchKategori) return kategoriList;
 
-  const supplierList = Array.isArray(supplierData)
-    ? supplierData
-    : supplierData?.data ?? [];
+    return kategoriList.filter((item) =>
+      item.nama_kategori.toLowerCase().includes(searchKategori.toLowerCase())
+    );
+  }, [kategoriList, searchKategori]);
+
+  const filteredSatuan = useMemo(() => {
+    if (!satuanList) return [];
+    if (!searchSatuan) return satuanList;
+
+    return satuanList.filter((item) =>
+      item.nama_satuan.toLowerCase().includes(searchSatuan.toLowerCase())
+    );
+  }, [satuanList, searchSatuan]);
+
+  const filteredSupplier = useMemo(() => {
+    if (!supplierList) return [];
+    if (!searchSupplier) return supplierList;
+
+    return supplierList.filter((item) =>
+      item.nama_supplier.toLowerCase().includes(searchSupplier.toLowerCase())
+    );
+  }, [supplierList, searchSupplier]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -64,8 +98,6 @@ const ProdukForm = ({
         nama_produk: namaProduk,
         deskripsi_produk: deskripsiProduk,
         kode_produk: kodeProduk,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       });
 
       onSuccess();
@@ -84,6 +116,32 @@ const ProdukForm = ({
         </DialogDescription>
       </DialogHeader>
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="kode-produk" className="text-center">
+            Kode Produk <i className="text-red-500">*</i>
+          </Label>
+          <Input
+            id="kode-produk"
+            value={kodeProduk}
+            onChange={(e) => setKodeProduk(e.target.value)}
+            className="col-span-3"
+            placeholder="Masukkan kode produk"
+          />
+        </div>
+
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="nama-produk" className="text-center">
+            Nama Produk <i className="text-red-500">*</i>
+          </Label>
+          <Input
+            id="nama-produk"
+            value={namaProduk}
+            onChange={(e) => setNamaProduk(e.target.value)}
+            className="col-span-3"
+            placeholder="Masukkan nama produk"
+          />
+        </div>
+
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="kategori-produk" className="text-center">
@@ -121,12 +179,24 @@ const ProdukForm = ({
                     afterLeave={() => setKategoriOpen(false)}
                   >
                     <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
+                      {/* 🔍 SEARCH */}
+                      <div className="p-2 border-b">
+                        <Input
+                          placeholder="Cari kategori..."
+                          value={searchKategori}
+                          onChange={(e) => setSearchKategori(e.target.value)}
+                          onKeyDownCapture={(e) => {
+                            if (e.key === " ") e.stopPropagation();
+                          }}
+                          className="h-8 text-sm"
+                        />
+                      </div>
                       {kategoriLoading ? (
                         <div className="py-2 px-4 text-muted-foreground italic">
                           Loading...
                         </div>
-                      ) : kategoriList.length > 0 ? (
-                        kategoriList.map((kategori) => (
+                      ) : filteredKategori.length > 0 ? (
+                        filteredKategori.map((kategori) => (
                           <Listbox.Option
                             key={kategori.id}
                             className={({ active }) =>
@@ -169,18 +239,6 @@ const ProdukForm = ({
                 </div>
               </Listbox>
             </div>
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="nama-produk" className="text-center">
-              Nama Produk <i className="text-red-500">*</i>
-            </Label>
-            <Input
-              id="nama-produk"
-              value={namaProduk}
-              onChange={(e) => setNamaProduk(e.target.value)}
-              className="col-span-3"
-              placeholder="Masukkan nama produk"
-            />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="deskripsi-produk" className="text-center">
@@ -229,12 +287,24 @@ const ProdukForm = ({
                     afterLeave={() => setSatuanOpen(false)}
                   >
                     <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
+                      {/* 🔍 SEARCH */}
+                      <div className="p-2 border-b">
+                        <Input
+                          placeholder="Cari kategori..."
+                          value={searchSatuan}
+                          onChange={(e) => setSearchSatuan(e.target.value)}
+                          onKeyDownCapture={(e) => {
+                            if (e.key === " ") e.stopPropagation();
+                          }}
+                          className="h-8 text-sm"
+                        />
+                      </div>
                       {satuanLoading ? (
                         <div className="py-2 px-4 text-muted-foreground italic">
                           Loading...
                         </div>
-                      ) : satuanList.length > 0 ? (
-                        satuanList.map((satuan) => (
+                      ) : filteredSatuan.length > 0 ? (
+                        filteredSatuan.map((satuan) => (
                           <Listbox.Option
                             key={satuan.id}
                             className={({ active }) =>
@@ -314,12 +384,24 @@ const ProdukForm = ({
                     afterLeave={() => setSupplierOpen(false)}
                   >
                     <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
+                      {/* 🔍 SEARCH */}
+                      <div className="p-2 border-b">
+                        <Input
+                          placeholder="Cari kategori..."
+                          value={searchSupplier}
+                          onChange={(e) => setSearchSupplier(e.target.value)}
+                          onKeyDownCapture={(e) => {
+                            if (e.key === " ") e.stopPropagation();
+                          }}
+                          className="h-8 text-sm"
+                        />
+                      </div>
                       {supplierLoading ? (
                         <div className="py-2 px-4 text-muted-foreground italic">
                           Loading...
                         </div>
-                      ) : supplierList.length > 0 ? (
-                        supplierList.map((supplier) => (
+                      ) : filteredSupplier.length > 0 ? (
+                        filteredSupplier.map((supplier) => (
                           <Listbox.Option
                             key={supplier.id}
                             className={({ active }) =>
@@ -363,21 +445,9 @@ const ProdukForm = ({
               </Listbox>
             </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="kode-produk" className="text-center">
-              Kode Produk <i className="text-red-500">*</i>
-            </Label>
-            <Input
-              id="kode-produk"
-              value={kodeProduk}
-              onChange={(e) => setKodeProduk(e.target.value)}
-              className="col-span-3"
-              placeholder="Masukkan kode produk"
-            />
-          </div>
         </div>
         <div className="flex justify-end">
-          <Button onClick={handleSubmit} variant="outline" disabled={loading}>
+          <Button onClick={handleSubmit} disabled={loading}>
             {loading ? "Loading..." : "Simpan"}
           </Button>
         </div>

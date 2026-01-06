@@ -20,22 +20,52 @@ const UpdateProdukForm = ({
 }) => {
   const [formData, setFormData] = useState(initialData ?? {});
   const [isChanged, setIsChanged] = useState(false);
+  const [searchKategori, setSearchKategori] = useState("");
+  const [searchSatuan, setSearchSatuan] = useState("");
+  const [searchSupplier, setSearchSupplier] = useState("");
 
   const kategoriList = useMemo(() => {
-    return Array.isArray(kategoriData)
-      ? kategoriData
-      : kategoriData?.data ?? [];
+    if (Array.isArray(kategoriData)) return kategoriData;
+    if (Array.isArray(kategoriData?.data)) return kategoriData.data;
+    return [];
   }, [kategoriData]);
-
   const satuanList = useMemo(() => {
-    return Array.isArray(satuanData) ? satuanData : satuanData?.data ?? [];
+    if (Array.isArray(satuanData)) return satuanData;
+    if (Array.isArray(satuanData?.data)) return satuanData.data;
+    return [];
   }, [satuanData]);
-
   const supplierList = useMemo(() => {
-    return Array.isArray(supplierData)
-      ? supplierData
-      : supplierData?.data ?? [];
+    if (Array.isArray(supplierData)) return supplierData;
+    if (Array.isArray(supplierData?.data)) return supplierData.data;
+    return [];
   }, [supplierData]);
+
+  const filteredKategori = useMemo(() => {
+    if (!kategoriList) return [];
+    if (!searchKategori) return kategoriList;
+
+    return kategoriList.filter((item) =>
+      item.nama_kategori.toLowerCase().includes(searchKategori.toLowerCase())
+    );
+  }, [kategoriList, searchKategori]);
+
+  const filteredSatuan = useMemo(() => {
+    if (!satuanList) return [];
+    if (!searchSatuan) return satuanList;
+
+    return satuanList.filter((item) =>
+      item.nama_satuan.toLowerCase().includes(searchSatuan.toLowerCase())
+    );
+  }, [satuanList, searchSatuan]);
+
+  const filteredSupplier = useMemo(() => {
+    if (!supplierList) return [];
+    if (!searchSupplier) return supplierList;
+
+    return supplierList.filter((item) =>
+      item.nama_supplier.toLowerCase().includes(searchSupplier.toLowerCase())
+    );
+  }, [supplierList, searchSupplier]);
 
   useEffect(() => {
     if (initialData) {
@@ -113,13 +143,41 @@ const UpdateProdukForm = ({
 
       if (onSubmit) onSubmit(updatedData);
     } catch (error) {
-      onError;
       console.error("Error saat menyimpan data:", error);
+      onError?.(error);
     }
   };
 
   return (
     <div className="grid gap-4 py-4">
+      {/* Kode Produk */}
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="kode-produk" className="text-center">
+          Kode Produk <i className="text-red-500">*</i>
+        </Label>
+        <Input
+          name="kode_produk"
+          value={formData.kode_produk || ""}
+          onChange={handleChange}
+          className="col-span-3"
+          placeholder="Masukkan kode produk"
+        />
+      </div>
+
+      {/* Nama Produk */}
+      <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="nama-produk" className="text-center">
+          Nama Produk <i className="text-red-500">*</i>
+        </Label>
+        <Input
+          name="nama_produk"
+          value={formData.nama_produk || ""}
+          onChange={handleChange}
+          className="col-span-3"
+          placeholder="Masukkan nama produk"
+        />
+      </div>
+
       {/* Kategori Produk */}
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="kategori-produk" className="text-center">
@@ -144,8 +202,21 @@ const UpdateProdukForm = ({
               </Listbox.Button>
               <Transition as={Fragment} leave="transition-opacity duration-100">
                 <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
-                  {kategoriList.length > 0 ? (
-                    kategoriList.map((kategori) => (
+                  {/* 🔍 SEARCH */}
+                  <div className="p-2 border-b">
+                    <Input
+                      placeholder="Cari kategori..."
+                      value={searchKategori}
+                      onChange={(e) => setSearchKategori(e.target.value)}
+                      onKeyDownCapture={(e) => {
+                        if (e.key === " ") e.stopPropagation();
+                      }}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+
+                  {filteredKategori.length > 0 ? (
+                    filteredKategori.map((kategori) => (
                       <Listbox.Option
                         key={kategori.id}
                         value={kategori}
@@ -190,20 +261,6 @@ const UpdateProdukForm = ({
         </div>
       </div>
 
-      {/* Nama Produk */}
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="nama-produk" className="text-center">
-          Nama Produk <i className="text-red-500">*</i>
-        </Label>
-        <Input
-          name="nama_produk"
-          value={formData.nama_produk || ""}
-          onChange={handleChange}
-          className="col-span-3"
-          placeholder="Masukkan nama produk"
-        />
-      </div>
-
       {/* Deskripsi Produk */}
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="deskripsi-produk" className="text-center">
@@ -240,8 +297,20 @@ const UpdateProdukForm = ({
               </Listbox.Button>
               <Transition as={Fragment} leave="transition-opacity duration-100">
                 <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
-                  {satuanList.length > 0 ? (
-                    satuanList.map((satuan) => (
+                  {/* 🔍 SEARCH */}
+                  <div className="p-2 border-b">
+                    <Input
+                      placeholder="Cari satuan..."
+                      value={searchSatuan}
+                      onChange={(e) => setSearchSatuan(e.target.value)}
+                      onKeyDownCapture={(e) => {
+                        if (e.key === " ") e.stopPropagation();
+                      }}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  {filteredSatuan.length > 0 ? (
+                    filteredSatuan.map((satuan) => (
                       <Listbox.Option
                         key={satuan.id}
                         value={satuan}
@@ -314,8 +383,20 @@ const UpdateProdukForm = ({
               </Listbox.Button>
               <Transition as={Fragment} leave="transition-opacity duration-100">
                 <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
-                  {supplierList.length > 0 ? (
-                    supplierList.map((supplier) => (
+                  {/* 🔍 SEARCH */}
+                  <div className="p-2 border-b">
+                    <Input
+                      placeholder="Cari supplier..."
+                      value={searchSupplier}
+                      onChange={(e) => setSearchSupplier(e.target.value)}
+                      onKeyDownCapture={(e) => {
+                        if (e.key === " ") e.stopPropagation();
+                      }}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  {filteredSupplier.length > 0 ? (
+                    filteredSupplier.map((supplier) => (
                       <Listbox.Option
                         key={supplier.id}
                         value={supplier}
@@ -364,20 +445,6 @@ const UpdateProdukForm = ({
         </div>
       </div>
 
-      {/* Kode Produk */}
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="kode-produk" className="text-center">
-          Kode Produk <i className="text-red-500">*</i>
-        </Label>
-        <Input
-          name="kode_produk"
-          value={formData.kode_produk || ""}
-          onChange={handleChange}
-          className="col-span-3"
-          placeholder="Masukkan kode produk"
-        />
-      </div>
-
       {/* Status Produk */}
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="status" className="text-center">
@@ -388,13 +455,13 @@ const UpdateProdukForm = ({
           checked={formData.is_aktif || false}
           onCheckedChange={handleSwitchChange}
         />
-        <Label>{formData.is_aktif ? "Aktif" : "Nonaktif"}</Label>
+        {/* <Label>{formData.is_aktif ? "Aktif" : "Nonaktif"}</Label> */}
       </div>
 
       {/* Tombol Simpan */}
       <div className="flex justify-end">
         <Button onClick={handleSubmit} disabled={!isChanged || isLoading}>
-          {isLoading ? "Loading..." : "Simpan Perubahan"}
+          {isLoading ? "Loading..." : "Simpan"}
         </Button>
       </div>
     </div>
