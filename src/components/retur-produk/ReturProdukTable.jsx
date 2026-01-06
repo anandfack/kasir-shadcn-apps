@@ -1,8 +1,6 @@
 "use client";
-import { useState } from "react";
+import { React, useState, useEffect, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-// import HargaProdukActions from "./HargaProdukActions";
-import React from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -40,38 +38,44 @@ import {
 import { Input } from "@/components/ui/input";
 
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/app/utils/fetchOptions";
-// import TambahPembelianProduk from "./TambahPembelianProduk";
-// import DetailPembelianProduk from "./DetailPembelianProduk";
+import { apiRequest } from "@/lib/apiRequest";
 import useFetchReturProduk from "@/hooks/retur-produk/useFetchReturProduk";
 import DetailReturProduk from "./DetailReturProduk";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 const ReturProdukTable = () => {
   const { toast } = useToast();
-  const [refreshKey, setRefreshKey] = React.useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { data, loading, error } = useFetchReturProduk(
     "/api/v1/admin/retur-produk",
     refreshKey
   );
 
-  // console.log("data", data);
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Terjadi kesalahan",
+        description: error.message,
+        variant: "destructive",
+      });
 
-  // const [isDialogUpdateOpen, setIsDialogUpdateOpen] = useState(false);
-  // const [editData, setEditData] = useState(null);
+      if (error.status === 401) {
+        // redirect / logout
+      }
+    }
+  }, [error, toast]);
 
-  const [sorting, setSorting] = React.useState([]);
-  const [columnFilters, setColumnFilters] = React.useState([]);
-  const [columnVisibility, setColumnVisibility] = React.useState({});
-  const [rowSelection, setRowSelection] = React.useState({});
-  // const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
-  // const [produkOpen, setProdukOpen] = useState(true);
+  const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [rowSelection, setRowSelection] = useState({});
   const [selectedDetail, setSelectedDetail] = useState(null);
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [detailData, setDetailData] = useState(null);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
 
-  const fetchDetailReturProduk = React.useCallback(
+  const fetchDetailReturProduk = useCallback(
     async (id) => {
       setIsDetailLoading(true);
       try {
@@ -82,17 +86,17 @@ const ReturProdukTable = () => {
       } catch (err) {
         toast({
           title: "Gagal mengambil detail",
-          description: err?.message || "Terjadi kesalahan saat memuat detail",
+          description: getApiErrorMessage(error),
           variant: "destructive",
         });
       } finally {
         setIsDetailLoading(false);
       }
     },
-    [toast]
+    [toast, error]
   );
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     () => [
       {
         id: "no",
@@ -221,7 +225,7 @@ const ReturProdukTable = () => {
   );
 
   const table = useReactTable({
-    data,
+    data: data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -254,7 +258,7 @@ const ReturProdukTable = () => {
           <div>Gagal memuat data</div>
         </div>
         <div className="flex items-center justify-center text-zinc-300 text-xs">
-          {error}
+          {error.message}
         </div>
       </div>
     );
@@ -262,41 +266,6 @@ const ReturProdukTable = () => {
   return (
     <div className="w-full">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between py-4">
-        {/* <Dialog
-          open={isDialogTambahOpen}
-          onOpenChange={(isOpen) => setIsDialogTambahOpen(isOpen)}
-        >
-          <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              className="font-semibold text-xs md:text-sm"
-            >
-              <CirclePlus /> Tambah Pembelian
-            </Button>
-          </DialogTrigger>
-          <TambahPembelianProduk
-            open={isDialogTambahOpen}
-            onSuccess={() => {
-              toast({
-                title: "Sukses!",
-                description: "Data pembelian produk berhasil ditambahkan.",
-                variant: "success",
-              });
-              setRefreshKey((prev) => prev + 1);
-              setIsDialogTambahOpen(false);
-            }}
-            onError={(error) => {
-              toast({
-                title: "Terjadi kesalahan",
-                description:
-                  error?.response?.data?.error || "Terjadi kesalahan",
-                variant: "destructive",
-              });
-              console.error("Terjadi error:", error);
-              setIsDialogTambahOpen(true);
-            }}
-          />
-        </Dialog> */}
         <Input
           placeholder="Cari Retur Produk ..."
           className="max-w-sm text-xs md:text-sm"
