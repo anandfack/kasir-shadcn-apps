@@ -56,7 +56,7 @@ const UpdateSatuanProdukForm = ({
 
       if (onSubmit) onSubmit(updatedData);
     } catch (error) {
-      onError;
+      onError?.(error);
       console.error("Error saat menyimpan data:", error);
     }
   };

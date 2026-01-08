@@ -38,6 +38,7 @@ import UpdateSatuanProdukForm from "./UpdateSatuanProdukForm";
 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/apiRequest";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 const SatuanProdukTable = () => {
   const { toast } = useToast();
@@ -262,12 +263,9 @@ const SatuanProdukTable = () => {
               setIsDialogTambahOpen(false);
             }}
             onError={(error) => {
-              const message = error?.errors
-                ? Object.values(error.errors).join(", ")
-                : error?.message || "Terjadi kesalahan";
               toast({
                 title: "Terjadi kesalahan",
-                description: message,
+                description: getApiErrorMessage(error),
                 variant: "destructive",
               });
               console.error("Terjadi error:", error);
@@ -367,12 +365,9 @@ const SatuanProdukTable = () => {
                 setIsDialogUpdateOpen(false);
               }}
               onError={(error) => {
-                const message = error?.errors
-                  ? Object.values(error.errors).join(", ")
-                  : error?.message || "Terjadi kesalahan";
                 toast({
                   title: "Terjadi kesalahan",
-                  description: message,
+                  description: getApiErrorMessage(error),
                   variant: "destructive",
                 });
                 console.error("Terjadi error:", error);
