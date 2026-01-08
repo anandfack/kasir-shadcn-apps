@@ -6,3 +6,4 @@
 6. berikan validasi jika tidak memiliki token, maka tidak bisa hit api admin
 7. rapihkan login dan register page
 8. buat 2 method login username dan email
+testing branch
