@@ -274,7 +274,7 @@ const HargaProdukTable = () => {
               variant="outline"
               className="font-semibold text-xs md:text-sm"
             >
-              <CirclePlus /> Tambah Produk
+              <CirclePlus /> Tambah Harga Produk
             </Button>
           </DialogTrigger>
           <TambahHargaProdukForm

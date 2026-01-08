@@ -46,6 +46,7 @@ const TambahHargaProdukForm = ({ onSuccess, onError }) => {
 
       onSuccess();
     } catch (error) {
+      console.error("Error saat menyimpan data:", error);
       onError(error);
     } finally {
       setLoading(false);
