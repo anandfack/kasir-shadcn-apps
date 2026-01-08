@@ -178,9 +178,9 @@ const ProdukForm = ({
                     leaveTo="opacity-0"
                     afterLeave={() => setKategoriOpen(false)}
                   >
-                    <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
+                    <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover pt-0 pb-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
                       {/* 🔍 SEARCH */}
-                      <div className="p-2 border-b">
+                      <div className="sticky top-0 z-20 bg-popover p-2 border-b">
                         <Input
                           placeholder="Cari kategori..."
                           value={searchKategori}
@@ -286,9 +286,9 @@ const ProdukForm = ({
                     leaveTo="opacity-0"
                     afterLeave={() => setSatuanOpen(false)}
                   >
-                    <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
+                    <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover pt-0 pb-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
                       {/* 🔍 SEARCH */}
-                      <div className="p-2 border-b">
+                      <div className="sticky top-0 z-20 bg-popover p-2 border-b">
                         <Input
                           placeholder="Cari kategori..."
                           value={searchSatuan}
@@ -383,9 +383,9 @@ const ProdukForm = ({
                     leaveTo="opacity-0"
                     afterLeave={() => setSupplierOpen(false)}
                   >
-                    <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
+                    <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover pt-0 pb-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
                       {/* 🔍 SEARCH */}
-                      <div className="p-2 border-b">
+                      <div className="sticky top-0 z-20 bg-popover p-2 border-b">
                         <Input
                           placeholder="Cari kategori..."
                           value={searchSupplier}

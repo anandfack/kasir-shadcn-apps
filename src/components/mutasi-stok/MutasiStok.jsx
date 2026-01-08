@@ -12,7 +12,7 @@ import { useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 
-export default function MutasiStokBarang({ open, onOpenChange, data }) {
+export default function MutasiStokBarang({ open, onOpenChange, data, produk }) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
@@ -53,7 +53,7 @@ export default function MutasiStokBarang({ open, onOpenChange, data }) {
         <div className="text-sm space-y-2">
           <DialogHeader>
             <DialogTitle>Mutasi Stok</DialogTitle>
-            <DialogDescription>Tabel Mutasi Stok Produk</DialogDescription>
+            <DialogDescription>{produk?.nama_produk || "-"}</DialogDescription>
           </DialogHeader>
 
           <div className="flex items-center gap-2 mb-3">

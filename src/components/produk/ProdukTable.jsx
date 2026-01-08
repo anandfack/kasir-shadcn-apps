@@ -83,6 +83,7 @@ const ProdukTable = () => {
   const [isMutasiDialogOpen, setIsMutasiDialogOpen] = useState(false);
   const [mutasiData, setMutasiData] = useState(null);
   const [isMutasiLoading, setIsMutasiLoading] = useState(false);
+  const [selectedProduk, setSelectedProduk] = useState(null);
 
   const { data: kategoriData = [], isLoading: kategoriLoading } = useQuery({
     queryKey: ["kategori"],
@@ -303,7 +304,10 @@ const ProdukTable = () => {
                 size="icon"
                 title="Mutasi Stok"
                 disabled={isMutasiLoading}
-                onClick={() => fetchMutasiStok(loadData.id)}
+                onClick={() => {
+                  setSelectedProduk(loadData);
+                  fetchMutasiStok(loadData.id);
+                }}
               >
                 {isMutasiLoading ? (
                   <Loader2 className="animate-spin h-4 w-4" />
@@ -547,6 +551,7 @@ const ProdukTable = () => {
         open={isMutasiDialogOpen}
         onOpenChange={setIsMutasiDialogOpen}
         data={mutasiData}
+        produk={selectedProduk}
       />
     </div>
   );

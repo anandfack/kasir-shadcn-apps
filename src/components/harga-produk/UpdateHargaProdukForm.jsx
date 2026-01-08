@@ -48,6 +48,13 @@ const UpdateHargaProdukForm = ({
         dataToSend.harga_jual = Number(formData.harga_jual);
       }
 
+      if (formData.harga_beli === "" || formData.harga_jual === "") {
+        onError?.({
+          message: "Harga beli dan harga jual wajib diisi",
+        });
+        return;
+      }
+
       const updatedData = await apiRequest(
         "PUT",
         `/api/v1/admin/harga-produk/${formData.id}`,
@@ -60,37 +67,6 @@ const UpdateHargaProdukForm = ({
       onError?.(error);
     }
   };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-
-  //   try {
-  //     const dataToSend = {
-  //       harga_beli: parseFloat(formData.harga_beli),
-  //       harga_jual: parseFloat(formData.harga_jual),
-  //     };
-
-  //     const updatedData = await apiRequest(
-  //       "PUT",
-  //       `/api/v1/admin/harga-produk/${formData.id}`,
-  //       dataToSend
-  //     );
-
-  //     console.log("Data berhasil disimpan:", updatedData);
-
-  //     setFormData((prev) => ({
-  //       ...prev,
-  //       produk: updatedData.produk_id,
-  //       harga_beli: updatedData.harga_beli.toFixed(2),
-  //       harga_jual: updatedData.harga_jual.toFixed(2),
-  //     }));
-
-  //     if (onSubmit) onSubmit(updatedData);
-  //   } catch (error) {
-  //     console.error("Error saat menyimpan data:", error);
-  //     onError?.(error);
-  //   }
-  // };
 
   return (
     <div className="grid gap-4 py-4">
@@ -131,7 +107,7 @@ const UpdateHargaProdukForm = ({
       {/* Tombol Simpan */}
       <div className="flex justify-end">
         <Button onClick={handleSubmit} disabled={!isChanged || isLoading}>
-          {isLoading ? "Loading..." : "Simpan Perubahan"}
+          {isLoading ? "Loading..." : "Simpan"}
         </Button>
       </div>
     </div>
