@@ -38,6 +38,7 @@ import UpdateSupplierForm from "./UpdateSupplierForm";
 
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/apiRequest";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 const SupplierTable = () => {
   const { toast } = useToast();
@@ -81,13 +82,10 @@ const SupplierTable = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  const dialogTitle = useMemo(
-    () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
-    [editData]
-  );
+  const dialogTitle = useMemo(() => `Update Supplier`, []);
 
   const dialogDescription = useMemo(
-    () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
+    () => `${editData?.nama_supplier || ""}`,
     [editData]
   );
 
@@ -215,7 +213,6 @@ const SupplierTable = () => {
                 onEdit={() => {
                   setEditData(loadData);
                   setIsDialogUpdateOpen(true);
-                  console.log("klik edit");
                 }}
                 onDelete={() => {
                   setDeleteData(loadData);
@@ -399,12 +396,9 @@ const SupplierTable = () => {
                 setIsDialogUpdateOpen(false);
               }}
               onError={(error) => {
-                const message = error?.errors
-                  ? Object.values(error.errors).join(", ")
-                  : error?.message || "Terjadi kesalahan";
                 toast({
                   title: "Terjadi kesalahan",
-                  description: message,
+                  description: getApiErrorMessage(error),
                   variant: "destructive",
                 });
                 console.error("Terjadi error:", error);

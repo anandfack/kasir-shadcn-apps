@@ -56,8 +56,8 @@ const UpdateSupplierForm = ({ initialData, onSubmit, isLoading, onError }) => {
 
       if (onSubmit) onSubmit(updatedData);
     } catch (error) {
-      onError;
       console.error("Error saat menyimpan data:", error);
+      onError?.(error);
     }
   };
 

@@ -74,8 +74,22 @@ export async function POST(req) {
     if (!alamat_supplier || alamat_supplier.trim() === "") {
       errors.alamat_supplier = "Alamat supplier wajib diisi";
     }
-    if (!nomor_telepon_supplier || nomor_telepon_supplier.trim() === "") {
-      errors.nomor_telepon_supplier = "Nomor telepon supplier wajib diisi";
+    if (nomor_telepon_supplier !== undefined) {
+      const phone = nomor_telepon_supplier?.trim();
+
+      if (!phone) {
+        errors.nomor_telepon_supplier = "Nomor telepon tidak boleh kosong";
+      } else if (!/^\d+$/.test(phone)) {
+        errors.nomor_telepon_supplier =
+          "Nomor telepon hanya boleh berisi angka";
+      } else if (phone.length < 9 || phone.length > 15) {
+        errors.nomor_telepon_supplier = "Panjang nomor telepon tidak valid";
+      } else if (!/^(\+62|62|08)/.test(phone)) {
+        errors.nomor_telepon_supplier =
+          "Format nomor telepon Indonesia tidak valid";
+      } else if (/^(\d)\1+$/.test(phone)) {
+        errors.nomor_telepon_supplier = "Nomor telepon tidak valid";
+      }
     }
 
     if (Object.keys(errors).length > 0) {

@@ -23,24 +23,39 @@ export const PUT = async (req, { params }) => {
     } = body;
 
     // validasi form input
-    const error = {};
+    const errors = {};
     if (!kode_supplier || kode_supplier.trim() === "") {
-      error.kode_supplier = "Kode supplier wajib diisi";
+      errors.kode_supplier = "Kode supplier wajib diisi";
     }
     if (!nama_supplier || nama_supplier.trim() === "") {
-      error.nama_supplier = "Nama supplier wajib diisi";
+      errors.nama_supplier = "Nama supplier wajib diisi";
     }
     if (!alamat_supplier || alamat_supplier.trim() === "") {
-      error.alamat_supplier = "Alamat supplier wajib diisi";
+      errors.alamat_supplier = "Alamat supplier wajib diisi";
     }
-    if (!nomor_telepon_supplier || nomor_telepon_supplier.trim() === "") {
-      error.nomor_telepon_supplier = "Nomor telepon supplier wajib diisi";
+    if (nomor_telepon_supplier !== undefined) {
+      const phone = nomor_telepon_supplier?.trim();
+
+      if (!phone) {
+        errors.nomor_telepon_supplier = "Nomor telepon tidak boleh kosong";
+      } else if (!/^\d+$/.test(phone)) {
+        errors.nomor_telepon_supplier =
+          "Nomor telepon hanya boleh berisi angka";
+      } else if (phone.length < 9 || phone.length > 15) {
+        errors.nomor_telepon_supplier = "Panjang nomor telepon tidak valid";
+      } else if (!/^(\+62|62|08)/.test(phone)) {
+        errors.nomor_telepon_supplier =
+          "Format nomor telepon Indonesia tidak valid";
+      } else if (/^(\d)\1+$/.test(phone)) {
+        errors.nomor_telepon_supplier = "Nomor telepon tidak valid";
+      }
     }
 
-    if (Object.keys(error).length > 0) {
+    if (Object.keys(errors).length > 0) {
       return jsonResponse(
         {
           message: "Validation Error",
+          errors,
         },
         409
       );
