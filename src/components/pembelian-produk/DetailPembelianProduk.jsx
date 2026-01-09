@@ -7,23 +7,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { formatRupiah } from "@/lib/formatRupiah";
+import { formatTanggal } from "@/lib/formatTanggal";
 
 export default function DetailPembelianProduk({ open, onOpenChange, data }) {
   const rows = data?.data || [];
 
-  const formatRupiah = (value) =>
-    new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-    }).format(value);
-
-  // Buat index retur berdasarkan produk_id
   const returMap = {};
   rows?.ReturPembelian?.forEach((retur) => {
     retur.DetailReturPembelian?.forEach((detail) => {
       const idProduk = detail.produk?.id;
       if (!returMap[idProduk]) returMap[idProduk] = [];
-      // tambahkan nomor_retur ke detail
       returMap[idProduk].push({ ...detail, nomor_retur: retur.nomor_retur });
     });
   });
@@ -40,7 +34,8 @@ export default function DetailPembelianProduk({ open, onOpenChange, data }) {
           <DialogHeader>
             <DialogTitle>Detail Pembelian</DialogTitle>
             <DialogDescription>
-              {rows?.nomor_pembelian || "-"} | {rows?.tanggal_pembelian}
+              {rows?.nomor_pembelian || "-"} |{" "}
+              {formatTanggal(rows?.tanggal_pembelian)}
             </DialogDescription>
           </DialogHeader>
           <div>

@@ -46,6 +46,9 @@ import TambahPembelianProduk from "./TambahPembelianProduk";
 import DetailPembelianProduk from "./DetailPembelianProduk";
 import ReturPembelianProduk from "./ReturPembelianProduk";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import { formatTanggalTanpaJam } from "@/lib/formatTanggal";
+import { formatRupiah } from "@/lib/formatRupiah";
+import { Badge } from "../ui/badge";
 
 const PembelianProdukTable = () => {
   const { toast } = useToast();
@@ -105,6 +108,19 @@ const PembelianProdukTable = () => {
     [toast, error]
   );
 
+  const statusBadgeVariant = (status) => {
+    switch (status) {
+      case "SELESAI":
+        return "success";
+      case "PROSES":
+        return "warning";
+      case "BATAL":
+        return "destructive";
+      default:
+        return "secondary";
+    }
+  };
+
   const columns = useMemo(
     () => [
       {
@@ -137,12 +153,11 @@ const PembelianProdukTable = () => {
           </Button>
         ),
         cell: ({ row }) => {
-          const rawDate = row.getValue("tanggal_pembelian");
-          const formattedDate = rawDate
-            ? new Date(rawDate).toISOString().split("T")[0]
-            : "";
-
-          return <div className="capitalize">{formattedDate}</div>;
+          return (
+            <div className="capitalize">
+              {formatTanggalTanpaJam(row.getValue("tanggal_pembelian"))}
+            </div>
+          );
         },
       },
       {
@@ -206,29 +221,28 @@ const PembelianProdukTable = () => {
         ),
         cell: ({ row }) => (
           <div className="capitalize">
-            {new Intl.NumberFormat("id-ID", {
-              style: "currency",
-              currency: "IDR",
-              minimumFractionDigits: 2,
-            }).format(row.getValue("total_harga"))}
+            {formatRupiah(row.getValue("total_harga"))}
           </div>
         ),
       },
       {
         accessorKey: "status_pembelian",
+
         header: ({ column }) => (
           <Button
             variant="link"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
             className="p-0"
           >
-            Nomor Faktur
+            Status Pembelian
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => (
-          <div className="capitalize">{row.getValue("status_pembelian")}</div>
-        ),
+        cell: ({ row }) => {
+          const status = row.getValue("status_pembelian");
+
+          return <Badge variant={statusBadgeVariant(status)}>{status}</Badge>;
+        },
       },
 
       {

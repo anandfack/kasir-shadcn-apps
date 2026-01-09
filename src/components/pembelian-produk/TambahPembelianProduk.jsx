@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, Fragment } from "react";
+import { useState, useMemo, Fragment } from "react";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { formatRupiah } from "@/lib/formatRupiah";
 
 export default function FormPembelianProduk({ open, onSuccess, onError }) {
   const [produkList, setProdukList] = useState([
@@ -37,8 +38,10 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
   const [supplier, setSupplier] = useState("");
   const [supplierOpen, setSupplierOpen] = useState(false);
   const [produkOpen, setProdukOpen] = useState(false);
-  const [selectedSupplier, setSelectedSupplier] = useState(null);
   const [supplierId, setSupplierId] = useState("");
+  const [searchSupplier, setSearchSupplier] = useState("");
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [searchProduk, setSearchProduk] = useState("");
 
   const { data: supplierData, isLoading: supplierLoading } = useQuery({
     queryKey: ["supplier"],
@@ -54,13 +57,35 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
     staleTime: 1000 * 60 * 5,
   });
 
-  const produkDataList = Array.isArray(produkData)
-    ? produkData
-    : produkData?.data ?? [];
+  const produkDataList = useMemo(() => {
+    if (Array.isArray(produkData)) return produkData;
+    if (Array.isArray(produkData?.data)) return produkData.data;
+    return [];
+  }, [produkData]);
 
-  const supplierDataList = Array.isArray(supplierData)
-    ? supplierData
-    : supplierData?.data ?? [];
+  const supplierDataList = useMemo(() => {
+    if (Array.isArray(supplierData)) return supplierData;
+    if (Array.isArray(supplierData?.data)) return supplierData.data;
+    return [];
+  }, [supplierData]);
+
+  const filteredSupplier = useMemo(() => {
+    if (!supplierDataList) return [];
+    if (!searchSupplier) return supplierDataList;
+
+    return supplierDataList.filter((item) =>
+      item.nama_supplier.toLowerCase().includes(searchSupplier.toLowerCase())
+    );
+  }, [supplierDataList, searchSupplier]);
+
+  const filteredProduk = useMemo(() => {
+    if (!produkDataList) return [];
+    if (!searchProduk) return produkDataList;
+
+    return produkDataList.filter((item) =>
+      item.nama_produk.toLowerCase().includes(searchProduk.toLowerCase())
+    );
+  }, [produkDataList, searchProduk]);
 
   useEffect(() => {
     if (open) {
@@ -72,6 +97,17 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
       setTanggalPembelian("");
     }
   }, [open]);
+
+  useEffect(() => {
+    setSearchProduk("");
+  }, [produkList.length]);
+
+  const getSelectedProdukIds = (produkList, currentIndex) => {
+    return produkList
+      .filter((_, i) => i !== currentIndex)
+      .map((item) => item.produk?.id)
+      .filter(Boolean);
+  };
 
   const tambahBarisProduk = () => {
     setProdukList([...produkList, { produk: null, qty: 1, harga: 0 }]);
@@ -91,7 +127,6 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
 
     try {
       await apiRequest("POST", "/api/v1/admin/pembelian-produk", {
-        // supplier_id: selectedSupplier?.id,
         supplier_id: supplierId,
         nomor_pembelian: nomorPembelian,
         nomor_faktur: nomorFaktur,
@@ -115,14 +150,14 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
   };
 
   return (
-    <DialogContent className="h-[650px] max-w-5xl overflow-auto">
+    <DialogContent className="sm:max-w-4xl h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>Tambah Pembelian Produk</DialogTitle>
         <DialogDescription>
           Tambahkan Pembelian Produk ke Dalam Daftar.
         </DialogDescription>
       </DialogHeader>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="flex flex-col h-full space-y-4">
         {/* Supplier Produk */}
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="supplier-produk" className="text-center">
@@ -158,13 +193,25 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
                   leaveTo="opacity-0"
                   afterLeave={() => setSupplierOpen(false)}
                 >
-                  <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
+                  <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover pt-0 pb-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
+                    {/* 🔍 SEARCH */}
+                    <div className="sticky top-0 z-20 bg-popover p-2 border-b">
+                      <Input
+                        placeholder="Cari supplier..."
+                        value={searchSupplier}
+                        onChange={(e) => setSearchSupplier(e.target.value)}
+                        onKeyDownCapture={(e) => {
+                          if (e.key === " ") e.stopPropagation();
+                        }}
+                        className="h-8 text-sm"
+                      />
+                    </div>
                     {supplierLoading ? (
                       <div className="py-2 px-4 text-muted-foreground italic">
                         Loading...
                       </div>
-                    ) : supplierDataList.length > 0 ? (
-                      supplierDataList.map((supplier) => (
+                    ) : filteredSupplier.length > 0 ? (
+                      filteredSupplier.map((supplier) => (
                         <Listbox.Option
                           key={supplier.id}
                           className={({ active }) =>
@@ -250,7 +297,7 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
 
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="jenis-kelamin" className="text-center">
+            <Label htmlFor="status-pembelian" className="text-center">
               Status Pembelian <i className="text-red-500">*</i>
             </Label>
 
@@ -259,13 +306,12 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
                 value={statusPembelian}
                 onValueChange={(value) => setStatusPembelian(value)}
               >
-                <SelectTrigger id="jenis-kelamin">
-                  <SelectValue placeholder="Pilih jenis kelamin" />
+                <SelectTrigger id="status-pembelian">
+                  <SelectValue placeholder="Pilih status pembelian" />
                 </SelectTrigger>
 
                 <SelectContent>
                   <SelectGroup>
-                    <SelectLabel>Jenis Kelamin</SelectLabel>
                     <SelectItem value="selesai">Selesai</SelectItem>
                     <SelectItem value="draft">Draft</SelectItem>
                   </SelectGroup>
@@ -276,7 +322,7 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
         </div>
 
         {/* Produk */}
-        <div className="grid gap-4 py-4">
+        <div className="flex flex-col gap-4 py-4 flex-1 overflow-y-auto">
           <Label htmlFor="daftar-produk" className="text-left">
             Daftar Produk <i className="text-red-500">*</i>
           </Label>
@@ -315,45 +361,63 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
                       leaveTo="opacity-0"
                       afterLeave={() => setProdukOpen(false)}
                     >
-                      <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
+                      <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover pt-0 pb-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
+                        {/* 🔍 SEARCH */}
+                        <div className="sticky top-0 z-20 bg-popover p-2 border-b">
+                          <Input
+                            placeholder="Cari produk..."
+                            value={searchProduk}
+                            onChange={(e) => setSearchProduk(e.target.value)}
+                            onKeyDownCapture={(e) => {
+                              if (e.key === " ") e.stopPropagation();
+                            }}
+                            className="h-8 text-sm"
+                          />
+                        </div>
                         {produkLoading ? (
                           <div className="py-2 px-4 text-muted-foreground italic">
                             Loading...
                           </div>
-                        ) : produkDataList && produkDataList.length > 0 ? (
-                          produkDataList.map((produk) => (
-                            <Listbox.Option
-                              key={produk.id}
-                              className={({ active }) =>
-                                `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                                  active
-                                    ? "bg-accent text-accent-foreground"
-                                    : "text-popover-foreground"
-                                }`
-                              }
-                              value={produk}
-                            >
-                              {({ selected }) => (
-                                <>
-                                  <span
-                                    className={`block truncate ${
-                                      selected ? "font-medium" : "font-normal"
-                                    }`}
-                                  >
-                                    {produk.nama_produk}
-                                  </span>
-                                  {selected ? (
-                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                                      <CheckIcon
-                                        className="h-5 w-5"
-                                        aria-hidden="true"
-                                      />
+                        ) : filteredProduk && filteredProduk.length > 0 ? (
+                          filteredProduk
+                            .filter((produk) => {
+                              const selectedProdukIds = produkList
+                                .filter((_, i) => i !== index)
+                                .map((item) => item.produk?.id)
+                                .filter(Boolean);
+
+                              return !selectedProdukIds.includes(produk.id);
+                            })
+                            .map((produk) => (
+                              <Listbox.Option
+                                key={produk.id}
+                                className={({ active }) =>
+                                  `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                                    active
+                                      ? "bg-accent text-accent-foreground"
+                                      : "text-popover-foreground"
+                                  }`
+                                }
+                                value={produk}
+                              >
+                                {({ selected }) => (
+                                  <>
+                                    <span
+                                      className={`block truncate ${
+                                        selected ? "font-medium" : "font-normal"
+                                      }`}
+                                    >
+                                      {produk.nama_produk}
                                     </span>
-                                  ) : null}
-                                </>
-                              )}
-                            </Listbox.Option>
-                          ))
+                                    {selected && (
+                                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
+                                        <CheckIcon className="h-5 w-5" />
+                                      </span>
+                                    )}
+                                  </>
+                                )}
+                              </Listbox.Option>
+                            ))
                         ) : (
                           <div className="py-2 px-4 text-muted-foreground italic">
                             Tidak ada data
@@ -384,10 +448,10 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
 
               {/* Harga */}
               <Input
-                type="number"
+                type="text"
                 className="col-span-3"
                 placeholder="Harga"
-                value={item.harga}
+                value={formatRupiah(item.harga)}
                 onChange={(e) => {
                   const newList = [...produkList];
                   newList[index].harga = parseFloat(e.target.value);
@@ -398,15 +462,15 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
 
               {/* Subtotal */}
               <div className="col-span-2">
-                Rp {(item.qty * item.harga || 0).toLocaleString()}
+                {formatRupiah(item.qty * item.harga || 0)}
               </div>
 
-              {/* Hapus */}
               <Button
                 type="button"
                 variant="destructive"
                 onClick={() => hapusBarisProduk(index)}
                 className="col-span-1"
+                disabled={produkList.length === 1}
               >
                 ✕
               </Button>
@@ -425,9 +489,9 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
         </div>
 
         {/* Submit */}
-        <Button type="submit" className="w-full">
-          Simpan Pembelian
-        </Button>
+        <div className="flex justify-end">
+          <Button type="submit">Simpan</Button>
+        </div>
       </form>
     </DialogContent>
   );
