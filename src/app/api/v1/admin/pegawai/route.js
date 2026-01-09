@@ -99,8 +99,21 @@ export async function POST(req) {
     if (!alamat_pegawai || alamat_pegawai.trim() === "") {
       errors.alamat_pegawai = "Alamat Pegawai wajib diisi";
     }
-    if (!nomor_telepon_pegawai || nomor_telepon_pegawai.trim() === "") {
-      errors.nomor_telepon_pegawai = "Nomor Telepon Pegawai wajib diisi";
+    if (nomor_telepon_pegawai !== undefined) {
+      const phone = nomor_telepon_pegawai?.trim();
+
+      if (!phone) {
+        errors.nomor_telepon_pegawai = "Nomor telepon tidak boleh kosong";
+      } else if (!/^\d+$/.test(phone)) {
+        errors.nomor_telepon_pegawai = "Nomor telepon hanya boleh berisi angka";
+      } else if (phone.length < 9 || phone.length > 15) {
+        errors.nomor_telepon_pegawai = "Panjang nomor telepon tidak valid";
+      } else if (!/^(\+62|62|08)/.test(phone)) {
+        errors.nomor_telepon_pegawai =
+          "Format nomor telepon Indonesia tidak valid";
+      } else if (/^(\d)\1+$/.test(phone)) {
+        errors.nomor_telepon_pegawai = "Nomor telepon tidak valid";
+      }
     }
     if (!email_pegawai || email_pegawai.trim() === "") {
       errors.email_pegawai = "Email Pegawai wajib diisi";

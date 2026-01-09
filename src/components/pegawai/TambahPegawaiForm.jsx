@@ -105,6 +105,7 @@ const TambahPegawaiForm = ({ onSuccess, onError }) => {
               onChange={(e) => setTanggalLahir(e.target.value)}
               className="col-span-3"
               placeholder="Masukkan tanggal lahir pegawai"
+              max={new Date().toISOString().split("T")[0]}
             />
           </div>
         </div>
@@ -125,7 +126,6 @@ const TambahPegawaiForm = ({ onSuccess, onError }) => {
 
                 <SelectContent>
                   <SelectGroup>
-                    <SelectLabel>Jenis Kelamin</SelectLabel>
                     <SelectItem value="L">Laki-laki</SelectItem>
                     <SelectItem value="P">Perempuan</SelectItem>
                   </SelectGroup>

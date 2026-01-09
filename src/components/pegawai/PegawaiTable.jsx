@@ -101,15 +101,12 @@ const PegawaiTable = () => {
     [toast]
   );
 
-  //   const dialogTitle = useMemo(
-  //     () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
-  //     [editData]
-  //   );
+  const dialogTitle = useMemo(() => `Update Pegawai `, []);
 
-  //   const dialogDescription = useMemo(
-  //     () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
-  //     [editData]
-  //   );
+  const dialogDescription = useMemo(
+    () => `${editData?.nama_pegawai || ""}`,
+    [editData]
+  );
 
   const handleError = useCallback((error) => {
     console.error("Terjadi error:", error);
@@ -211,7 +208,15 @@ const PegawaiTable = () => {
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => <div>{row.getValue("jenis_kelamin")}</div>,
+        cell: ({ row }) => (
+          <div>
+            {row.getValue("jenis_kelamin") === "L"
+              ? "Laki - Laki"
+              : row.getValue("jenis_kelamin") === "P"
+              ? "Perempuan"
+              : "-"}
+          </div>
+        ),
       },
       {
         accessorKey: "nomor_telepon_pegawai",
@@ -362,7 +367,7 @@ const PegawaiTable = () => {
             onSuccess={() => {
               toast({
                 title: "Sukses!",
-                description: "Data produk berhasil ditambahkan.",
+                description: "Data pegawai berhasil ditambahkan.",
               });
               setRefreshKey((prev) => prev + 1);
               setIsDialogTambahOpen(false);
@@ -453,8 +458,8 @@ const PegawaiTable = () => {
       <Dialog open={isDialogUpdateOpen} onOpenChange={setIsDialogUpdateOpen}>
         <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            {/* <DialogTitle>{dialogTitle}</DialogTitle>
-            <DialogDescription>{dialogDescription}</DialogDescription> */}
+            <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogDescription>{dialogDescription}</DialogDescription>
           </DialogHeader>
           {editData && (
             <UpdatePegawaiForm

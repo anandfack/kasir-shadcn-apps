@@ -1,5 +1,5 @@
 "use client";
-import { React, useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,45 +11,71 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 
+const formatDateForInput = (date) => {
+  if (!date) return "";
+  return new Date(date).toISOString().split("T")[0];
+};
+
 const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
-  const [formData, setFormData] = useState(initialData ?? {});
-  const [isChanged, setIsChanged] = useState(false);
+  /** =========================
+   * Normalized initial data
+   * ========================= */
+  const normalizedInitialData = useMemo(() => {
+    if (!initialData) return {};
 
-  const formatDateForInput = (date) => {
-    if (!date) return "";
-    return new Date(date).toISOString().split("T")[0];
-  };
-
-  useEffect(() => {
-    if (initialData) {
-      setFormData({
-        ...initialData,
-        tanggal_lahir: formatDateForInput(initialData.tanggal_lahir),
-      });
-    }
+    return {
+      ...initialData,
+      tanggal_lahir: formatDateForInput(initialData.tanggal_lahir),
+      is_aktif: Boolean(initialData.is_aktif),
+    };
   }, [initialData]);
 
-  useEffect(() => {
-    setIsChanged(
-      JSON.stringify(formData) !==
-        JSON.stringify({
-          ...initialData,
-        })
-    );
-  }, [formData, initialData]);
+  /** =========================
+   * State
+   * ========================= */
+  const [formData, setFormData] = useState(normalizedInitialData);
+  const [isChanged, setIsChanged] = useState(false);
 
+  /** =========================
+   * Sync initial data
+   * ========================= */
+  useEffect(() => {
+    setFormData(normalizedInitialData);
+  }, [normalizedInitialData]);
+
+  /** =========================
+   * Dirty check (accurate)
+   * ========================= */
+  useEffect(() => {
+    const fields = [
+      "nip_pegawai",
+      "nama_pegawai",
+      "tanggal_lahir",
+      "jenis_kelamin",
+      "alamat_pegawai",
+      "nomor_telepon_pegawai",
+      "email_pegawai",
+      "jabatan_pegawai",
+      "is_aktif",
+    ];
+
+    const hasChanged = fields.some(
+      (key) => formData[key] !== normalizedInitialData[key]
+    );
+
+    setIsChanged(hasChanged);
+  }, [formData, normalizedInitialData]);
+
+  /** =========================
+   * Handlers
+   * ========================= */
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSwitchChange = (value) => {
@@ -60,7 +86,7 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
     e.preventDefault();
 
     try {
-      const dataToSend = {
+      const payload = {
         nip_pegawai: formData.nip_pegawai,
         nama_pegawai: formData.nama_pegawai,
         tanggal_lahir: formData.tanggal_lahir,
@@ -71,36 +97,34 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
         jabatan_pegawai: formData.jabatan_pegawai,
         is_aktif: formData.is_aktif,
       };
+
       const updatedData = await apiRequest(
         "PUT",
         `/api/v1/admin/pegawai/${formData.id}`,
-        dataToSend
+        payload
       );
 
-      setFormData((prev) => ({
-        ...prev,
-        nip_pegawai: updatedData.nip_pegawai,
-        nama_pegawai: updatedData.nama_pegawai,
-        tanggal_lahir: updatedData.tanggal_lahir,
-        jenis_kelamin: updatedData.jenis_kelamin,
-        alamat_pegawai: updatedData.alamat_pegawai,
-        nomor_telepon_pegawai: updatedData.nomor_telepon_pegawai,
-        email_pegawai: updatedData.email_pegawai,
-        jabatan_pegawai: updatedData.jabatan_pegawai,
-      }));
+      setFormData({
+        ...updatedData,
+        tanggal_lahir: formatDateForInput(updatedData.tanggal_lahir),
+        is_aktif: Boolean(updatedData.is_aktif),
+      });
 
-      if (onSubmit) onSubmit(updatedData);
+      onSubmit?.(updatedData);
     } catch (error) {
-      onError;
+      onError?.(error);
       console.error("Error saat menyimpan data:", error);
     }
   };
 
+  /** =========================
+   * Render
+   * ========================= */
   return (
     <div className="grid gap-4 py-4">
-      {/* NIP Pegawai */}
+      {/* NIP */}
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="nip-pegawai" className="text-center">
+        <Label className="text-center">
           NIP Pegawai <i className="text-red-500">*</i>
         </Label>
         <Input
@@ -108,12 +132,12 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
           value={formData.nip_pegawai || ""}
           onChange={handleChange}
           className="col-span-3"
-          placeholder="Masukkan NIP pegawai"
         />
       </div>
-      {/* Nama Pegawai */}
+
+      {/* Nama */}
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="nama-pegawai" className="text-center">
+        <Label className="text-center">
           Nama Pegawai <i className="text-red-500">*</i>
         </Label>
         <Input
@@ -121,26 +145,27 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
           value={formData.nama_pegawai || ""}
           onChange={handleChange}
           className="col-span-3"
-          placeholder="Masukkan nama pegawai"
         />
       </div>
-      {/* Tanggal lahir */}
+
+      {/* Tanggal Lahir */}
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="tanggal-lahir" className="text-center">
+        <Label className="text-center">
           Tanggal Lahir <i className="text-red-500">*</i>
         </Label>
         <Input
+          type="date"
           name="tanggal_lahir"
           value={formData.tanggal_lahir || ""}
           onChange={handleChange}
+          max={new Date().toISOString().split("T")[0]}
           className="col-span-3"
-          placeholder="Masukkan tanggal lahir pegawai"
-          type="date"
         />
       </div>
+
       {/* Jenis Kelamin */}
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="jenis-kelamin" className="text-center">
+        <Label className="text-center">
           Jenis Kelamin <i className="text-red-500">*</i>
         </Label>
         <div className="col-span-3">
@@ -153,10 +178,8 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
             <SelectTrigger>
               <SelectValue placeholder="Pilih jenis kelamin" />
             </SelectTrigger>
-
             <SelectContent>
               <SelectGroup>
-                <SelectLabel>Jenis Kelamin</SelectLabel>
                 <SelectItem value="L">Laki-laki</SelectItem>
                 <SelectItem value="P">Perempuan</SelectItem>
               </SelectGroup>
@@ -164,9 +187,10 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
           </Select>
         </div>
       </div>
-      {/* Alamat Pegawai */}
+
+      {/* Alamat */}
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="alamat-pegawai" className="text-center">
+        <Label className="text-center">
           Alamat Pegawai <i className="text-red-500">*</i>
         </Label>
         <Textarea
@@ -174,66 +198,61 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
           value={formData.alamat_pegawai || ""}
           onChange={handleChange}
           className="col-span-3 md:h-60"
-          placeholder="Masukkan alamat pegawai"
         />
       </div>
-      {/* Nomor Telepon Pegawai */}
+
+      {/* Telepon */}
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="nomor-telepon-pegawai" className="text-center">
-          Nomor Telepon Pegawai <i className="text-red-500">*</i>
+        <Label className="text-center">
+          Nomor Telepon <i className="text-red-500">*</i>
         </Label>
         <Input
           name="nomor_telepon_pegawai"
           value={formData.nomor_telepon_pegawai || ""}
           onChange={handleChange}
           className="col-span-3"
-          placeholder="Masukkan nomor telepon pegawai"
         />
       </div>
-      {/* Email Pegawai */}
+
+      {/* Email */}
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="email-pegawai" className="text-center">
-          Email Pegawai <i className="text-red-500">*</i>
+        <Label className="text-center">
+          Email <i className="text-red-500">*</i>
         </Label>
         <Input
           name="email_pegawai"
           value={formData.email_pegawai || ""}
           onChange={handleChange}
           className="col-span-3"
-          placeholder="Masukkan email pegawai"
         />
       </div>
-      {/* Jabatan Pegawai */}
+
+      {/* Jabatan */}
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="jabatan-pegawai" className="text-center">
-          Jabatan Pegawai <i className="text-red-500">*</i>
+        <Label className="text-center">
+          Jabatan <i className="text-red-500">*</i>
         </Label>
         <Input
           name="jabatan_pegawai"
           value={formData.jabatan_pegawai || ""}
           onChange={handleChange}
           className="col-span-3"
-          placeholder="Masukkan jabatan pegawai"
         />
       </div>
 
-      {/* Status Pegawai */}
+      {/* Status */}
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="status" className="text-center">
-          Status
-        </Label>
+        <Label className="text-center">Status</Label>
         <Switch
-          id="status"
-          checked={formData.is_aktif || false}
+          checked={formData.is_aktif}
           onCheckedChange={handleSwitchChange}
         />
-        <Label>{formData.is_aktif ? "Aktif" : "Nonaktif"}</Label>
       </div>
 
-      {/* Tombol Simpan */}
+      {/* Submit */}
       <div className="flex justify-end">
-        <Button onClick={handleSubmit} disabled={!isChanged || isLoading}>
-          {isLoading ? "Loading..." : "Simpan Perubahan"}
+        <Button disabled={!isChanged || isLoading} onClick={handleSubmit}>
+          {isLoading ? "Loading..." : "Simpan"}
         </Button>
       </div>
     </div>

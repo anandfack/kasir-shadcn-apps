@@ -36,7 +36,16 @@ export default function DetailPegawai({ open, onOpenChange, data }) {
         {/* IDENTITAS */}
         <Section title="Identitas Pegawai">
           <Item label="NIP" value={rows.nip_pegawai} />
-          <Item label="Jenis Kelamin" value={rows.jenis_kelamin} />
+          <Item
+            label="Jenis Kelamin"
+            value={
+              rows.jenis_kelamin === "L"
+                ? "Laki - Laki"
+                : rows.jenis_kelamin === "P"
+                ? "Perempuan"
+                : "-"
+            }
+          />
           <Item
             label="Tanggal Lahir"
             value={new Date(rows.tanggal_lahir).toLocaleDateString()}
@@ -61,14 +70,6 @@ export default function DetailPegawai({ open, onOpenChange, data }) {
             value={new Date(rows.updated_at).toLocaleString()}
           />
         </Section>
-
-        {/* AKSI */}
-        <div className="flex justify-end gap-2 pt-4">
-          <Button variant="outline">Reset Password</Button>
-          <Button variant="secondary" onClick={() => onOpenChange(false)}>
-            Tutup
-          </Button>
-        </div>
       </DialogContent>
     </Dialog>
   );
