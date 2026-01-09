@@ -127,13 +127,13 @@ const ProdukTable = () => {
   );
 
   const dialogTitle = useMemo(() => {
-    if (!editData) return "Ubah Produk";
-    return `Ubah Produk ${editData.nama_produk}`;
+    if (!editData) return "Update Produk";
+    return `Update Produk`;
   }, [editData]);
 
   const dialogDescription = useMemo(() => {
     if (!editData) return "Silakan ubah data produk di sini";
-    return `Silakan ubah data produk ${editData.nama_produk} di sini`;
+    return `${editData.nama_produk}`;
   }, [editData]);
 
   const handleError = useCallback((error) => {

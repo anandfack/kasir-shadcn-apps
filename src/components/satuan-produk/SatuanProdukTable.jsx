@@ -82,13 +82,10 @@ const SatuanProdukTable = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  const dialogTitle = useMemo(
-    () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
-    [editData]
-  );
+  const dialogTitle = useMemo(() => `Update Satuan Produk`, []);
 
   const dialogDescription = useMemo(
-    () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
+    () => `${editData?.nama_satuan || ""}`,
     [editData]
   );
 
