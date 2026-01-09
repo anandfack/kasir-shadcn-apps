@@ -17,17 +17,18 @@ export const PUT = async (req, { params }) => {
     const { kode_kategori, nama_kategori } = body;
 
     // validasi form input
-    const error = {};
+    const errors = {};
     if (!kode_kategori || kode_kategori.trim() === "") {
-      error.kode_kategori = "Kode kategori wajib diisi";
+      errors.kode_kategori = "Kode kategori wajib diisi";
     }
     if (!nama_kategori || nama_kategori.trim() === "") {
-      error.nama_kategori = "Nama kategori wajib diisi";
+      errors.nama_kategori = "Nama kategori wajib diisi";
     }
-    if (Object.keys(error).length > 0) {
+    if (Object.keys(errors).length > 0) {
       return jsonResponse(
         {
           message: "Validation error",
+          errors,
         },
         400
       );

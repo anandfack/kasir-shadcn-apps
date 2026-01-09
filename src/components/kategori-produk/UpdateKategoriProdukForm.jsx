@@ -56,8 +56,8 @@ const UpdateKategoriProdukForm = ({
 
       if (onSubmit) onSubmit(updatedData);
     } catch (error) {
-      onError;
       console.error("Error saat menyimpan data:", error);
+      onError?.(error);
     }
   };
 
