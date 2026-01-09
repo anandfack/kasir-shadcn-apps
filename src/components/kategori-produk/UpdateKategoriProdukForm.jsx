@@ -103,7 +103,7 @@ const UpdateKategoriProdukForm = ({
       {/* Tombol Simpan */}
       <div className="flex justify-end">
         <Button onClick={handleSubmit} disabled={!isChanged || isLoading}>
-          {isLoading ? "Loading..." : "Simpan Perubahan"}
+          {isLoading ? "Loading..." : "Simpan"}
         </Button>
       </div>
     </div>
