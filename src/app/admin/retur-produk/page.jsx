@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import ReturProdukTable from "@/components/retur-produk/ReturProdukTable";
-// import PembelianProdukTable from "@/components/pembelian-produk/PembelianProdukTable";
 
 const page = () => {
   return (
@@ -17,7 +16,7 @@ const page = () => {
       <Card>
         <CardHeader>
           <CardTitle>Retur Produk</CardTitle>
-          <CardDescription>Retur Produk</CardDescription>
+          <CardDescription>Retur Produk ada disini</CardDescription>
         </CardHeader>
         <CardContent>
           <ReturProdukTable />

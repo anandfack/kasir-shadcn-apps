@@ -7,9 +7,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { formatRupiah } from "@/lib/formatRupiah";
+import { formatTanggal } from "@/lib/formatTanggal";
+import { useState } from "react";
 
 export default function DetailReturProduk({ open, onOpenChange, data }) {
   const rows = data?.data || [];
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="h-[450px] max-w-5xl overflow-auto">
@@ -17,7 +21,7 @@ export default function DetailReturProduk({ open, onOpenChange, data }) {
           <DialogHeader>
             <DialogTitle>Detail Retur Pembelian Produk</DialogTitle>
             <DialogDescription>
-              {rows?.nomor_retur || "-"} | {rows?.tanggal_retur}
+              {rows?.nomor_retur || "-"} | {formatTanggal(rows?.tanggal_retur)}
             </DialogDescription>
           </DialogHeader>
 
@@ -30,15 +34,8 @@ export default function DetailReturProduk({ open, onOpenChange, data }) {
             {rows?.pembelian?.supplier?.nama_supplier || "-"}
           </div>
           <div>
-            <strong>Total Harga:</strong>{" "}
-            {new Intl.NumberFormat("id-ID", {
-              style: "currency",
-              currency: "IDR",
-            }).format(rows?.total_harga || 0)}
+            <strong>Total Harga:</strong> {formatRupiah(rows?.total_harga)}
           </div>
-          {/* <div>
-            <strong>Status:</strong> {rows?.status_pembelian}
-          </div> */}
 
           {/* Tabel Produk */}
           <div className="mt-4">
@@ -63,16 +60,10 @@ export default function DetailReturProduk({ open, onOpenChange, data }) {
                       </td>
                       <td className="p-2 border">{item.jumlah_produk}</td>
                       <td className="p-2 border">
-                        {new Intl.NumberFormat("id-ID", {
-                          style: "currency",
-                          currency: "IDR",
-                        }).format(item.harga_satuan)}
+                        {formatRupiah(item.harga_satuan)}
                       </td>
                       <td className="p-2 border">
-                        {new Intl.NumberFormat("id-ID", {
-                          style: "currency",
-                          currency: "IDR",
-                        }).format(item.total_harga)}
+                        {formatRupiah(item.total_harga)}
                       </td>
                     </tr>
                   ))}

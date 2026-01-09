@@ -9,6 +9,7 @@ import {
 
 import { Button } from "../ui/button";
 import { Badge } from "@/components/ui/badge";
+import { formatTanggal, formatTanggalTanpaJam } from "@/lib/formatTanggal";
 
 export default function DetailPegawai({ open, onOpenChange, data }) {
   const rows = data?.data || [];
@@ -48,7 +49,7 @@ export default function DetailPegawai({ open, onOpenChange, data }) {
           />
           <Item
             label="Tanggal Lahir"
-            value={new Date(rows.tanggal_lahir).toLocaleDateString()}
+            value={formatTanggalTanpaJam(rows.tanggal_lahir)}
           />
         </Section>
 
@@ -61,13 +62,10 @@ export default function DetailPegawai({ open, onOpenChange, data }) {
 
         {/* SISTEM */}
         <Section title="Informasi Sistem">
-          <Item
-            label="Dibuat"
-            value={new Date(rows.created_at).toLocaleString()}
-          />
+          <Item label="Dibuat" value={formatTanggal(rows.created_at)} />
           <Item
             label="Terakhir Diupdate"
-            value={new Date(rows.updated_at).toLocaleString()}
+            value={formatTanggal(rows.updated_at)}
           />
         </Section>
       </DialogContent>

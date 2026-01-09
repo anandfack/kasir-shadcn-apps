@@ -11,6 +11,7 @@ import {
 import { useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { formatTanggal } from "@/lib/formatTanggal";
 
 export default function MutasiStokBarang({ open, onOpenChange, data, produk }) {
   const [startDate, setStartDate] = useState("");
@@ -104,19 +105,7 @@ export default function MutasiStokBarang({ open, onOpenChange, data, produk }) {
                         </td>
                         <td className="p-2 border align-top">
                           {item.tanggal_mutasi
-                            ? (() => {
-                                const d = new Date(item.tanggal_mutasi);
-                                const tanggal = d.toLocaleDateString("id-ID", {
-                                  day: "2-digit",
-                                  month: "long",
-                                  year: "numeric",
-                                });
-                                const jam = d.toLocaleTimeString("id-ID", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                });
-                                return `${tanggal} ${jam}`;
-                              })()
+                            ? formatTanggal(item.tanggal_mutasi)
                             : "-"}
                         </td>
                         <td className="p-2 border align-top">

@@ -42,6 +42,7 @@ import { apiRequest } from "@/lib/apiRequest";
 import useFetchReturProduk from "@/hooks/retur-produk/useFetchReturProduk";
 import DetailReturProduk from "./DetailReturProduk";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import { formatTanggal, formatTanggalTanpaJam } from "@/lib/formatTanggal";
 
 const ReturProdukTable = () => {
   const { toast } = useToast();
@@ -129,11 +130,9 @@ const ReturProdukTable = () => {
         ),
         cell: ({ row }) => {
           const rawDate = row.getValue("tanggal_retur");
-          const formattedDate = rawDate
-            ? new Date(rawDate).toISOString().split("T")[0]
-            : "";
-
-          return <div className="capitalize">{formattedDate}</div>;
+          return (
+            <div className="capitalize">{formatTanggalTanpaJam(rawDate)}</div>
+          );
         },
       },
       {
