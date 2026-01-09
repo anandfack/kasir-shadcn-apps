@@ -21,23 +21,46 @@ export const PUT = async (req, { params }) => {
 
     const errors = {};
 
-    if (minimal !== undefined) {
-      if (minimal === null || minimal === "") {
-        errors.minimal = "Nilai minimal tidak boleh kosong";
-      } else if (isNaN(Number(minimal))) {
-        errors.minimal = "Nilai minimal harus berupa angka";
-      } else if (Number(minimal) < 0) {
-        errors.minimal = "Nilai minimal tidak boleh kurang dari 0";
-      }
+    if (
+      minimal_stok === undefined ||
+      minimal_stok === null ||
+      minimal_stok === ""
+    ) {
+      errors.minimal_stok = "Nilai minimal tidak boleh kosong";
+    } else if (isNaN(minimal_stok)) {
+      errors.minimal_stok = "Nilai minimal harus berupa angka";
+    } else if (Number(minimal_stok) < 0) {
+      errors.minimal_stok = "Nilai minimal tidak boleh kurang dari 0";
     }
-    if (maksimal !== undefined) {
-      if (maksimal === null || maksimal === "") {
-        errors.maksimal = "Nilai maksimal tidak boleh kosong";
-      } else if (isNaN(Number(maksimal))) {
-        errors.maksimal = "Nilai maksimal harus berupa angka";
-      } else if (Number(maksimal) < 0) {
-        errors.maksimal = "Nilai maksimal tidak boleh kurang dari 0";
-      }
+
+    if (
+      maksimal_stok === undefined ||
+      maksimal_stok === null ||
+      maksimal_stok === ""
+    ) {
+      errors.maksimal_stok = "Nilai maksimal tidak boleh kosong";
+    } else if (isNaN(maksimal_stok)) {
+      errors.maksimal_stok = "Nilai maksimal harus berupa angka";
+    } else if (Number(maksimal_stok) < 0) {
+      errors.maksimal_stok = "Nilai maksimal tidak boleh kurang dari 0";
+    }
+
+    if (
+      !isNaN(minimal_stok) &&
+      !isNaN(maksimal_stok) &&
+      Number(minimal_stok) > Number(maksimal_stok)
+    ) {
+      errors.maksimal_stok =
+        "Maksimal stok tidak boleh lebih kecil dari minimal stok";
+    }
+    if (Object.keys(errors).length > 0) {
+      return jsonResponse(
+        {
+          message: "Validation Error",
+          errors,
+        },
+        400
+      );
     }
 
     const stok = await prisma.stok.upsert({

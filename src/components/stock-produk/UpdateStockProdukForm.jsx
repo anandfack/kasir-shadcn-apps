@@ -73,7 +73,7 @@ const UpdateStockProdukForm = ({
           onChange={(e) =>
             setFormData((prev) => ({
               ...prev,
-              minimal_stok: parseInt(e.target.value, 10),
+              minimal_stok: e.target.value,
             }))
           }
           className="col-span-3"
@@ -93,7 +93,7 @@ const UpdateStockProdukForm = ({
           onChange={(e) =>
             setFormData((prev) => ({
               ...prev,
-              maksimal_stok: parseInt(e.target.value, 10),
+              maksimal_stok: e.target.value,
             }))
           }
           className="col-span-3"
@@ -103,8 +103,16 @@ const UpdateStockProdukForm = ({
 
       {/* Tombol Simpan */}
       <div className="flex justify-end">
-        <Button onClick={handleSubmit} disabled={!isChanged || isLoading}>
-          {isLoading ? "Loading..." : "Simpan Perubahan"}
+        <Button
+          onClick={handleSubmit}
+          disabled={
+            !isChanged ||
+            isLoading ||
+            formData.minimal_stok === "" ||
+            formData.maksimal_stok === ""
+          }
+        >
+          Simpan
         </Button>
       </div>
     </div>

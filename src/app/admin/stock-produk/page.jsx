@@ -16,7 +16,7 @@ const Page = () => {
       <Card>
         <CardHeader>
           <CardTitle>Stock Produk</CardTitle>
-          <CardDescription>Data barang ada disini</CardDescription>
+          <CardDescription>Data stock ada disini</CardDescription>
         </CardHeader>
         <CardContent>
           <StockProdukTable />

@@ -86,15 +86,26 @@ const StockProdukTable = () => {
   //   staleTime: 1000 * 60 * 5,
   // });
 
-  // const dialogTitle = useMemo(
-  //   () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
-  //   [editData]
-  // );
+  const dialogTitle = useMemo(
+    () => `Update Nilai Minimum dan Maksimum Stock`,
+    []
+  );
 
-  // const dialogDescription = useMemo(
-  //   () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
-  //   [editData]
-  // );
+  console.log("Edit data: ", editData);
+
+  const dialogDescription = useMemo(
+    () => `${editData?.nama_produk || ""}`,
+    [editData]
+  );
+
+  const dialogTitlePenyesuaian = useMemo(() => `Penyesuaian Stock Produk`, []);
+
+  console.log("Edit data: ", editData);
+
+  const dialogDescriptionPenyesuaian = useMemo(
+    () => `${penyesuaianData?.nama_produk || ""}`,
+    [penyesuaianData]
+  );
 
   const handleError = useCallback((error) => {
     console.error("Terjadi error:", error);
@@ -275,37 +286,6 @@ const StockProdukTable = () => {
                   console.log("klik adjustment");
                 }}
               />
-              <StockProdukDialog
-                isOpen={isDialogUpdateOpen}
-                onOpenChange={setIsDialogUpdateOpen}
-                // title={dialogTitle}
-                // description={dialogDescription}
-              >
-                {editData && (
-                  <UpdateStockProdukForm
-                    // produkData={produkData}
-                    onSubmit={() => {
-                      toast({
-                        title: "Sukses!",
-                        description: "Data harga produk berhasil diupdate.",
-                      });
-                      setRefreshKey((prev) => prev + 1);
-                      setIsDialogUpdateOpen(false);
-                    }}
-                    onError={(error) => {
-                      toast({
-                        title: "Terjadi kesalahan",
-                        description: getApiErrorMessage(error),
-                        variant: "destructive",
-                      });
-                      console.error("Terjadi error:", error);
-                      setIsDialogTambahOpen(true);
-                    }}
-                    isLoading={false}
-                    initialData={editData}
-                  />
-                )}
-              </StockProdukDialog>
             </div>
           );
         },
@@ -313,10 +293,10 @@ const StockProdukTable = () => {
     ],
     [
       statusBadgeMap,
-      editData,
-      toast,
-      isDialogUpdateOpen,
-      setIsDialogUpdateOpen,
+      // editData,
+      // toast,
+      // isDialogUpdateOpen,
+      // setIsDialogUpdateOpen,
       // dialogDescription,
       // dialogTitle,
       // produkData,
@@ -417,8 +397,8 @@ const StockProdukTable = () => {
       <Dialog open={isDialogUpdateOpen} onOpenChange={setIsDialogUpdateOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            {/* <DialogTitle>{dialogTitle}</DialogTitle>
-            <DialogDescription>{dialogDescription}</DialogDescription> */}
+            <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogDescription>{dialogDescription}</DialogDescription>
           </DialogHeader>
           {editData && (
             <UpdateStockProdukForm
@@ -453,8 +433,10 @@ const StockProdukTable = () => {
       >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            {/* <DialogTitle>{dialogTitle}</DialogTitle>
-            <DialogDescription>{dialogDescription}</DialogDescription> */}
+            <DialogTitle>{dialogTitlePenyesuaian}</DialogTitle>
+            <DialogDescription>
+              {dialogDescriptionPenyesuaian}
+            </DialogDescription>
           </DialogHeader>
           {penyesuaianData && (
             <PenyesuaianStockForm

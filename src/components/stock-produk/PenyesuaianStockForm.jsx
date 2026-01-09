@@ -5,6 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiRequest } from "@/lib/apiRequest";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const PenyesuaianStockForm = ({ initialData, onSubmit, onError }) => {
   const [stokFisik, setStokFisik] = useState("");
@@ -35,13 +44,6 @@ const PenyesuaianStockForm = ({ initialData, onSubmit, onError }) => {
     try {
       setLoading(true);
 
-      // console.log("SEND DATA:", {
-      //   produk_id: initialData?.id,
-      //   stok_fisik: stokFisik,
-      // });
-
-      // console.log("initial data produk id:", initialData);
-
       await apiRequest("POST", "/api/v1/admin/stock/penyesuaian", {
         produk_id: initialData.id,
         stok_fisik: Number(stokFisik),
@@ -52,7 +54,7 @@ const PenyesuaianStockForm = ({ initialData, onSubmit, onError }) => {
       setAlasan("");
       onSubmit?.();
     } catch (error) {
-      onError(error);
+      onError?.(error);
     } finally {
       setLoading(false);
     }
@@ -106,21 +108,29 @@ const PenyesuaianStockForm = ({ initialData, onSubmit, onError }) => {
         />
       </div>
 
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label className="text-center">
-          Alasan <span className="text-red-500">*</span>
-        </Label>
-        <select
-          value={alasan}
-          onChange={(e) => setAlasan(e.target.value)}
-          className="col-span-3 border rounded px-3 py-2"
-        >
-          <option value="">-- Pilih alasan --</option>
-          <option value="OPNAME">Stok opname</option>
-          <option value="RUSAK">Barang rusak</option>
-          <option value="HILANG">Barang hilang</option>
-          <option value="KOREKSI">Koreksi sistem</option>
-        </select>
+      <div className="grid gap-4 py-4">
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="jenis-kelamin" className="text-center">
+            Jenis Kelamin <i className="text-red-500">*</i>
+          </Label>
+
+          <div className="col-span-3">
+            <Select value={alasan} onValueChange={setAlasan}>
+              <SelectTrigger id="alasan">
+                <SelectValue placeholder="Pilih alasan" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="OPNAME">Stok Opname</SelectItem>
+                  <SelectItem value="RUSAK">Barang Rusak</SelectItem>
+                  <SelectItem value="HILANG">Barang Hilang</SelectItem>
+                  <SelectItem value="KOREKSI">Koreksi Sistem</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-4 items-center gap-4">
@@ -132,7 +142,7 @@ const PenyesuaianStockForm = ({ initialData, onSubmit, onError }) => {
 
       <div className="flex justify-end">
         <Button type="submit" disabled={loading || selisih === 0}>
-          {loading ? "Menyimpan..." : "Simpan Penyesuaian"}
+          {loading ? "Menyimpan..." : "Simpan"}
         </Button>
       </div>
     </form>
