@@ -20,11 +20,11 @@ export async function GET(req) {
     };
 
     if (withoutLogin === "true") {
-      whereCondition.LoginPemakai = {
-        is: null,
-      };
+      whereCondition.OR = [
+        { LoginPemakai: null },
+        { LoginPemakai: { deleted_at: { not: null } } },
+      ];
     }
-
     const pegawai = await prisma.pegawai.findMany({
       select: {
         id: true,

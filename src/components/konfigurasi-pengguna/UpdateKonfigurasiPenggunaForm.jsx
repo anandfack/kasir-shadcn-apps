@@ -1,10 +1,10 @@
 "use client";
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, useMemo, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { apiRequest } from "@/app/utils/fetchOptions";
 import { Listbox, Transition } from "@headlessui/react";
+import { apiRequest } from "@/lib/apiRequest";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { Switch } from "../ui/switch";
 import { ROLE_OPTIONS } from "@/lib/roleBadge";
@@ -19,24 +19,43 @@ const UpdateKonfigurasiPenggunaForm = ({
   const [formData, setFormData] = useState(initialData ?? {});
   const [isChanged, setIsChanged] = useState(false);
   const [searchRole, setSearchRole] = useState("");
+  const [searchPegawai, setSearchPegawai] = useState("");
+
+  const pegawaiList = useMemo(() => {
+    if (Array.isArray(pegawaiData)) return pegawaiData;
+    if (Array.isArray(pegawaiData?.data)) return pegawaiData.data;
+    return [];
+  }, [pegawaiData]);
+
+  const filteredPegawai = useMemo(() => {
+    if (!pegawaiList) return [];
+    if (!searchPegawai) return pegawaiList;
+
+    return pegawaiList.filter((item) =>
+      item.nama_kategori.toLowerCase().includes(searchPegawai.toLowerCase())
+    );
+  }, [pegawaiList, searchPegawai]);
 
   useEffect(() => {
     if (initialData) {
       setFormData({
         ...initialData,
-        pegawai: initialData.pegawai?.id || "",
+        kategori:
+          pegawaiList.find((k) => k.id === initialData.pegawai?.id) || null,
       });
     }
-  }, [initialData]);
+  }, [initialData, pegawaiList]);
 
   useEffect(() => {
-    setIsChanged(
-      JSON.stringify(formData) !==
-        JSON.stringify({
-          ...initialData,
-          pegawai: initialData.pegawai?.id || "",
-        })
-    );
+    if (!initialData) return;
+
+    const isSame =
+      formData.username === initialData.username &&
+      formData.email === initialData.email &&
+      formData.role === initialData.role &&
+      formData.is_aktif === initialData.is_aktif &&
+      formData.pegawai?.id === initialData.pegawai?.id;
+    setIsChanged(!isSame);
   }, [formData, initialData]);
 
   const filteredRoles = ROLE_OPTIONS.filter((role) =>
@@ -61,25 +80,22 @@ const UpdateKonfigurasiPenggunaForm = ({
 
     try {
       const dataToSend = {
-        pegawai_id: formData.pegawai,
+        pegawai_id: formData.pegawai?.id,
         username: formData.username,
         email: formData.email,
         role: formData.role,
         is_aktif: formData.is_aktif,
       };
-      // Menggunakan apiRequest untuk update harga produk
       const updatedData = await apiRequest(
         "PUT",
         `/api/v1/admin/konfigurasi-pengguna/${formData.id}`,
         dataToSend
       );
 
-      console.log("Data berhasil disimpan:", updatedData);
-
-      // Update state dengan data baru
       setFormData((prev) => ({
         ...prev,
-        pegawai: updatedData.pegawai_id,
+        pegawai:
+          pegawaiList.find((k) => k.id === updatedData.pegawai_id) || null,
         username: updatedData.username,
         email: updatedData.email,
         role: updatedData.role,
@@ -87,7 +103,7 @@ const UpdateKonfigurasiPenggunaForm = ({
 
       if (onSubmit) onSubmit(updatedData);
     } catch (error) {
-      onError;
+      onError?.(error);
       console.error("Error saat menyimpan data:", error);
     }
   };
@@ -104,16 +120,14 @@ const UpdateKonfigurasiPenggunaForm = ({
             value={formData.pegawai}
             onChange={(pegawai) => {
               if (pegawai.id !== formData.pegawai) {
-                console.log("Pegawai dipilih:", pegawai);
-                setFormData((prev) => ({ ...prev, pegawai: pegawai.id }));
+                setFormData((prev) => ({ ...prev, pegawai }));
               }
             }}
           >
             <div className="relative mt-1">
               <Listbox.Button className="relative w-full h-10 cursor-default rounded-md bg-background py-2 pl-3 pr-10 text-left border border-input shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input sm:text-sm">
                 <span className="block truncate">
-                  {pegawaiData.find((p) => p.id === formData.pegawai)
-                    ?.nama_pegawai || "Pilih Pegawai"}
+                  {formData.pegawai?.nama_pegawai || "Pilih Pegawai"}
                 </span>
 
                 <span className="absolute inset-y-0 right-0 flex items-center pr-2">
@@ -122,8 +136,20 @@ const UpdateKonfigurasiPenggunaForm = ({
               </Listbox.Button>
               <Transition as={Fragment} leave="transition-opacity duration-100">
                 <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
-                  {pegawaiData.length > 0 ? (
-                    pegawaiData.map((pegawai) => (
+                  {/* 🔍 SEARCH */}
+                  <div className="sticky top-0 z-20 bg-popover p-2 border-b">
+                    <Input
+                      placeholder="Cari kategori..."
+                      value={searchPegawai}
+                      onChange={(e) => setSaerchPegawai(e.target.value)}
+                      onKeyDownCapture={(e) => {
+                        if (e.key === " ") e.stopPropagation();
+                      }}
+                      className="h-8 text-sm"
+                    />
+                  </div>
+                  {filteredPegawai.length > 0 ? (
+                    filteredPegawai.map((pegawai) => (
                       <Listbox.Option
                         key={pegawai.id}
                         value={pegawai}
@@ -293,13 +319,12 @@ const UpdateKonfigurasiPenggunaForm = ({
           checked={formData.is_aktif || false}
           onCheckedChange={handleSwitchChange}
         />
-        <Label>{formData.is_aktif ? "Aktif" : "Nonaktif"}</Label>
       </div>
 
       {/* Tombol Simpan */}
       <div className="flex justify-end">
         <Button onClick={handleSubmit} disabled={!isChanged || isLoading}>
-          {isLoading ? "Loading..." : "Simpan Perubahan"}
+          {isLoading ? "Loading..." : "Simpan"}
         </Button>
       </div>
     </div>

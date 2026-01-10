@@ -16,8 +16,8 @@ const Page = () => {
       <Breadcrumbs />
       <Card>
         <CardHeader>
-          <CardTitle>Barang</CardTitle>
-          <CardDescription>Data barang ada disini</CardDescription>
+          <CardTitle>Konfigurasi Pengguna</CardTitle>
+          <CardDescription>Data pengguna ada disini</CardDescription>
         </CardHeader>
         <CardContent>
           <KonfigurasiPenggunaTable />

@@ -20,14 +20,14 @@ const KonfigurasiPenggunaActions = ({ onEdit, onDelete, onResetPassword }) => {
       >
         <KeyIcon />
       </Button>
-      <Button
+      {/* <Button
         title="Hapus"
         variant="destructive"
         className="text-xs"
         onClick={onDelete}
       >
         <Trash2 />
-      </Button>
+      </Button> */}
     </div>
   );
 };

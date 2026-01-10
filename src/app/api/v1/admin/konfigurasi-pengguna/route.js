@@ -1,3 +1,5 @@
+import jsonResponse from "@/lib/jsonResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 
@@ -5,10 +7,14 @@ const prisma = new PrismaClient();
 
 export async function GET(req) {
   try {
-    // const { searchParams } = new URL(req.url);
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
 
     const konfigurasiPengguna = await prisma.loginPemakai.findMany({
-      where: { deleted_at: null },  
+      where: { deleted_at: null },
       select: {
         id: true,
         username: true,
@@ -29,57 +35,89 @@ export async function GET(req) {
       },
     });
 
-    return new Response(JSON.stringify(konfigurasiPengguna), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "OK",
+        data: konfigurasiPengguna,
+      },
+      200
+    );
   } catch (error) {
-    console.error("Error:", error); // Tambahkan ini untuk melihat error di log
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("Error:", error);
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }
 
 export async function POST(req) {
   try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
     const body = await req.json();
-    const {
-      pegawai_id,
-      username,
-      email,
-      password,
-      role,
-      verified,
-      is_aktif,
-      created_at,
-      updated_at,
-    } = body;
+    const { pegawai_id, username, email, password, role, verified, is_aktif } =
+      body;
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const requiredFields = [
-      { key: "pegawai_id", label: "Pegawai" },
-      { key: "username", label: "Username" },
-      { key: "email", label: "Email" },
-      { key: "password", label: "Password" },
-      { key: "role", label: "Role" },
-    ];
+    const errors = {};
 
-    const missingFields = requiredFields.filter((field) => !body[field.key]);
+    if (!pegawai_id) {
+      errors.pegawai_id = "Pegawai wajib diisi";
+    } else if (isNaN(Number(pegawai_id))) {
+      errors.pegawai_id = "Pegawai tidak valid";
+    }
 
-    if (missingFields.length > 0) {
-      return new Response(
-        JSON.stringify({
-          error: `${missingFields[0].label} harus diisi`,
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+    if (!username || username.trim() === "") {
+      errors.username = "Username wajib diisi";
+    }
+    if (!password || password.trim() === "") {
+      errors.password = "Password wajib diisi";
+    }
+    if (password.length < 8) {
+      errors.password = "Password minimal 8 karakter";
+    } else if (password.length > 20) {
+      errors.password = "Password maksimal 20 karakter";
+    }
+    if (!/[A-Z]/.test(password)) {
+      errors.password = "Password harus mengandung setidaknya 1 huruf besar";
+    }
+    if (!/[a-z]/.test(password)) {
+      errors.password = "Password harus mengandung setidaknya 1 huruf kecil";
+    }
+    if (!/\d/.test(password)) {
+      errors.password = "Password harus mengandung setidaknya 1 angka";
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+      errors.password = "Password harus mengandung setidaknya 1 simbol khusus";
+    }
+    if (/\s/.test(password)) {
+      errors.password = "Password tidak boleh mengandung spasi";
+    }
+
+    if (!role || role.trim() === "") {
+      errors.role = "Role wajib diisi";
+    }
+    if (!email || email.trim() === "") {
+      errors.email = "Email wajib diisi";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return jsonResponse(
+        {
+          message: "Validation Error",
+          errors,
+        },
+        400
       );
     }
-    const nowJakarta = new Date().toLocaleString("en-US", {
-      timeZone: "Asia/Jakarta",
-    });
 
     const tambahKonfigurasiPengguna = await prisma.loginPemakai.create({
       data: {
@@ -90,20 +128,23 @@ export async function POST(req) {
         role,
         verified: verified ? verified : true,
         is_aktif: is_aktif ? is_aktif : true,
-        created_at: created_at ? new Date(created_at) : nowJakarta,
-        updated_at: updated_at ? new Date(updated_at) : nowJakarta,
       },
     });
 
-    return new Response(JSON.stringify(tambahKonfigurasiPengguna), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Konfigurasi pengguna berhasil ditambahkan!",
+        data: tambahKonfigurasiPengguna,
+      },
+      201
+    );
   } catch (error) {
     console.error("Error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
+    );
   }
 }

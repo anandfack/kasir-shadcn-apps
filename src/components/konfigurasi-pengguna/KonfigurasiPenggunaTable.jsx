@@ -1,10 +1,9 @@
 "use client";
-import { useState } from "react";
+import { React, useState, useEffect, useMemo, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import KonfigurasiPenggunaDialog from "./KonfigurasiPenggunaDialog";
 import KonfigurasiPenggunaActions from "./KonfigurasiPenggunaActions";
 import useFetchKonfigurasiPengguna from "@/hooks/konfigurasi-pengguna/useFetchKonfigurasiPengguna";
-import React from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -34,43 +33,56 @@ import {
 } from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
-// import TambahKategoriProdukForm from "./TambahKategoriProdukForm";
 import TambahKonfigurasiPenggunaForm from "./TambahKonfigurasiPenggunaForm";
 import UpdateKonfigurasiPenggunaForm from "./UpdateKonfigurasiPenggunaForm";
-
+import { apiRequest } from "@/lib/apiRequest";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/app/utils/fetchOptions";
-
 import { Badge } from "@/components/ui/badge";
 import { roleBadgeMap } from "@/lib/roleBadge";
 import ResetPasswordForm from "./ResetPasswordForm";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import { formatTanggal } from "@/lib/formatTanggal";
 
 const KonfigurasiPenggunaTable = () => {
   const { toast } = useToast();
-  const [refreshKey, setRefreshKey] = React.useState(0);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { data, loading, error } = useFetchKonfigurasiPengguna(
     "/api/v1/admin/konfigurasi-pengguna",
     refreshKey
   );
 
+  useEffect(() => {
+    if (error) {
+      toast({
+        title: "Terjadi kesalahan",
+        description: error.message,
+        variant: "destructive",
+      });
+
+      if (error.status === 401) {
+        // redirect / logout
+      }
+    }
+  }, [error, toast]);
+
   const [isDialogUpdateOpen, setIsDialogUpdateOpen] = useState(false);
   const [editData, setEditData] = useState(null);
 
-  const [sorting, setSorting] = React.useState([]);
-  const [columnFilters, setColumnFilters] = React.useState([]);
-  const [columnVisibility, setColumnVisibility] = React.useState({});
-  const [rowSelection, setRowSelection] = React.useState({});
-  const [deleteData, setDeleteData] = React.useState(null);
-  const [isDialogTambahOpen, setIsDialogTambahOpen] = React.useState(false);
-  const [isDialogDeleteOpen, setIsDialogDeleteOpen] = React.useState(false);
+  const [sorting, setSorting] = useState([]);
+  const [columnFilters, setColumnFilters] = useState([]);
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [rowSelection, setRowSelection] = useState({});
+  const [deleteData, setDeleteData] = useState(null);
+  const [isDialogTambahOpen, setIsDialogTambahOpen] = useState(false);
+  const [isDialogDeleteOpen, setIsDialogDeleteOpen] = useState(false);
   const [pegawaiOpen, setPegawaiOpen] = useState(true);
   const [pegawaiWithoutLoginOpen, setPegawaiWithoutLoginOpen] = useState(true);
   useState(true);
   const [pegawaiWithoutLoading, setPegawaiWithoutLoading] = useState(true);
-  const [resetPasswordData, setResetPasswordData] = React.useState(null);
+  const [resetPasswordData, setResetPasswordData] = useState(null);
   const [isDialogResetPasswordOpen, setIsDialogResetPasswordOpen] =
-    React.useState(false);
+    useState(false);
 
   const { data: pegawaiData = [], isLoading: pegawaiLoading } = useQuery({
     queryKey: ["pegawai"],
@@ -88,48 +100,51 @@ const KonfigurasiPenggunaTable = () => {
       apiRequest("GET", "/api/v1/admin/pegawai?without_login=true"),
     enabled: pegawaiWithoutLoginOpen,
   });
-  //   const dialogTitle = React.useMemo(
-  //     () => `Ubah Harga ${editData?.produk?.nama_produk || ""}`,
-  //     [editData]
-  //   );
 
-  //   const dialogDescription = React.useMemo(
-  //     () => `Update Harga ${editData?.produk?.nama_produk || ""} disini`,
-  //     [editData]
-  //   );
+  const dialogTitle = useMemo(() => `Ubah Konfigurasi Pengguna`, []);
 
-  const handleError = React.useCallback((error) => {
+  const dialogDescription = useMemo(
+    () => `${editData?.pegawai?.nama_pegawai || ""}`,
+    [editData]
+  );
+  const dialogTitleReset = useMemo(() => `Reset Password`, []);
+
+  const dialogDescriptionReset = useMemo(
+    () => `${resetPasswordData?.pegawai?.nama_pegawai || ""}`,
+    [resetPasswordData]
+  );
+
+  const handleError = useCallback((error) => {
     console.error("Terjadi error:", error);
     setIsDialogUpdateOpen(true);
   }, []);
 
-  const handleDelete = React.useCallback(async () => {
-    if (!deleteData) return;
+  // const handleDelete = useCallback(async () => {
+  //   if (!deleteData) return;
 
-    try {
-      await apiRequest(
-        "DELETE",
-        `/api/v1/admin/konfigurasi-pengguna/${deleteData.id}`
-      );
-      toast({
-        title: "Sukses!",
-        description: "Data konfigurasi pengguna berhasil dihapus.",
-        variant: "success",
-      });
-      setRefreshKey((prev) => prev + 1);
-      setDeleteData(null);
-      setIsDialogDeleteOpen(false);
-    } catch (error) {
-      toast({
-        title: "Gagal menghapus",
-        description: error?.response?.data?.error || "Terjadi kesalahan",
-        variant: "destructive",
-      });
-      console.error("Gagal menghapus:", error);
-    }
-  }, [deleteData, toast]);
+  //   try {
+  //     await apiRequest(
+  //       "DELETE",
+  //       `/api/v1/admin/konfigurasi-pengguna/${deleteData.id}`
+  //     );
+  //     toast({
+  //       title: "Sukses!",
+  //       description: "Data konfigurasi pengguna berhasil dihapus.",
+  //     });
+  //     setRefreshKey((prev) => prev + 1);
+  //     setDeleteData(null);
+  //     setIsDialogDeleteOpen(false);
+  //   } catch (error) {
+  //     toast({
+  //       title: "Gagal menghapus",
+  //       description: getApiErrorMessage(error),
+  //       variant: "destructive",
+  //     });
+  //     console.error("Gagal menghapus:", error);
+  //   }
+  // }, [deleteData, toast]);
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     () => [
       {
         id: "no",
@@ -269,22 +284,9 @@ const KonfigurasiPenggunaTable = () => {
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => {
-          const rawDate = row.getValue("last_login");
-          if (!rawDate) {
-            return <div>-</div>;
-          }
-          const formattedDate = new Date(rawDate).toLocaleString("id-ID", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          });
-
-          return <div className="capitalize">{formattedDate}</div>;
-        },
+        cell: ({ row }) => (
+          <div>{formatTanggal(row.getValue("last_login"))}</div>
+        ),
       },
       {
         id: "actions",
@@ -300,10 +302,10 @@ const KonfigurasiPenggunaTable = () => {
                   setIsDialogUpdateOpen(true);
                   console.log("klik edit");
                 }}
-                onDelete={() => {
-                  setDeleteData(loadData);
-                  setIsDialogDeleteOpen(true);
-                }}
+                // onDelete={() => {
+                //   setDeleteData(loadData);
+                //   setIsDialogDeleteOpen(true);
+                // }}
                 onResetPassword={() => {
                   setResetPasswordData(loadData);
                   setIsDialogResetPasswordOpen(true);
@@ -318,7 +320,7 @@ const KonfigurasiPenggunaTable = () => {
   );
 
   const table = useReactTable({
-    data,
+    data: data || [],
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -351,7 +353,7 @@ const KonfigurasiPenggunaTable = () => {
           <div>Gagal memuat data</div>
         </div>
         <div className="flex items-center justify-center text-zinc-300 text-xs">
-          {error}
+          {error.message}
         </div>
       </div>
     );
@@ -376,7 +378,6 @@ const KonfigurasiPenggunaTable = () => {
               toast({
                 title: "Sukses!",
                 description: "Data pengguna berhasil ditambahkan.",
-                variant: "success",
               });
               setRefreshKey((prev) => prev + 1);
               setIsDialogTambahOpen(false);
@@ -384,8 +385,7 @@ const KonfigurasiPenggunaTable = () => {
             onError={(error) => {
               toast({
                 title: "Terjadi kesalahan",
-                description:
-                  error?.response?.data?.error || "Terjadi kesalahan",
+                description: getApiErrorMessage(error),
                 variant: "destructive",
               });
               console.error("Terjadi error:", error);
@@ -445,7 +445,7 @@ const KonfigurasiPenggunaTable = () => {
         </Table>
       </div>
       {/* ✅ Dialog Konfirmasi Delete */}
-      <Dialog open={isDialogDeleteOpen} onOpenChange={setIsDialogDeleteOpen}>
+      {/* <Dialog open={isDialogDeleteOpen} onOpenChange={setIsDialogDeleteOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Hapus Data</DialogTitle>
@@ -465,13 +465,13 @@ const KonfigurasiPenggunaTable = () => {
             </Button>
           </div>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
       {/* ✅ Dialog Update Harga Produk */}
       <Dialog open={isDialogUpdateOpen} onOpenChange={setIsDialogUpdateOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            {/* <DialogTitle>{dialogTitle}</DialogTitle>
-            <DialogDescription>{dialogDescription}</DialogDescription> */}
+            <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogDescription>{dialogDescription}</DialogDescription>
           </DialogHeader>
           {editData && (
             <UpdateKonfigurasiPenggunaForm
@@ -482,7 +482,6 @@ const KonfigurasiPenggunaTable = () => {
                 toast({
                   title: "Sukses!",
                   description: "Data konfigurasi pengguna berhasil diupdate.",
-                  variant: "success",
                 });
                 setRefreshKey((prev) => prev + 1);
                 setIsDialogUpdateOpen(false);
@@ -490,8 +489,7 @@ const KonfigurasiPenggunaTable = () => {
               onError={(error) => {
                 toast({
                   title: "Terjadi kesalahan",
-                  description:
-                    error?.response?.data?.error || "Terjadi kesalahan",
+                  description: getApiErrorMessage(error),
                   variant: "destructive",
                 });
                 console.error("Terjadi error:", error);
@@ -508,8 +506,8 @@ const KonfigurasiPenggunaTable = () => {
       >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            {/* <DialogTitle>{dialogTitle}</DialogTitle>
-            <DialogDescription>{dialogDescription}</DialogDescription> */}
+            <DialogTitle>{dialogTitleReset}</DialogTitle>
+            <DialogDescription>{dialogDescriptionReset}</DialogDescription>
           </DialogHeader>
           {resetPasswordData && (
             <ResetPasswordForm
@@ -519,15 +517,13 @@ const KonfigurasiPenggunaTable = () => {
                 toast({
                   title: "Sukses!",
                   description: "Password berhasil direset.",
-                  variant: "success",
                 });
                 setIsDialogResetPasswordOpen(false);
               }}
               onError={(error) => {
                 toast({
                   title: "Terjadi kesalahan",
-                  description:
-                    error?.response?.data?.error || "Terjadi kesalahan",
+                  description: getApiErrorMessage(error),
                   variant: "destructive",
                 });
               }}

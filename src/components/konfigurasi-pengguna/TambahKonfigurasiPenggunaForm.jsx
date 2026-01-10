@@ -11,7 +11,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { apiRequest } from "@/app/utils/fetchOptions";
+import { apiRequest } from "@/lib/apiRequest";
 import { Listbox, Transition } from "@headlessui/react";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { CheckIcon } from "lucide-react";
@@ -41,16 +41,23 @@ const TambahKonfigurasiPenggunaForm = ({
     role.label.toLowerCase().includes(searchRole.toLowerCase())
   );
 
-  const filteredPegawai = useMemo(() => {
-    if (!pegawaiWithoutLoginData) return [];
-    if (!searchPegawaiWithoutLogin) return pegawaiWithoutLoginData;
+  const pegawaiList = useMemo(() => {
+    if (Array.isArray(pegawaiWithoutLoginData)) return pegawaiWithoutLoginData;
+    if (Array.isArray(pegawaiWithoutLoginData?.data))
+      return pegawaiWithoutLoginData.data;
+    return [];
+  }, [pegawaiWithoutLoginData]);
 
-    return pegawaiWithoutLoginData.filter((pegawai) =>
-      pegawai.nama_pegawai
+  const filteredPegawai = useMemo(() => {
+    if (!pegawaiList) return [];
+    if (!searchPegawaiWithoutLogin) return pegawaiList;
+
+    return pegawaiList.filter((item) =>
+      item.nama_kategori
         .toLowerCase()
         .includes(searchPegawaiWithoutLogin.toLowerCase())
     );
-  }, [pegawaiWithoutLoginData, searchPegawaiWithoutLogin]);
+  }, [pegawaiList, searchPegawaiWithoutLogin]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -69,13 +76,12 @@ const TambahKonfigurasiPenggunaForm = ({
         password: password,
         role: role,
         email: email,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
       });
 
       onSuccess();
     } catch (error) {
-      onError(error);
+      onError?.(error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -125,7 +131,7 @@ const TambahKonfigurasiPenggunaForm = ({
                     leaveTo="opacity-0"
                     afterLeave={() => setPegawaiWithoutLoginOpen(false)}
                   >
-                    <Listbox.Options className="absolute z-10 mt-1 w-full rounded-md bg-popover shadow-lg ring-1 ring-black/5 dark:ring-white/10 sm:text-sm">
+                    <Listbox.Options className="absolute z-10 mt-1 w-full rounded-md bg-popover pb-1 pt-0 shadow-lg ring-1 ring-black/5 dark:ring-white/10 sm:text-sm">
                       {/* 🔍 Search */}
                       <div className="p-2 border-b">
                         <Input
