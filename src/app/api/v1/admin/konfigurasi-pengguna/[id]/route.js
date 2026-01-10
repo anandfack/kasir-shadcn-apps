@@ -16,6 +16,8 @@ export const PUT = async (req, { params }) => {
     const body = await req.json();
     const { pegawai_id, username, email, role, is_aktif } = body;
 
+    const errors = {};
+
     if (!pegawai_id) {
       errors.pegawai_id = "Pegawai wajib diisi";
     } else if (isNaN(Number(pegawai_id))) {
@@ -24,29 +26,6 @@ export const PUT = async (req, { params }) => {
 
     if (!username || username.trim() === "") {
       errors.username = "Username wajib diisi";
-    }
-    if (!password || password.trim() === "") {
-      errors.password = "Password wajib diisi";
-    }
-    if (password.length < 8) {
-      errors.password = "Password minimal 8 karakter";
-    } else if (password.length > 20) {
-      errors.password = "Password maksimal 20 karakter";
-    }
-    if (!/[A-Z]/.test(password)) {
-      errors.password = "Password harus mengandung setidaknya 1 huruf besar";
-    }
-    if (!/[a-z]/.test(password)) {
-      errors.password = "Password harus mengandung setidaknya 1 huruf kecil";
-    }
-    if (!/\d/.test(password)) {
-      errors.password = "Password harus mengandung setidaknya 1 angka";
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-      errors.password = "Password harus mengandung setidaknya 1 simbol khusus";
-    }
-    if (/\s/.test(password)) {
-      errors.password = "Password tidak boleh mengandung spasi";
     }
 
     if (!role || role.trim() === "") {
