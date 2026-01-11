@@ -32,7 +32,7 @@ export const PUT = async (req, { params }) => {
     if (!/\d/.test(password)) {
       errors.password = "Password harus mengandung setidaknya 1 angka";
     }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    if (!/[!@#$%^&*(),.?":{}|<>-]/.test(password)) {
       errors.password = "Password harus mengandung setidaknya 1 simbol khusus";
     }
     if (/\s/.test(password)) {

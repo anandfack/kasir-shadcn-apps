@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import jsonResponse from "@/lib/jsonResponse";
 
 const prisma = new PrismaClient();
 
@@ -9,10 +10,25 @@ export async function POST(req) {
   try {
     const { username, password } = await req.json();
 
-    if (!username || !password) {
-      return NextResponse.json(
-        { error: "Username dan password harus diisi" },
-        { status: 400 }
+    const errors = {};
+
+    if (!username || username.trim() === "") {
+      errors.username = "Username wajib diisi";
+    }
+
+    if (password.length < 8) {
+      errors.password = "Password minimal 8 karakter";
+    } else if (password.length > 20) {
+      errors.password = "Password maksimal 20 karakter";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return jsonResponse(
+        {
+          message: "Validation Error",
+          errors,
+        },
+        400
       );
     }
 
@@ -21,34 +37,50 @@ export async function POST(req) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Username tidak ditemukan" },
-        { status: 400 }
+      jsonResponse(
+        {
+          message: "Username tidak ditemukan",
+        },
+        400
       );
     }
 
-    if (user.role !== "admin") {
-      return NextResponse.json(
-        { error: "Akses ditolak. Anda bukan admin." },
-        { status: 403 }
+    if (user.role !== "superadmin") {
+      return jsonResponse(
+        {
+          message: "Akses ditolak, anda bukan admin",
+        },
+        403
       );
     }
 
-    if (!user.is_aktif) {
-      return NextResponse.json({ error: "Akun tidak aktif." }, { status: 403 });
+    if (!user.is_aktif || user.is_aktif == false) {
+      return jsonResponse(
+        {
+          message: "Akun tidak aktif",
+        },
+        403
+      );
     }
 
     if (!user.verified) {
-      return NextResponse.json(
-        { error: "Email belum diverifikasi." },
-        { status: 403 }
+      return jsonResponse(
+        {
+          message: "Akun belum diverifikasi",
+        },
+        403
       );
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
-      return NextResponse.json({ error: "Password salah" }, { status: 400 });
+      return jsonResponse(
+        {
+          message: "Password salah",
+        },
+        400
+      );
     }
 
     await prisma.loginPemakai.update({
@@ -78,10 +110,12 @@ export async function POST(req) {
 
     return response;
   } catch (error) {
-    console.error("Login Admin Error:", error);
-    return NextResponse.json(
-      { error: "Terjadi kesalahan server" },
-      { status: 500 }
+    console.error("Internal Server Error", error);
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500
     );
   }
 }

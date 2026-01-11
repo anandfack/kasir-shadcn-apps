@@ -1,6 +1,6 @@
 "use client";
 
-import { apiRequest } from "@/app/utils/fetchOptions";
+import { apiRequest } from "@/lib/apiRequest";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -15,9 +15,12 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 const LoginPage = () => {
   const router = useRouter();
+  const { toast } = useToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,7 +38,13 @@ const LoginPage = () => {
 
       router.push("/admin/dashboard");
     } catch (error) {
-      setErrorMessage(error.message);
+      toast({
+        title: "Gagal login!",
+        description: getApiErrorMessage(error),
+        variant: "destructive",
+      });
+      console.error(error);
+      // setErrorMessage(error.message);
     } finally {
       setLoading(false);
     }
@@ -43,17 +52,14 @@ const LoginPage = () => {
 
   return (
     <Card className="w-full max-w-lg mx-auto max-h-lg my-auto">
-      <div className="flex items-center gap-16">
-        <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
-          <CardDescription>
-            Enter your Username below to login to your account
-          </CardDescription>
-        </CardHeader>
-        <Button variant="link">
-          <Link href="/auth-admin/register">Sign Up</Link>
-        </Button>
-      </div>
+      <CardHeader className="flex items-center justify-center">
+        <CardTitle className="flex items-center justify-center text-2xl">
+          Hey, hello 👋
+        </CardTitle>
+        <CardDescription className="flex items-center justify-center">
+          Login untuk mengakses admin panel
+        </CardDescription>
+      </CardHeader>
       <CardContent>
         {errorMessage && (
           <p className="text-red-600 text-sm mb-2">{errorMessage}</p>
@@ -88,15 +94,10 @@ const LoginPage = () => {
                 required
               />
             </div>
-          </div>
-          <CardFooter className="flex-col gap-2">
             <Button type="submit" className="w-full">
               Login
             </Button>
-            <Button variant="outline" className="w-full">
-              Login with Google
-            </Button>
-          </CardFooter>
+          </div>
         </form>
       </CardContent>
     </Card>

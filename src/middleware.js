@@ -14,12 +14,19 @@ async function verifyToken(token) {
 
 export async function middleware(req) {
   const token = req.cookies.get("token")?.value;
+  const decoded = token ? await verifyToken(token) : null;
+
+  console.log("[MIDDLEWARE]", {
+    path: req.nextUrl.pathname,
+    user: decoded?.username,
+    role: decoded?.role,
+  });
 
   if (req.nextUrl.pathname.startsWith("/auth-admin/login")) {
     if (token) {
       const decoded = await verifyToken(token);
 
-      if (decoded?.role === "admin") {
+      if (decoded?.role === "superadmin") {
         return NextResponse.redirect(new URL("/admin/dashboard", req.url));
       }
     }
@@ -32,7 +39,7 @@ export async function middleware(req) {
 
     const decoded = await verifyToken(token);
 
-    if (!decoded || decoded.role !== "admin") {
+    if (!decoded || decoded.role !== "superadmin") {
       return NextResponse.redirect(new URL("/auth-admin/login", req.url));
     }
   }
