@@ -2,7 +2,6 @@ import { Sidebar, SidebarHeader, SidebarContent } from "./ui/sidebar";
 import { SidebarCollapsibleMenu } from "./SidebarCollapsibleMenu";
 import {
   PackageIcon,
-  DollarSignIcon,
   RulerIcon,
   TagIcon,
   BoxesIcon,
@@ -27,6 +26,7 @@ import {
   SettingsIcon,
   LogOutIcon,
 } from "lucide-react";
+import handleLogout from "@/components/logout/handleLogout";
 
 export function AppSidebar() {
   const masterMenuItems = [
@@ -73,7 +73,7 @@ export function AppSidebar() {
     },
     { icon: <MailCheckIcon />, name: "Verifikasi E-mail", href: "#" },
     { icon: <SettingsIcon />, name: "Pengaturan Sistem", href: "#" },
-    { icon: <LogOutIcon />, name: "Logout", href: "#" },
+    { icon: <LogOutIcon />, name: "Logout", action: handleLogout },
   ];
 
   return (

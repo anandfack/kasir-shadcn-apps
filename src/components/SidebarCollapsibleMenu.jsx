@@ -15,6 +15,7 @@ import {
 } from "./ui/collapsible";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export function SidebarCollapsibleMenu({ label, items }) {
   return (
@@ -27,18 +28,32 @@ export function SidebarCollapsibleMenu({ label, items }) {
           </CollapsibleTrigger>
         </SidebarGroupLabel>
         <CollapsibleContent>
-          {items.map((item, index) => (
-            <SidebarMenu key={index}>
-              <SidebarMenuItem>
-                <Link href={item.href}>
-                  <SidebarMenuButton>
-                    {item.icon}
-                    {item.name}
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-            </SidebarMenu>
-          ))}
+          {items.map((item, index) => {
+            if (item.action) {
+              return (
+                <SidebarMenu key={index}>
+                  <SidebarMenuItem>
+                    <Button variant="ghost" onClick={item.action}>
+                      {item.icon}
+                      {item.name}
+                    </Button>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              );
+            }
+            return (
+              <SidebarMenu key={index}>
+                <SidebarMenuItem>
+                  <Link href={item.href}>
+                    <SidebarMenuButton>
+                      {item.icon}
+                      {item.name}
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            );
+          })}
         </CollapsibleContent>
       </SidebarGroup>
     </Collapsible>
