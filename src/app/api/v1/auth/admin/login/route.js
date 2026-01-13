@@ -1,14 +1,16 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+// import jwt from "jsonwebtoken";
 import jsonResponse from "@/lib/jsonResponse";
+import { SignJWT } from "jose";
 
 const prisma = new PrismaClient();
 
 export async function POST(req) {
   try {
     const { username, password } = await req.json();
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
     const errors = {};
 
@@ -88,22 +90,35 @@ export async function POST(req) {
       data: { last_login: new Date() },
     });
 
-    const token = jwt.sign(
-      {
-        id: user.id,
-        username: user.username,
-        role: user.role,
-        pegawai_id: user.pegawai_id,
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
+    // const token = jwt.sign(
+    //   {
+    //     id: user.id,
+    //     username: user.username,
+    //     role: user.role,
+    //     pegawai_id: user.pegawai_id,
+    //   },
+    //   process.env.JWT_SECRET,
+    //   { expiresIn: "1h" }
+    // );
+    const token = await new SignJWT({
+      id: user.id,
+      role: user.role,
+      pegawai_id: user.pegawai_id,
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setIssuedAt()
+      .setExpirationTime("1h")
+      .sign(secret);
 
     const response = NextResponse.json({ message: "Login admin berhasil." });
 
+    const isProduction = process.env.NODE_ENV === "production";
+
     response.cookies.set("token", token, {
       httpOnly: true,
-      secure: true,
+      // secure: true,
+      secure: isProduction,
+      sameSite: isProduction ? "strict" : "lax",
       path: "/",
       maxAge: 60 * 60,
     });

@@ -14,13 +14,7 @@ async function verifyToken(token) {
 
 export async function middleware(req) {
   const token = req.cookies.get("token")?.value;
-  const decoded = token ? await verifyToken(token) : null;
-
-  console.log("[MIDDLEWARE]", {
-    path: req.nextUrl.pathname,
-    user: decoded?.username,
-    role: decoded?.role,
-  });
+  // const decoded = token ? await verifyToken(token) : null;
 
   if (req.nextUrl.pathname.startsWith("/auth-admin/login")) {
     if (token) {
