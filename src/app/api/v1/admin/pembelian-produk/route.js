@@ -27,15 +27,35 @@ export async function GET(req) {
             nama_supplier: true,
           },
         },
+        pembayaranPembelian: {
+          select: {
+            jumlah_bayar: true,
+          },
+        },
       },
       where: {
         deleted_at: null,
       },
     });
+
+    const result = pembelianProduk.map((p) => {
+      const totalBayar = p.pembayaranPembelian.reduce(
+        (sum, pay) => sum + pay.jumlah_bayar,
+        0
+      );
+
+      return {
+        ...p,
+        // total_bayar: totalBayar,
+        status_pembayaran:
+          totalBayar >= p.total_harga ? "LUNAS" : "BELUM LUNAS",
+      };
+    });
+
     return jsonResponse(
       {
         message: "OK",
-        data: pembelianProduk,
+        data: result,
       },
       200
     );

@@ -14,7 +14,7 @@ datasource db {
 }
 
 model Pegawai {
-  id                    Int           @id @default(autoincrement())
+  id                    Int                   @id @default(autoincrement())
   nip_pegawai           String
   nama_pegawai          String
   tanggal_lahir         DateTime
@@ -24,11 +24,12 @@ model Pegawai {
   email_pegawai         String
   jabatan_pegawai       String
   is_aktif              Boolean
-  created_at            DateTime      @default(now())
-  updated_at            DateTime      @updatedAt
+  created_at            DateTime              @default(now())
+  updated_at            DateTime              @updatedAt
   deleted_at            DateTime?
   mutasiStok            MutasiStok[]
   LoginPemakai          LoginPemakai?
+  pembayaranPembelian   PembayaranPembelian[]
 
   @@map("pegawai_m")
 }
@@ -214,7 +215,7 @@ model Pembayaran {
   id              Int       @id @default(autoincrement())
   penjualan_id    Int
   penjualan       Penjualan @relation(fields: [penjualan_id], references: [id])
-  tanggal_bayar   DateTime
+  tanggal_bayar   DateTime  @default(now())
   jumlah_bayar    Float
   metode_bayar    String
   nomor_referensi String?
@@ -225,20 +226,39 @@ model Pembayaran {
   @@map("pembayaran_t")
 }
 
+model PembayaranPembelian {
+  id              Int       @id @default(autoincrement())
+  pembelian_id    Int
+  pembelian       Pembelian @relation(fields: [pembelian_id], references: [id])
+  tanggal_bayar   DateTime
+  jumlah_bayar    Float
+  metode_bayar    String
+  nomor_referensi String?
+  nomor_rekening  String?
+  pegawai_id      Int
+  pegawai         Pegawai   @relation(fields: [pegawai_id], references: [id])
+  created_at      DateTime  @default(now())
+  updated_at      DateTime  @updatedAt
+  deleted_at      DateTime?
+
+  @@map("pembayaranpembelian_t")
+}
+
 model Pembelian {
-  id                Int               @id @default(autoincrement())
-  nomor_pembelian   String
-  nomor_faktur      String
-  tanggal_pembelian DateTime
-  supplier_id       Int?
-  supplier          Supplier?         @relation(fields: [supplier_id], references: [id])
-  status_pembelian  String
-  total_harga       Float
-  created_at        DateTime          @default(now())
-  updated_at        DateTime          @updatedAt
-  deleted_at        DateTime?
-  DetailPembelian   DetailPembelian[]
-  ReturPembelian    ReturPembelian[]
+  id                  Int                   @id @default(autoincrement())
+  nomor_pembelian     String
+  nomor_faktur        String
+  tanggal_pembelian   DateTime
+  supplier_id         Int?
+  supplier            Supplier?             @relation(fields: [supplier_id], references: [id])
+  status_pembelian    String
+  total_harga         Float
+  created_at          DateTime              @default(now())
+  updated_at          DateTime              @updatedAt
+  deleted_at          DateTime?
+  DetailPembelian     DetailPembelian[]
+  ReturPembelian      ReturPembelian[]
+  pembayaranPembelian PembayaranPembelian[]
 
   @@map("pembelian_t")
 }

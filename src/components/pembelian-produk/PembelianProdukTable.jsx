@@ -14,6 +14,7 @@ import {
   ArrowDownUp,
   ArrowUpDown,
   CirclePlus,
+  CreditCardIcon,
   EyeIcon,
   Loader2,
   SquarePen,
@@ -244,6 +245,22 @@ const PembelianProdukTable = () => {
           return <Badge variant={statusBadgeVariant(status)}>{status}</Badge>;
         },
       },
+      {
+        accessorKey: "status_pembayaran",
+        header: ({ column }) => (
+          <Button
+            variant="link"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            className="p-0"
+          >
+            Status Pembayaran
+            <ArrowUpDown />
+          </Button>
+        ),
+        cell: ({ row }) => (
+          <div className="capitalize">{row.getValue("status_pembayaran")}</div>
+        ),
+      },
 
       {
         id: "actions",
@@ -261,6 +278,16 @@ const PembelianProdukTable = () => {
                 }}
               >
                 <EyeIcon />
+              </Button>
+              <Button
+                variant="secondary"
+                className="text-xs bg-blue-500 text-white dark:bg-blue-600"
+                title="Bayar Pembelian"
+                onClick={() => {
+                  fetchPembayaranPembelian(loadData.id);
+                }}
+              >
+                <CreditCardIcon />
               </Button>
               <Button
                 variant="destructive"
