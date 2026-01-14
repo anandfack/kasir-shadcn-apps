@@ -14,7 +14,7 @@ import { apiRequest } from "@/lib/apiRequest";
 import { formatRupiah } from "@/lib/formatRupiah";
 import { formatTanggal } from "@/lib/formatTanggal";
 
-export default function DetailPembelianProduk({
+export default function ReturPembelianProduk({
   open,
   pembelianId,
   onClose,

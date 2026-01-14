@@ -38,6 +38,16 @@ export async function GET(req) {
       },
     });
 
+    function hitungStatusPembayaran(pembayaran, totalTagihan) {
+      const totalBayar =
+        pembayaran?.reduce((sum, p) => sum + p.jumlah_bayar, 0) ?? 0;
+
+      if (totalBayar === 0) return "BELUM_BAYAR";
+      if (totalBayar > totalTagihan) return "OVERPAID";
+      if (totalBayar >= totalTagihan) return "LUNAS";
+      return "SEBAGIAN";
+    }
+
     const result = pembelianProduk.map((p) => {
       const totalBayar = p.pembayaranPembelian.reduce(
         (sum, pay) => sum + pay.jumlah_bayar,
@@ -46,12 +56,13 @@ export async function GET(req) {
 
       return {
         ...p,
-        // total_bayar: totalBayar,
-        status_pembayaran:
-          totalBayar >= p.total_harga ? "LUNAS" : "BELUM LUNAS",
+        total_bayar: totalBayar,
+        status_pembayaran: hitungStatusPembayaran(
+          p.pembayaranPembelian,
+          p.total_harga
+        ),
       };
     });
-
     return jsonResponse(
       {
         message: "OK",

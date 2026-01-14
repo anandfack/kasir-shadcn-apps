@@ -50,6 +50,7 @@ import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import { formatTanggalTanpaJam } from "@/lib/formatTanggal";
 import { formatRupiah } from "@/lib/formatRupiah";
 import { Badge } from "../ui/badge";
+import PembayaranPembelianProduk from "./PembayaranPembelianProduk";
 
 const PembelianProdukTable = () => {
   const { toast } = useToast();
@@ -85,6 +86,9 @@ const PembelianProdukTable = () => {
   const [isReturDialogOpen, setIsReturDialogOpen] = useState(false);
   const [isDialogReturOpen, setIsDialogReturOpen] = useState(false);
   const [selectedReturId, setSelectedReturId] = useState(null);
+  const [isPembayaranDialogOpen, setIsPembayaranDialogOpen] = useState(false);
+  const [isDialogPembayaranOpen, setIsDialogPembayaranOpen] = useState(false);
+  const [selectedPembayaranId, setSelectedPembayaranId] = useState(null);
 
   const fetchDetailPembelian = useCallback(
     async (id) => {
@@ -119,6 +123,21 @@ const PembelianProdukTable = () => {
         return "destructive";
       default:
         return "secondary";
+    }
+  };
+
+  const statusPembayaranBadge = (status) => {
+    if (status === "BELUM_BAYAR") {
+      return "secondary";
+    }
+    if (status === "SEBAGIAN") {
+      return "warning";
+    }
+    if (status === "LUNAS") {
+      return "success";
+    }
+    if (status === "OVERPAID") {
+      return "destructive";
     }
   };
 
@@ -257,9 +276,15 @@ const PembelianProdukTable = () => {
             <ArrowUpDown />
           </Button>
         ),
-        cell: ({ row }) => (
-          <div className="capitalize">{row.getValue("status_pembayaran")}</div>
-        ),
+        cell: ({ row }) => {
+          const status = row.getValue("status_pembayaran");
+          const removedSymbolStatus = status.replace(/_/g, " ");
+          return (
+            <Badge variant={statusPembayaranBadge(status)}>
+              {removedSymbolStatus}
+            </Badge>
+          );
+        },
       },
 
       {
@@ -284,7 +309,8 @@ const PembelianProdukTable = () => {
                 className="text-xs bg-blue-500 text-white dark:bg-blue-600"
                 title="Bayar Pembelian"
                 onClick={() => {
-                  fetchPembayaranPembelian(loadData.id);
+                  setSelectedPembayaranId(loadData.id);
+                  setIsDialogPembayaranOpen(true);
                 }}
               >
                 <CreditCardIcon />
@@ -467,10 +493,6 @@ const PembelianProdukTable = () => {
           pembelianId={selectedReturId}
           data={detailData}
           onClose={() => setIsDialogReturOpen(false)}
-          // onSuccess={() => {
-          //   setRefreshKey((prev) => prev + 1);
-          //   setIsDialogReturOpen(false);
-          // }}
           onSuccess={() => {
             toast({
               title: "Sukses!",
@@ -481,6 +503,31 @@ const PembelianProdukTable = () => {
           }}
           onError={(error) => {
             console.error("Error retur:", error);
+          }}
+        />
+      </Dialog>
+      <Dialog
+        open={isDialogPembayaranOpen}
+        onOpenChange={setIsDialogPembayaranOpen}
+      >
+        <PembayaranPembelianProduk
+          open={isDialogPembayaranOpen}
+          onOpenChange={setIsPembayaranDialogOpen}
+          pembelianId={selectedPembayaranId}
+          data={detailData}
+          statusBadgeVariant={statusBadgeVariant}
+          statusPembayaranBadge={statusPembayaranBadge}
+          onClose={() => setIsDialogPembayaranOpen(false)}
+          onSuccess={() => {
+            toast({
+              title: "Sukses!",
+              description: "Pembayaran berhasil ditambahkan.",
+            });
+            setRefreshKey((prev) => prev + 1);
+            setIsDialogPembayaranOpen(false);
+          }}
+          onError={(error) => {
+            console.error("Error pembayaran:", error);
           }}
         />
       </Dialog>
