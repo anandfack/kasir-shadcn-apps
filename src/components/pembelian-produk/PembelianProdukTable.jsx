@@ -502,6 +502,11 @@ const PembelianProdukTable = () => {
             setIsDialogReturOpen(false);
           }}
           onError={(error) => {
+            toast({
+              title: "Terjadi kesalahan",
+              description: getApiErrorMessage(error),
+              variant: "destructive",
+            });
             console.error("Error retur:", error);
           }}
         />
@@ -524,9 +529,14 @@ const PembelianProdukTable = () => {
               description: "Pembayaran berhasil ditambahkan.",
             });
             setRefreshKey((prev) => prev + 1);
-            setIsDialogPembayaranOpen(false);
+            // setIsDialogPembayaranOpen(false);
           }}
           onError={(error) => {
+            toast({
+              title: "Terjadi kesalahan",
+              description: getApiErrorMessage(error),
+              variant: "destructive",
+            });
             console.error("Error pembayaran:", error);
           }}
         />
