@@ -66,7 +66,7 @@ export async function POST(req) {
         nomor_rekening,
         metode_bayar,
         tanggal_bayar: new Date(),
-        // nomor_pembayaran: `BYR-${new Date()}`,
+        nomor_pembayaran: `BYR-testing`,
       },
     });
 

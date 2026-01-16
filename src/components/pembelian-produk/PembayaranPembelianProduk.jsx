@@ -330,7 +330,7 @@ export default function PembayaranPembelianProduk({
                                     {idx + 1}
                                   </td>
                                   <td className="p-2 border text-center">
-                                    {item.tanggal_bayar}
+                                    {item.nomor_pembayaran}
                                   </td>
                                   <td className="p-2 border text-center">
                                     {formatTanggal(item.tanggal_bayar)}

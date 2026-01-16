@@ -227,19 +227,20 @@ model Pembayaran {
 }
 
 model PembayaranPembelian {
-  id              Int       @id @default(autoincrement())
-  pembelian_id    Int
-  pembelian       Pembelian @relation(fields: [pembelian_id], references: [id])
-  tanggal_bayar   DateTime
-  jumlah_bayar    Float
-  metode_bayar    String
-  nomor_referensi String?
-  nomor_rekening  String?
-  pegawai_id      Int
-  pegawai         Pegawai   @relation(fields: [pegawai_id], references: [id])
-  created_at      DateTime  @default(now())
-  updated_at      DateTime  @updatedAt
-  deleted_at      DateTime?
+  id               Int       @id @default(autoincrement())
+  pembelian_id     Int
+  pembelian        Pembelian @relation(fields: [pembelian_id], references: [id])
+  nomor_pembayaran String?
+  tanggal_bayar    DateTime
+  jumlah_bayar     Float
+  metode_bayar     String
+  nomor_referensi  String?
+  nomor_rekening   String?
+  pegawai_id       Int
+  pegawai          Pegawai   @relation(fields: [pegawai_id], references: [id])
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  deleted_at       DateTime?
 
   @@map("pembayaranpembelian_t")
 }
