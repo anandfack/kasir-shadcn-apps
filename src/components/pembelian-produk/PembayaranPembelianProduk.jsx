@@ -292,7 +292,7 @@ export default function PembayaranPembelianProduk({
             type="single"
             collapsible
             className="w-full"
-            defaultValue="item-1"
+            defaultValue="item-2"
           >
             <AccordionItem value="item-2">
               <AccordionTrigger className="text-lg font-semibold">
