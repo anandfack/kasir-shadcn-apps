@@ -55,6 +55,20 @@ const Hero = () => {
           />
         </div>
       </section>
+      <section className="bg-black text-white mt-2 -mx-5 overflow-hidden py-5">
+        <div className="flex whitespace-nowrap font-anton text-6xl animate-marquee">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="flex items-center gap-8 px-2">
+              {Array.from({ length: 6 }).map((_, j) => (
+                <span key={j} className="flex items-center gap-8">
+                  <span>SHOP THE COLLECTION</span>
+                  <span>*</span>
+                </span>
+              ))}
+            </div>
+          ))}
+        </div>
+      </section>
     </>
   );
 };
