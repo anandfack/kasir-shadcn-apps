@@ -35,8 +35,8 @@ export default function SignaturePieces() {
         ))}
       </div>
       <div className="mt-8 flex justify-center">
-        <button className="flex items-center px-3 py-2 border-2 border-black">
-          <h1>Shop Now!</h1>
+        <button className="flex items-center gap-1 px-3 py-2 border-2 border-black uppercase hover:bg-black hover:text-white">
+          <h1>Shop Now! </h1>
           <ArrowUpRight size={20} />
         </button>
       </div>

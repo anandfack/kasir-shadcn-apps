@@ -92,22 +92,24 @@ model Stok {
 }
 
 model MutasiStok {
-  id                 Int       @id @default(autoincrement())
+  id                 Int            @id @default(autoincrement())
   produk_id          Int?
-  produk             Produk?   @relation(fields: [produk_id], references: [id])
+  produk             Produk?        @relation(fields: [produk_id], references: [id])
   tipe_mutasi        String
   jumlah_mutasi      Int
   keterangan_mutasi  String
   pegawai_id         Int?
-  pegawai            Pegawai?  @relation(fields: [pegawai_id], references: [id])
+  pegawai            Pegawai?       @relation(fields: [pegawai_id], references: [id])
   satuan_produk_id   Int?
-  satuan_produk      Satuan?   @relation(fields: [satuan_produk_id], references: [id])
+  satuan_produk      Satuan?        @relation(fields: [satuan_produk_id], references: [id])
   tanggal_kadaluarsa DateTime?
   tanggal_mutasi     DateTime
   nomor_mutasi       String
-  created_at         DateTime  @default(now())
-  updated_at         DateTime  @updatedAt
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
   deleted_at         DateTime?
+  produkVariant      ProdukVariant? @relation(fields: [produkVariantId], references: [id])
+  produkVariantId    Int?
 
   @@map("mutasistok_m")
 }
@@ -175,6 +177,7 @@ model Produk {
   DetailPenjualan      DetailPenjualan[]
   DetailPembelian      DetailPembelian[]
   DetailReturPembelian DetailReturPembelian[]
+  produkVariants       ProdukVariant[]
 
   @@map("produk_m")
 }
@@ -313,4 +316,37 @@ model DetailReturPembelian {
   deleted_at         DateTime?
 
   @@map("detailreturpembelian_t")
+}
+
+model ProdukVariant {
+  id         Int       @id @default(autoincrement())
+  produk_id  Int
+  sku        String    @unique
+  ukuran     String // S, M, L, XL, 42, ALL
+  warna      String?
+  is_aktif   Boolean   @default(true)
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  produk      Produk       @relation(fields: [produk_id], references: [id])
+  stok        StokVariant?
+  mutasiStoks MutasiStok[]
+
+  @@map("produkvariant_m")
+}
+
+model StokVariant {
+  id                Int       @id @default(autoincrement())
+  produk_variant_id Int       @unique
+  jumlah_stok       Int
+  minimal_stok      Int
+  maksimal_stok     Int
+  created_at        DateTime  @default(now())
+  updated_at        DateTime  @updatedAt
+  deleted_at        DateTime?
+
+  variant ProdukVariant @relation(fields: [produk_variant_id], references: [id])
+
+  @@map("stokvariant_m")
 }
