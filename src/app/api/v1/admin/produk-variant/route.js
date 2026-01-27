@@ -12,11 +12,15 @@ export async function GET(req) {
       return jsonResponse({ message: auth.error }, 401);
     }
 
-    // let whereCondition = {
-    //   deleted_at: null,
-    // };
-
     const produkVariant = await prisma.produkVariant.findMany({
+      where: {
+        deleted_at: null,
+      },
+      orderBy: {
+        produk: {
+          nama_produk: "asc",
+        },
+      },
       select: {
         id: true,
         produk: {
@@ -31,10 +35,6 @@ export async function GET(req) {
         warna: true,
         is_aktif: true,
       },
-        // where: whereCondition,
-      //   orderBy: {
-      //     nama_produk: "asc",
-      //   },
     });
 
     return jsonResponse(
@@ -55,89 +55,79 @@ export async function GET(req) {
   }
 }
 
-// export async function POST(req) {
-//   try {
-//     const auth = verifyAuth(req);
+export async function POST(req) {
+  try {
+    const auth = verifyAuth(req);
 
-//     if (auth.error) {
-//       return jsonResponse({ message: auth.error }, 401);
-//     }
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
 
-//     const body = await req.json();
-//     const {
-//       kategori_id,
-//       satuan_produk_id,
-//       supplier_id,
-//       kode_produk,
-//       nama_produk,
-//       deskripsi_produk,
-//       is_aktif,
-//     } = body;
+    const body = await req.json();
+    const { produk_id, variants } = body;
 
-//     const errors = {};
+    const errors = {};
 
-//     if (!satuan_produk_id) {
-//       errors.satuan_produk_id = "Satuan produk wajib diisi";
-//     } else if (isNaN(Number(satuan_produk_id))) {
-//       errors.satuan_produk_id = "Satuan produk tidak valid";
-//     }
-//     if (!kategori_id) {
-//       errors.kategori_id = "Kategori wajib diisi";
-//     } else if (isNaN(Number(kategori_id))) {
-//       errors.kategori_id = "Kategori tidak valid";
-//     }
-//     if (!supplier_id) {
-//       errors.supplier_id = "Supplier wajib diisi";
-//     } else if (isNaN(Number(supplier_id))) {
-//       errors.supplier_id = "Supplier tidak valid";
-//     }
+    if (!produk_id) {
+      errors.produk_id = "Produk wajib diisi";
+    } else if (isNaN(Number(produk_id))) {
+      errors.produk_id = "Produk tidak valid";
+    }
 
-//     if (!kode_produk || kode_produk.trim() === "") {
-//       errors.kode_produk = "Kode produk wajib diisi";
-//     }
-//     if (!nama_produk || nama_produk.trim() === "") {
-//       errors.nama_produk = "Nama produk wajib diisi";
-//     }
-//     if (!deskripsi_produk || deskripsi_produk.trim() === "") {
-//       errors.deskripsi_produk = "Deskripsi produk wajib diisi";
-//     }
+    if (!Array.isArray(variants) || variants.length === 0) {
+      errors.variants = "Variant minimal 1";
+    }
 
-//     if (Object.keys(errors).length > 0) {
-//       return jsonResponse(
-//         {
-//           message: "Validation Error",
-//           errors,
-//         },
-//         400
-//       );
-//     }
+    if (Object.keys(errors).length > 0) {
+      return jsonResponse({ message: "Validasi gagal", errors }, 422);
+    }
 
-//     const tambahProduk = await prisma.produk.create({
-//       data: {
-//         kategori_id,
-//         satuan_produk_id,
-//         supplier_id,
-//         kode_produk,
-//         nama_produk,
-//         deskripsi_produk,
-//         is_aktif: is_aktif ? is_aktif : true,
-//       },
-//     });
+    const result = await prisma.$transaction(async (tx) => {
+      const produk = await tx.produk.findUnique({
+        where: { id: Number(produk_id) },
+        include: {
+          produkVariants: true,
+        },
+      });
 
-//     return jsonResponse(
-//       {
-//         message: "Produk berhasil ditambahkan",
-//         data: tambahProduk,
-//       },
-//       201
-//     );
-//   } catch (error) {
-//     console.error("Error:", error);
-//     return jsonResponse(
-//       {
-//         message: "Internal Server Error",
-//       },
-//       500
-//     );
-//   }
-// }
+      if (!produk) {
+        throw new Error("Produk tidak ditemukan");
+      }
+
+      const createdVariants = await Promise.all(
+        variants.map((variant) =>
+          tx.produkVariant.create({
+            data: {
+              produk_id: Number(produk_id),
+              sku: variant.sku,
+              ukuran: variant.ukuran,
+              warna: variant.warna,
+            },
+          }),
+        ),
+      );
+
+      return {
+        produk_id,
+        variants: createdVariants,
+      };
+    });
+
+    return jsonResponse(
+      {
+        message: "Produk variant berhasil ditambahkan",
+        data: result,
+      },
+      201,
+    );
+  } catch (error) {
+    console.error("Error:", error);
+
+    return jsonResponse(
+      {
+        message: error.message || "Internal Server Error",
+      },
+      500,
+    );
+  }
+}

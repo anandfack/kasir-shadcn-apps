@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
-// import AdminTambahProdukVariantForm from "./AdminTambahProdukVariantForm";
+import AdminTambahProdukVariantForm from "./AdminTambahProdukVariantForm";
 // import AdminUpdateProdukVariantForm from "./AdminUpdateProdukVariantForm";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "../ui/badge";
@@ -44,7 +44,7 @@ import { ArrowLeftRight } from "lucide-react";
 import { apiRequest } from "@/lib/apiRequest";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
-const ProdukTable = () => {
+const AdminProdukVarianTable = () => {
   const { toast } = useToast();
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -398,7 +398,7 @@ const ProdukTable = () => {
   return (
     <div className="w-full">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between py-4">
-        {/* <Dialog
+        <Dialog
           open={isDialogTambahOpen}
           onOpenChange={(isOpen) => setIsDialogTambahOpen(isOpen)}
         >
@@ -432,7 +432,7 @@ const ProdukTable = () => {
             setProdukOpen={setProdukOpen}
             produkLoading={produkLoading}
           />
-        </Dialog> */}
+        </Dialog>
         <Input
           placeholder="Cari Produk Variant ..."
           className="max-w-sm text-xs md:text-sm"
@@ -570,4 +570,4 @@ const ProdukTable = () => {
   );
 };
 
-export default ProdukTable;
+export default AdminProdukVarianTable;
