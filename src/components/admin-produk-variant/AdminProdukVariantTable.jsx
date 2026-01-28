@@ -43,6 +43,8 @@ import { Badge } from "../ui/badge";
 import { ArrowLeftRight } from "lucide-react";
 import { apiRequest } from "@/lib/apiRequest";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import AdminProdukVariantActions from "./AdminProdukVariantActions";
+import AdminUpdateProdukVariantForm from "./AdminUpdateProdukVariantForm";
 
 const AdminProdukVarianTable = () => {
   const { toast } = useToast();
@@ -115,12 +117,13 @@ const AdminProdukVarianTable = () => {
 
   const dialogTitle = useMemo(() => {
     if (!editData) return "Update Produk";
-    return `Update Produk`;
+    return `Update Produk Variant`;
   }, [editData]);
 
   const dialogDescription = useMemo(() => {
+    console.log("EDIT DATA ADA NIH:", editData);
     if (!editData) return "Silakan ubah data produk di sini";
-    return `${editData.nama_produk}`;
+    return `${editData.produk?.nama_produk}`;
   }, [editData]);
 
   const handleError = useCallback((error) => {
@@ -128,27 +131,30 @@ const AdminProdukVarianTable = () => {
     setIsDialogUpdateOpen(true);
   }, []);
 
-  //   const handleDelete = useCallback(async () => {
-  //     if (!deleteData) return;
+  const handleDelete = useCallback(async () => {
+    if (!deleteData) return;
 
-  //     try {
-  //       await apiRequest("DELETE", `/api/v1/admin/produk/${deleteData.id}`);
-  //       toast({
-  //         title: "Sukses!",
-  //         description: "Data harga produk berhasil dihapus.",
-  //       });
-  //       setRefreshKey((prev) => prev + 1);
-  //       setDeleteData(null);
-  //       setIsDialogDeleteOpen(false);
-  //     } catch (error) {
-  //       toast({
-  //         title: "Gagal menghapus",
-  //         description: getApiErrorMessage(error),
-  //         variant: "destructive",
-  //       });
-  //       console.error("Gagal menghapus:", error);
-  //     }
-  //   }, [deleteData, toast]);
+    try {
+      await apiRequest(
+        "DELETE",
+        `/api/v1/admin/produk-variant/${deleteData.id}`,
+      );
+      toast({
+        title: "Sukses!",
+        description: "Data produk variant berhasil dihapus.",
+      });
+      setRefreshKey((prev) => prev + 1);
+      setDeleteData(null);
+      setIsDialogDeleteOpen(false);
+    } catch (error) {
+      toast({
+        title: "Gagal menghapus",
+        description: getApiErrorMessage(error),
+        variant: "destructive",
+      });
+      console.error("Gagal menghapus:", error);
+    }
+  }, [deleteData, toast]);
 
   const columns = useMemo(
     () => [
@@ -163,25 +169,50 @@ const AdminProdukVarianTable = () => {
       },
       {
         id: "variants",
-        header: "Variant",
+        header: () => (
+          <div className="w-full grid grid-cols-[80px_120px_1fr_100px_80px] text-xs">
+            <div>Ukuran</div>
+            <div>Warna</div>
+            <div>SKU</div>
+            <div>Status</div>
+            <div className="text-center">Actions</div>
+          </div>
+        ),
         cell: ({ row }) => {
           const variants = row.original.variants;
 
           return (
-            <div className="flex flex-col gap-1">
+            <div className="w-full flex flex-col divide-y">
               {variants.map((v) => (
                 <div
                   key={v.id}
-                  className="grid grid-cols-5 gap-2 text-xs border-b pb-1"
+                  className="grid grid-cols-[80px_120px_1fr_100px_80px] items-center py-2 text-sm"
                 >
                   <div>{v.ukuran}</div>
                   <div>{v.warna}</div>
-                  <div>{v.sku}</div>
+                  <div className="text-xs truncate">{v.sku}</div>
                   <div>
-                    <Badge variant={v.is_aktif ? "secondary" : "destructive"}>
+                    <Badge
+                      variant={v.is_aktif ? "secondary" : "destructive"}
+                      className="text-xs"
+                    >
                       {v.is_aktif ? "Aktif" : "Non-Aktif"}
                     </Badge>
                   </div>
+
+                  <AdminProdukVariantActions
+                    onEdit={() => {
+                      console.log("EDIT VARIANT ID:", v.id);
+                      console.log("FULL VARIANT DATA:", v);
+
+                      setEditData(v);
+                      setIsDialogUpdateOpen(true);
+                    }}
+                    onDelete={() => {
+                      setDeleteData(v);
+                      setIsDialogDeleteOpen(true);
+                    }}
+                  />
                 </div>
               ))}
             </div>
@@ -191,148 +222,6 @@ const AdminProdukVarianTable = () => {
     ],
     [],
   );
-
-  //   const columns = useMemo(
-  //     () => [
-  //       {
-  //         id: "no",
-  //         accessorFn: (_, index) => index + 1,
-  //         header: ({ column }) => (
-  //           <Button
-  //             variant="link"
-  //             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //             className="p-0"
-  //           >
-  //             No
-  //             <ArrowUpDown />
-  //           </Button>
-  //         ),
-  //         cell: ({ row }) => <div>{row.getValue("no")}.</div>,
-  //         enableSorting: true,
-  //         enableHiding: false,
-  //       },
-  //       {
-  //         id: "produk",
-  //         accessorFn: (row) => row.produk?.nama_produk,
-  //         header: ({ column }) => (
-  //           <Button
-  //             variant="link"
-  //             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //             className="p-0"
-  //           >
-  //             Nama Produk
-  //             <ArrowUpDown />
-  //           </Button>
-  //         ),
-  //         cell: ({ row }) => <div>{row.getValue("produk")}</div>,
-  //       },
-  //       {
-  //         accessorKey: "sku",
-  //         header: ({ column }) => (
-  //           <Button
-  //             variant="link"
-  //             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //             className="p-0"
-  //           >
-  //             SKU
-  //             <ArrowUpDown />
-  //           </Button>
-  //         ),
-  //         cell: ({ row }) => <div>{row.getValue("sku")}</div>,
-  //       },
-  //       {
-  //         accessorKey: "ukuran",
-  //         header: ({ column }) => (
-  //           <Button
-  //             variant="link"
-  //             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //             className="p-0"
-  //           >
-  //             Ukuran
-  //             <ArrowUpDown />
-  //           </Button>
-  //         ),
-  //         cell: ({ row }) => <div>{row.getValue("ukuran")}</div>,
-  //       },
-  //       {
-  //         accessorKey: "warna",
-  //         header: ({ column }) => (
-  //           <Button
-  //             variant="link"
-  //             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //             className="p-0"
-  //           >
-  //             Warna
-  //             <ArrowUpDown />
-  //           </Button>
-  //         ),
-  //         cell: ({ row }) => <div>{row.getValue("warna")}</div>,
-  //       },
-  //       {
-  //         accessorKey: "is_aktif",
-  //         header: ({ column }) => (
-  //           <Button
-  //             variant="link"
-  //             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-  //             className="p-0"
-  //           >
-  //             Status
-  //             <ArrowUpDown />
-  //           </Button>
-  //         ),
-  //         cell: ({ row }) => {
-  //           const isActive = row.getValue("is_aktif");
-  //           return (
-  //             <Badge variant={isActive ? "secondary" : "destructive"}>
-  //               {isActive ? "Aktif" : "Non-Aktif"}
-  //             </Badge>
-  //           );
-  //         },
-  //       },
-  //       {
-  //         id: "actions",
-  //         header: () => <div className="text-center">Actions</div>,
-  //         cell: ({ row }) => {
-  //           const loadData = row.original;
-
-  //             return (
-  //               <div className="flex items-center justify-center gap-2">
-  //                 {/* ✅ Mutasi Stok */}
-  //                 <Button
-  //                   variant="ghost"
-  //                   size="icon"
-  //                   title="Mutasi Stok"
-  //                   disabled={isMutasiLoading}
-  //                   onClick={() => {
-  //                     setSelectedProduk(loadData);
-  //                     fetchMutasiStok(loadData.id);
-  //                   }}
-  //                 >
-  //                   {isMutasiLoading ? (
-  //                     <Loader2 className="animate-spin h-4 w-4" />
-  //                   ) : (
-  //                     <ArrowLeftRight className="h-4 w-4" />
-  //                   )}
-  //                 </Button>
-
-  //                 {/* Edit & Delete tetap */}
-  //                 <ProdukActions
-  //                   onEdit={() => {
-  //                     setEditData(loadData);
-  //                     setIsDialogUpdateOpen(true);
-  //                   }}
-  //                   onDelete={() => {
-  //                     setDeleteData(loadData);
-  //                     setIsDialogDeleteOpen(true);
-  //                   }}
-  //                 />
-  //               </div>
-  //             );
-  //         },
-  //       },
-  //     ],
-  //     [],
-  //   );
 
   const groupedData = useMemo(() => {
     if (!data) return [];
@@ -482,13 +371,13 @@ const AdminProdukVarianTable = () => {
         </Table>
       </div>
       {/* ✅ Dialog Konfirmasi Delete */}
-      {/* <Dialog open={isDialogDeleteOpen} onOpenChange={setIsDialogDeleteOpen}>
+      <Dialog open={isDialogDeleteOpen} onOpenChange={setIsDialogDeleteOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Hapus Data</DialogTitle>
             <DialogDescription>
               Apakah kamu yakin ingin menghapus{" "}
-              <strong>{deleteData?.nama_produk}</strong>?
+              <strong>{deleteData?.sku}</strong>?
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-2 mt-4">
@@ -503,9 +392,9 @@ const AdminProdukVarianTable = () => {
             </Button>
           </div>
         </DialogContent>
-      </Dialog> */}
+      </Dialog>
       {/* ✅ Dialog Update Harga Produk */}
-      {/* <Dialog open={isDialogUpdateOpen} onOpenChange={setIsDialogUpdateOpen}>
+      <Dialog open={isDialogUpdateOpen} onOpenChange={setIsDialogUpdateOpen}>
         <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{dialogTitle}</DialogTitle>
@@ -519,7 +408,7 @@ const AdminProdukVarianTable = () => {
               onSubmit={() => {
                 toast({
                   title: "Sukses!",
-                  description: "Data harga produk variant berhasil diupdate.",
+                  description: "Data produk variant berhasil diupdate.",
                 });
                 setRefreshKey((prev) => prev + 1);
                 setIsDialogUpdateOpen(false);
@@ -535,7 +424,7 @@ const AdminProdukVarianTable = () => {
             />
           )}
         </DialogContent>
-      </Dialog> */}
+      </Dialog>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
