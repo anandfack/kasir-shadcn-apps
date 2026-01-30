@@ -30,6 +30,7 @@ model Pegawai {
   mutasiStok            MutasiStok[]
   LoginPemakai          LoginPemakai?
   pembayaranPembelian   PembayaranPembelian[]
+  mutasiStokVariants    MutasiStokVariant[]
 
   @@map("pegawai_m")
 }
@@ -65,14 +66,15 @@ model EmailVerification {
 }
 
 model Satuan {
-  id          Int          @id @default(autoincrement())
-  kode_satuan String
-  nama_satuan String
-  created_at  DateTime     @default(now())
-  updated_at  DateTime     @updatedAt
-  deleted_at  DateTime?
-  Produk      Produk[]
-  mutasiStok  MutasiStok[]
+  id                 Int                 @id @default(autoincrement())
+  kode_satuan        String
+  nama_satuan        String
+  created_at         DateTime            @default(now())
+  updated_at         DateTime            @updatedAt
+  deleted_at         DateTime?
+  Produk             Produk[]
+  mutasiStok         MutasiStok[]
+  mutasiStokVariants MutasiStokVariant[]
 
   @@map("satuanproduk_m")
 }
@@ -92,9 +94,30 @@ model Stok {
 }
 
 model MutasiStok {
-  id                 Int            @id @default(autoincrement())
+  id                 Int       @id @default(autoincrement())
   produk_id          Int?
-  produk             Produk?        @relation(fields: [produk_id], references: [id])
+  produk             Produk?   @relation(fields: [produk_id], references: [id])
+  tipe_mutasi        String
+  jumlah_mutasi      Int
+  keterangan_mutasi  String
+  pegawai_id         Int?
+  pegawai            Pegawai?  @relation(fields: [pegawai_id], references: [id])
+  satuan_produk_id   Int?
+  satuan_produk      Satuan?   @relation(fields: [satuan_produk_id], references: [id])
+  tanggal_kadaluarsa DateTime?
+  tanggal_mutasi     DateTime
+  nomor_mutasi       String
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @updatedAt
+  deleted_at         DateTime?
+
+  @@map("mutasistok_m")
+}
+
+model MutasiStokVariant {
+  id                 Int            @id @default(autoincrement())
+  produk_variant_id  Int?
+  produkVariant      ProdukVariant? @relation(fields: [produk_variant_id], references: [id])
   tipe_mutasi        String
   jumlah_mutasi      Int
   keterangan_mutasi  String
@@ -108,10 +131,8 @@ model MutasiStok {
   created_at         DateTime       @default(now())
   updated_at         DateTime       @updatedAt
   deleted_at         DateTime?
-  produkVariant      ProdukVariant? @relation(fields: [produkVariantId], references: [id])
-  produkVariantId    Int?
 
-  @@map("mutasistok_m")
+  @@map("mutasistokvariant_m")
 }
 
 model Kategori {
@@ -329,9 +350,9 @@ model ProdukVariant {
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
 
-  produk      Produk       @relation(fields: [produk_id], references: [id])
-  stok        StokVariant?
-  mutasiStoks MutasiStok[]
+  produk             Produk              @relation(fields: [produk_id], references: [id])
+  stok               StokVariant?
+  mutasiStokVariants MutasiStokVariant[]
 
   @@map("produkvariant_m")
 }
