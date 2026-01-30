@@ -38,6 +38,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "../ui/badge";
 // import UpdateStockProdukForm from "./UpdateStockProdukForm";
 // import PenyesuaianStockForm from "./PenyesuaianStockForm";
+import AdminUpdateStokVariantForm from "./AdminUpdateStokVariantForm";
 import { apiRequest } from "@/lib/apiRequest";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
@@ -86,15 +87,17 @@ const AdminStokVariantTable = () => {
   //   staleTime: 1000 * 60 * 5,
   // });
 
-  //   const dialogTitle = useMemo(
-  //     () => `Update Nilai Minimum dan Maksimum Stock`,
-  //     [],
-  //   );
+  const dialogTitle = useMemo(
+    () => `Update Nilai Minimum dan Maksimum Stock`,
+    [],
+  );
 
-  //   const dialogDescription = useMemo(
-  //     () => `${editData?.nama_produk || ""}`,
-  //     [editData],
-  //   );
+  const dialogDescription = useMemo(
+    () =>
+      `${editData?.nama_produk || ""}` +
+      ` - ${editData?.ukuran || ""} / ${editData?.warna || ""}`,
+    [editData],
+  );
 
   //   const dialogTitlePenyesuaian = useMemo(() => `Penyesuaian Stock Produk`, []);
 
@@ -227,13 +230,12 @@ const AdminStokVariantTable = () => {
                     {/* Actions */}
                     <div className="flex justify-center">
                       <AdminStokVariantActions
+                        disabled={v.jumlah_stok === null}
                         onEdit={() => {
-                          console.log("EDIT VARIANT:", v.id);
                           setEditData(v);
                           setIsDialogUpdateOpen(true);
                         }}
                         onAdjustment={() => {
-                          console.log("ADJUST VARIANT:", v.id);
                           setPenyesuaianData(v);
                           setIsDialogPenyesuaianOpen(true);
                         }}
@@ -341,21 +343,21 @@ const AdminStokVariantTable = () => {
         </Table>
       </div>
       {/* ✅ Dialog Update Harga Produk */}
-      {/* <Dialog open={isDialogUpdateOpen} onOpenChange={setIsDialogUpdateOpen}>
+      <Dialog open={isDialogUpdateOpen} onOpenChange={setIsDialogUpdateOpen}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>{dialogTitle}</DialogTitle>
             <DialogDescription>{dialogDescription}</DialogDescription>
           </DialogHeader>
           {editData && (
-            <UpdateStockProdukForm
+            <AdminUpdateStokVariantForm
               // produkData={produkData}
               initialData={editData}
               isLoading={false}
               onSubmit={() => {
                 toast({
                   title: "Sukses!",
-                  description: "Data harga produk berhasil diupdate.",
+                  description: "Data stok variant berhasil diupdate.",
                 });
                 setRefreshKey((prev) => prev + 1);
                 setIsDialogUpdateOpen(false);
@@ -371,7 +373,7 @@ const AdminStokVariantTable = () => {
             />
           )}
         </DialogContent>
-      </Dialog> */}
+      </Dialog>
 
       {/* <Dialog
         open={isDialogPenyesuaianOpen}

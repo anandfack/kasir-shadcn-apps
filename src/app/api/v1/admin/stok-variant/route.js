@@ -41,7 +41,7 @@ export async function GET(req) {
     });
 
     const result = produkVariant.map((item) => {
-      const stok = item.stok?.[0] ?? null;
+      const stok = item.stok ?? null;
 
       return {
         id: item.id,

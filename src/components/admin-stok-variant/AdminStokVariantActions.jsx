@@ -1,7 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal, SquarePen, Trash2 } from "lucide-react";
 
-const AdminStokVariantActions = ({ onEdit, onDelete, onAdjustment }) => {
+const AdminStokVariantActions = ({
+  onEdit,
+  onDelete,
+  onAdjustment,
+  disabled,
+}) => {
   return (
     <div className="flex items-center justify-center gap-2">
       <Button
@@ -9,6 +14,7 @@ const AdminStokVariantActions = ({ onEdit, onDelete, onAdjustment }) => {
         className="text-xs"
         title="Edit Stok Minimum dan Maksimum"
         onClick={onEdit}
+        disabled={disabled}
       >
         <SquarePen />
       </Button>
@@ -20,6 +26,7 @@ const AdminStokVariantActions = ({ onEdit, onDelete, onAdjustment }) => {
         className="text-xs"
         title="Sesuaikan Stok"
         onClick={onAdjustment}
+        disabled={disabled}
       >
         <SlidersHorizontal />
       </Button>
