@@ -1,0 +1,152 @@
+import { PrismaClient } from "@prisma/client";
+import { verifyAuth } from "@/lib/verifyAuth";
+import jsonResponse from "@/lib/jsonResponse";
+
+const prisma = new PrismaClient();
+
+export async function POST(req) {
+  try {
+    /* =========================
+       1. AUTH
+    ========================= */
+    const auth = verifyAuth(req);
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
+    const user = auth.user;
+
+    if (!user?.pegawai_id) {
+      return jsonResponse(
+        { message: "Pegawai tidak terhubung dengan akun login" },
+        403,
+      );
+    }
+
+    /* =========================
+       2. BODY
+    ========================= */
+    const body = await req.json();
+    const { produk_variant_id, stok_fisik, keterangan_mutasi } = body;
+
+    /* =========================
+       3. VALIDATION
+    ========================= */
+    const errors = {};
+
+    if (!produk_variant_id) {
+      errors.produk_variant_id = "Produk variant wajib diisi";
+    }
+
+    if (stok_fisik === undefined || stok_fisik === null || stok_fisik === "") {
+      errors.stok_fisik = "Stok fisik wajib diisi";
+    } else if (isNaN(stok_fisik)) {
+      errors.stok_fisik = "Stok fisik harus berupa angka";
+    } else if (Number(stok_fisik) < 0) {
+      errors.stok_fisik = "Stok fisik tidak boleh kurang dari 0";
+    }
+
+    if (!keterangan_mutasi) {
+      errors.keterangan_mutasi = "Keterangan mutasi wajib diisi";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      return jsonResponse(
+        {
+          message: "Validation Error",
+          errors,
+        },
+        400,
+      );
+    }
+
+    /* =========================
+       4. AMBIL STOK VARIANT
+    ========================= */
+    const stokVariant = await prisma.stokVariant.findUnique({
+      where: {
+        produk_variant_id,
+      },
+    });
+
+    if (!stokVariant) {
+      return jsonResponse(
+        {
+          message: "Data stok variant tidak ditemukan",
+        },
+        404,
+      );
+    }
+
+    const stokSistem = stokVariant.jumlah_stok;
+    const stokFisik = Number(stok_fisik);
+    const selisih = stokFisik - stokSistem;
+
+    if (selisih === 0) {
+      return jsonResponse(
+        {
+          message: "Tidak ada selisih stok",
+        },
+        400,
+      );
+    }
+
+    /* =========================
+       5. TRANSACTION
+    ========================= */
+    const result = await prisma.$transaction(async (tx) => {
+      // 5.1 Mutasi stok variant
+      const mutasi = await tx.mutasiStokVariant.create({
+        data: {
+          produk_variant_id,
+          tipe_mutasi: "PENYESUAIAN",
+          jumlah_mutasi: Math.abs(selisih),
+          keterangan_mutasi,
+          pegawai_id: auth.user?.pegawai_id,
+          tanggal_mutasi: new Date(),
+          nomor_mutasi: `MT-VAR-${Date.now()}`,
+          // pegawai_id: auth.user?.pegawai_id,
+        },
+      });
+
+      // 5.2 Update stok variant
+      const stokUpdate = await tx.stokVariant.update({
+        where: {
+          produk_variant_id,
+        },
+        data: {
+          jumlah_stok: stokFisik,
+          updated_at: new Date(),
+        },
+      });
+
+      return {
+        mutasi,
+        stok: stokUpdate,
+        selisih,
+        stok_sistem: stokSistem,
+        stok_fisik: stokFisik,
+      };
+    });
+
+    /* =========================
+       6. RESPONSE
+    ========================= */
+    return jsonResponse(
+      {
+        message: "Penyesuaian stok variant berhasil",
+        data: result,
+      },
+      200,
+    );
+  } catch (error) {
+    console.error("Penyesuaian stok variant error:", error);
+
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500,
+    );
+  }
+}

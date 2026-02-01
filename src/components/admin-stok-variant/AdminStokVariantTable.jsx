@@ -36,11 +36,10 @@ import { Input } from "@/components/ui/input";
 
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "../ui/badge";
-// import UpdateStockProdukForm from "./UpdateStockProdukForm";
-// import PenyesuaianStockForm from "./PenyesuaianStockForm";
 import AdminUpdateStokVariantForm from "./AdminUpdateStokVariantForm";
 import { apiRequest } from "@/lib/apiRequest";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
+import AdminPenyesuaianStokVariantForm from "./AdminPenyesuaianStokVariantForm";
 
 const AdminStokVariantTable = () => {
   const { toast } = useToast();
@@ -99,14 +98,17 @@ const AdminStokVariantTable = () => {
     [editData],
   );
 
-  //   const dialogTitlePenyesuaian = useMemo(() => `Penyesuaian Stock Produk`, []);
+  const dialogTitlePenyesuaian = useMemo(
+    () => `Penyesuaian Stok Variant Produk`,
+    [],
+  );
 
-  //   console.log("Edit data: ", editData);
-
-  //   const dialogDescriptionPenyesuaian = useMemo(
-  //     () => `${penyesuaianData?.nama_produk || ""}`,
-  //     [penyesuaianData],
-  //   );
+  const dialogDescriptionPenyesuaian = useMemo(
+    () =>
+      `${penyesuaianData?.nama_produk || ""}` +
+      ` - ${penyesuaianData?.ukuran || ""} / ${penyesuaianData?.warna || ""}`,
+    [penyesuaianData],
+  );
 
   const handleError = useCallback((error) => {
     console.error("Terjadi error:", error);
@@ -375,7 +377,7 @@ const AdminStokVariantTable = () => {
         </DialogContent>
       </Dialog>
 
-      {/* <Dialog
+      <Dialog
         open={isDialogPenyesuaianOpen}
         onOpenChange={setIsDialogPenyesuaianOpen}
       >
@@ -387,13 +389,13 @@ const AdminStokVariantTable = () => {
             </DialogDescription>
           </DialogHeader>
           {penyesuaianData && (
-            <PenyesuaianStockForm
+            <AdminPenyesuaianStokVariantForm
               initialData={penyesuaianData}
               isLoading={false}
               onSubmit={() => {
                 toast({
                   title: "Sukses!",
-                  description: "Berhasil menyesuaikan stok produk.",
+                  description: "Berhasil menyesuaikan stok variant produk.",
                 });
                 setRefreshKey((prev) => prev + 1);
                 setIsDialogPenyesuaianOpen(false);
@@ -401,14 +403,18 @@ const AdminStokVariantTable = () => {
               onError={(error) => {
                 toast({
                   title: "Terjadi kesalahan",
-                  description: getApiErrorMessage(error),
+                  description:
+                    typeof error === "string"
+                      ? error
+                      : getApiErrorMessage(error),
+                  variant: "destructive",
                   variant: "destructive",
                 });
               }}
             />
           )}
         </DialogContent>
-      </Dialog> */}
+      </Dialog>
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground">
           {table.getFilteredSelectedRowModel().rows.length} of{" "}
