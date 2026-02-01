@@ -39,12 +39,12 @@ import AdminTambahProdukVariantForm from "./AdminTambahProdukVariantForm";
 // import AdminUpdateProdukVariantForm from "./AdminUpdateProdukVariantForm";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "../ui/badge";
-// import MutasiStokBarang from "@/components/mutasi-stok/MutasiStok";
 import { ArrowLeftRight } from "lucide-react";
 import { apiRequest } from "@/lib/apiRequest";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import AdminProdukVariantActions from "./AdminProdukVariantActions";
 import AdminUpdateProdukVariantForm from "./AdminUpdateProdukVariantForm";
+import AdminMutasiStokVariant from "../admin-mutasi-stok-variant/AdminMutasiStokVariant";
 
 const AdminProdukVarianTable = () => {
   const { toast } = useToast();
@@ -83,9 +83,9 @@ const AdminProdukVarianTable = () => {
   const [supplierOpen, setSupplierOpen] = useState(true);
   const [satuanOpen, setSatuanOpen] = useState(true);
   const [produkOpen, setProdukOpen] = useState(true);
-  //   const [isMutasiDialogOpen, setIsMutasiDialogOpen] = useState(false);
-  //   const [mutasiData, setMutasiData] = useState(null);
-  //   const [isMutasiLoading, setIsMutasiLoading] = useState(false);
+  const [isMutasiDialogOpen, setIsMutasiDialogOpen] = useState(false);
+  const [mutasiData, setMutasiData] = useState(null);
+  const [isMutasiLoading, setIsMutasiLoading] = useState(false);
   const [selectedProduk, setSelectedProduk] = useState(null);
 
   const { data: produkData = [], isLoading: produkLoading } = useQuery({
@@ -95,25 +95,28 @@ const AdminProdukVarianTable = () => {
     staleTime: 1000 * 60 * 5,
   });
 
-  //   const fetchMutasiStok = useCallback(
-  //     async (id) => {
-  //       setIsMutasiLoading(true);
-  //       try {
-  //         const res = await apiRequest("GET", `/api/v1/admin/mutasi-stok/${id}`);
-  //         setMutasiData(res);
-  //         setIsMutasiDialogOpen(true);
-  //       } catch (err) {
-  //         toast({
-  //           title: "Gagal mengambil mutasi stok",
-  //           description: getApiErrorMessage(err),
-  //           variant: "destructive",
-  //         });
-  //       } finally {
-  //         setIsMutasiLoading(false);
-  //       }
-  //     },
-  //     [toast],
-  //   );
+  const fetchMutasiStok = useCallback(
+    async (id) => {
+      setIsMutasiLoading(true);
+      try {
+        const res = await apiRequest(
+          "GET",
+          `/api/v1/admin/mutasi-stok-variant/${id}`,
+        );
+        setMutasiData(res);
+        setIsMutasiDialogOpen(true);
+      } catch (err) {
+        toast({
+          title: "Gagal mengambil mutasi stok",
+          description: getApiErrorMessage(err),
+          variant: "destructive",
+        });
+      } finally {
+        setIsMutasiLoading(false);
+      }
+    },
+    [toast],
+  );
 
   const dialogTitle = useMemo(() => {
     if (!editData) return "Update Produk";
@@ -170,7 +173,7 @@ const AdminProdukVarianTable = () => {
       {
         id: "variants",
         header: () => (
-          <div className="w-full grid grid-cols-[80px_120px_1fr_100px_80px] text-xs">
+          <div className="w-full grid grid-cols-5 items-center py-2 text-sm">
             <div>Ukuran</div>
             <div>Warna</div>
             <div>SKU</div>
@@ -186,7 +189,7 @@ const AdminProdukVarianTable = () => {
               {variants.map((v) => (
                 <div
                   key={v.id}
-                  className="grid grid-cols-[80px_120px_1fr_100px_80px] items-center py-2 text-sm"
+                  className="grid grid-cols-5 items-center py-2 text-sm"
                 >
                   <div>{v.ukuran}</div>
                   <div>{v.warna}</div>
@@ -202,15 +205,16 @@ const AdminProdukVarianTable = () => {
 
                   <AdminProdukVariantActions
                     onEdit={() => {
-                      console.log("EDIT VARIANT ID:", v.id);
-                      console.log("FULL VARIANT DATA:", v);
-
                       setEditData(v);
                       setIsDialogUpdateOpen(true);
                     }}
                     onDelete={() => {
                       setDeleteData(v);
                       setIsDialogDeleteOpen(true);
+                    }}
+                    onMutasiStokVariant={() => {
+                      setSelectedProduk(row.original);
+                      fetchMutasiStok(v.id);
                     }}
                   />
                 </div>
@@ -220,7 +224,7 @@ const AdminProdukVarianTable = () => {
         },
       },
     ],
-    [],
+    [fetchMutasiStok],
   );
 
   const groupedData = useMemo(() => {
@@ -449,12 +453,12 @@ const AdminProdukVarianTable = () => {
           </Button>
         </div>
       </div>
-      {/* <MutasiStokBarang
+      <AdminMutasiStokVariant
         open={isMutasiDialogOpen}
         onOpenChange={setIsMutasiDialogOpen}
         data={mutasiData}
         produk={selectedProduk}
-      /> */}
+      />
     </div>
   );
 };

@@ -75,6 +75,7 @@ model Satuan {
   Produk             Produk[]
   mutasiStok         MutasiStok[]
   mutasiStokVariants MutasiStokVariant[]
+  produkVariants     ProdukVariant[]
 
   @@map("satuanproduk_m")
 }
@@ -340,15 +341,17 @@ model DetailReturPembelian {
 }
 
 model ProdukVariant {
-  id         Int       @id @default(autoincrement())
-  produk_id  Int
-  sku        String    @unique
-  ukuran     String // S, M, L, XL, 42, ALL
-  warna      String?
-  is_aktif   Boolean   @default(true)
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  deleted_at DateTime?
+  id               Int       @id @default(autoincrement())
+  produk_id        Int
+  sku              String    @unique
+  ukuran           String
+  warna            String?
+  satuan_produk_id Int?
+  satuan           Satuan?   @relation(fields: [satuan_produk_id], references: [id])
+  is_aktif         Boolean   @default(true)
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  deleted_at       DateTime?
 
   produk             Produk              @relation(fields: [produk_id], references: [id])
   stok               StokVariant?

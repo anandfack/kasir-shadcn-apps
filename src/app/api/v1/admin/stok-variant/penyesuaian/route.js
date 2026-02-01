@@ -6,9 +6,6 @@ const prisma = new PrismaClient();
 
 export async function POST(req) {
   try {
-    /* =========================
-       1. AUTH
-    ========================= */
     const auth = verifyAuth(req);
     if (auth.error) {
       return jsonResponse({ message: auth.error }, 401);
@@ -23,15 +20,9 @@ export async function POST(req) {
       );
     }
 
-    /* =========================
-       2. BODY
-    ========================= */
     const body = await req.json();
     const { produk_variant_id, stok_fisik, keterangan_mutasi } = body;
 
-    /* =========================
-       3. VALIDATION
-    ========================= */
     const errors = {};
 
     if (!produk_variant_id) {
@@ -60,9 +51,6 @@ export async function POST(req) {
       );
     }
 
-    /* =========================
-       4. AMBIL STOK VARIANT
-    ========================= */
     const stokVariant = await prisma.stokVariant.findUnique({
       where: {
         produk_variant_id,
@@ -91,11 +79,7 @@ export async function POST(req) {
       );
     }
 
-    /* =========================
-       5. TRANSACTION
-    ========================= */
     const result = await prisma.$transaction(async (tx) => {
-      // 5.1 Mutasi stok variant
       const mutasi = await tx.mutasiStokVariant.create({
         data: {
           produk_variant_id,
@@ -105,11 +89,9 @@ export async function POST(req) {
           pegawai_id: auth.user?.pegawai_id,
           tanggal_mutasi: new Date(),
           nomor_mutasi: `MT-VAR-${Date.now()}`,
-          // pegawai_id: auth.user?.pegawai_id,
         },
       });
 
-      // 5.2 Update stok variant
       const stokUpdate = await tx.stokVariant.update({
         where: {
           produk_variant_id,
@@ -129,9 +111,6 @@ export async function POST(req) {
       };
     });
 
-    /* =========================
-       6. RESPONSE
-    ========================= */
     return jsonResponse(
       {
         message: "Penyesuaian stok variant berhasil",
