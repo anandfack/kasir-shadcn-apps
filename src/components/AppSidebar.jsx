@@ -40,7 +40,7 @@ export function AppSidebar() {
   ];
   const informasiMenuItems = [
     { icon: <BoxesIcon />, name: "Stok", href: "/admin/stock-produk" },
-    { icon: <BoxesIcon />, name: "Stok Variant", href: "/admin/stock-variant" },
+    { icon: <BoxesIcon />, name: "Stok Variant", href: "/admin/stok-variant" },
     { icon: <Undo2Icon />, name: "Retur", href: "/admin/retur-produk" },
     {
       icon: <ReceiptIcon />,

@@ -14,23 +14,27 @@ datasource db {
 }
 
 model Pegawai {
-  id                    Int                   @id @default(autoincrement())
-  nip_pegawai           String
-  nama_pegawai          String
-  tanggal_lahir         DateTime
-  jenis_kelamin         String
-  alamat_pegawai        String
-  nomor_telepon_pegawai String
-  email_pegawai         String
-  jabatan_pegawai       String
-  is_aktif              Boolean
-  created_at            DateTime              @default(now())
-  updated_at            DateTime              @updatedAt
-  deleted_at            DateTime?
-  mutasiStok            MutasiStok[]
-  LoginPemakai          LoginPemakai?
-  pembayaranPembelian   PembayaranPembelian[]
-  mutasiStokVariants    MutasiStokVariant[]
+  id                      Int                      @id @default(autoincrement())
+  nip_pegawai             String
+  nama_pegawai            String
+  tanggal_lahir           DateTime
+  jenis_kelamin           String
+  alamat_pegawai          String
+  nomor_telepon_pegawai   String
+  email_pegawai           String
+  jabatan_pegawai         String
+  is_aktif                Boolean
+  created_at              DateTime                 @default(now())
+  updated_at              DateTime                 @updatedAt
+  deleted_at              DateTime?
+  mutasiStok              MutasiStok[]
+  LoginPemakai            LoginPemakai?
+  pembayaranPembelian     PembayaranPembelian[]
+  mutasiStokVariants      MutasiStokVariant[]
+  purchaseOrders          PurchaseOrder[]
+  purchaseOrderDetails    PurchaseOrderDetail[]
+  penerimaanBarangs       PenerimaanBarang[]
+  penerimaanBarangDetails PenerimaanBarangDetail[]
 
   @@map("pegawai_m")
 }
@@ -149,17 +153,18 @@ model Kategori {
 }
 
 model Supplier {
-  id                     Int         @id @default(autoincrement())
+  id                     Int             @id @default(autoincrement())
   kode_supplier          String
   nama_supplier          String
   alamat_supplier        String
   nomor_telepon_supplier String
   is_aktif               Boolean
-  created_at             DateTime    @default(now())
-  updated_at             DateTime    @updatedAt
+  created_at             DateTime        @default(now())
+  updated_at             DateTime        @updatedAt
   deleted_at             DateTime?
   Produk                 Produk[]
   Pembelian              Pembelian[]
+  purchaseOrders         PurchaseOrder[]
 
   @@map("supplier_m")
 }
@@ -353,9 +358,11 @@ model ProdukVariant {
   updated_at       DateTime  @updatedAt
   deleted_at       DateTime?
 
-  produk             Produk              @relation(fields: [produk_id], references: [id])
-  stok               StokVariant?
-  mutasiStokVariants MutasiStokVariant[]
+  produk                  Produk                   @relation(fields: [produk_id], references: [id])
+  stok                    StokVariant?
+  mutasiStokVariants      MutasiStokVariant[]
+  purchaseOrderDetails    PurchaseOrderDetail[]
+  penerimaanBarangDetails PenerimaanBarangDetail[]
 
   @@map("produkvariant_m")
 }
@@ -373,4 +380,95 @@ model StokVariant {
   variant ProdukVariant @relation(fields: [produk_variant_id], references: [id])
 
   @@map("stokvariant_m")
+}
+
+model PurchaseOrder {
+  id       Int    @id @default(autoincrement())
+  nomor_po String @unique
+
+  supplier_id Int
+  supplier    Supplier @relation(fields: [supplier_id], references: [id])
+
+  pegawai_id Int
+  pegawai    Pegawai @relation(fields: [pegawai_id], references: [id])
+
+  tanggal_po  DateTime
+  status_po   String
+  total_harga Float
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  details    PurchaseOrderDetail[]
+  penerimaan PenerimaanBarang[]
+
+  @@map("purchaseorder_t")
+}
+
+model PurchaseOrderDetail {
+  id Int @id @default(autoincrement())
+
+  purchase_order_id Int
+  purchaseOrder     PurchaseOrder @relation(fields: [purchase_order_id], references: [id])
+
+  produk_variant_id Int
+  produkVariant     ProdukVariant @relation(fields: [produk_variant_id], references: [id])
+
+  harga_satuan  Float
+  jumlah_produk Int
+  qty_diterima  Int   @default(0)
+  total_harga   Float
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  pegawai    Pegawai?  @relation(fields: [pegawaiId], references: [id])
+  pegawaiId  Int?
+
+  @@map("purchaseorderdetail_t")
+}
+
+model PenerimaanBarang {
+  id Int @id @default(autoincrement())
+
+  purchase_order_id Int
+  purchaseOrder     PurchaseOrder @relation(fields: [purchase_order_id], references: [id])
+
+  pegawai_id Int
+  pegawai    Pegawai @relation(fields: [pegawai_id], references: [id])
+
+  nomor_penerimaan   String   @unique
+  tanggal_penerimaan DateTime
+  status_penerimaan  String
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  details PenerimaanBarangDetail[]
+
+  @@map("penerimaanbarang_t")
+}
+
+model PenerimaanBarangDetail {
+  id Int @id @default(autoincrement())
+
+  penerimaan_barang_id Int
+  penerimaanBarang     PenerimaanBarang @relation(fields: [penerimaan_barang_id], references: [id])
+
+  produk_variant_id Int
+  produkVariant     ProdukVariant @relation(fields: [produk_variant_id], references: [id])
+
+  harga_satuan  Float
+  jumlah_produk Int
+  total_harga   Float
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  pegawai    Pegawai?  @relation(fields: [pegawaiId], references: [id])
+  pegawaiId  Int?
+
+  @@map("penerimaanbarangdetail_t")
 }
