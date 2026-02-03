@@ -31,7 +31,11 @@ import handleLogout from "@/components/logout/handleLogout";
 export function AppSidebar() {
   const masterMenuItems = [
     { icon: <PackageIcon />, name: "Produk", href: "/admin/produk" },
-    { icon: <PackageIcon />, name: "Produk Variant", href: "/admin/produk-variant" },
+    {
+      icon: <PackageIcon />,
+      name: "Produk Variant",
+      href: "/admin/produk-variant",
+    },
     { icon: <TagsIcon />, name: "Harga", href: "/admin/harga-produk" },
     { icon: <RulerIcon />, name: "Satuan", href: "/admin/satuan-produk" },
     { icon: <TagIcon />, name: "Kategori", href: "/admin/kategori-produk" },
@@ -56,6 +60,16 @@ export function AppSidebar() {
       icon: <ShoppingCartIcon />,
       name: "Pembelian",
       href: "/admin/pembelian-produk",
+    },
+    {
+      icon: <ShoppingCartIcon />,
+      name: "Purchase Order",
+      href: "/admin/purchase-order",
+    },
+    {
+      icon: <ShoppingCartIcon />,
+      name: "Penerimaan Barang",
+      href: "/admin/penerimaan-barang",
     },
   ];
 
