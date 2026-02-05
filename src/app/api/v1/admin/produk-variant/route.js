@@ -28,6 +28,12 @@ export async function GET(req) {
             id: true,
             kode_produk: true,
             nama_produk: true,
+            Harga: {
+              select: {
+                harga_jual: true,
+                harga_beli: true,
+              },
+            },
           },
         },
         sku: true,

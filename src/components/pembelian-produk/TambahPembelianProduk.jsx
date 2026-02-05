@@ -150,7 +150,7 @@ export default function FormPembelianProduk({ open, onSuccess, onError }) {
   };
 
   return (
-    <DialogContent className="sm:max-w-4xl h-[90vh] overflow-y-auto">
+    <DialogContent className="sm:max-w-7xl h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle>Tambah Pembelian Produk</DialogTitle>
         <DialogDescription>

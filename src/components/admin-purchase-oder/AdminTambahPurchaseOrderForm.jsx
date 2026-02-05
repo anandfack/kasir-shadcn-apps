@@ -60,8 +60,6 @@ export default function AdminTambahPurchaseOrderForm({
     },
   );
 
-  console.log("Produk Variant Data :", produkVariantData);
-
   // const produkVariantDataList = useMemo(() => {
   //   if (Array.isArray(produkVariantData)) return produkVariantData;
   //   if (Array.isArray(produkVariantData?.data)) return produkVariantData.data;
@@ -130,6 +128,17 @@ export default function AdminTambahPurchaseOrderForm({
       .filter(Boolean);
   };
 
+  // Fungsi untuk mengelompokkan produk variant berdasarkan nama produk
+  const groupedProdukVariant =
+    filteredProdukVariant?.reduce((groups, produk) => {
+      const namaProduk = produk.produk?.nama_produk || "Tidak Diketahui";
+      if (!groups[namaProduk]) {
+        groups[namaProduk] = [];
+      }
+      groups[namaProduk].push(produk);
+      return groups;
+    }, {}) || {};
+
   const tambahBarisProduk = () => {
     setProdukVariantList([
       ...produkVariantList,
@@ -142,7 +151,7 @@ export default function AdminTambahPurchaseOrderForm({
   };
 
   const totalHarga = produkVariantList.reduce(
-    (sum, item) => sum + (item.qty * item.harga || 0),
+    (sum, item) => sum + (item.qty * item?.harga || 0),
     0,
   );
 
@@ -150,11 +159,23 @@ export default function AdminTambahPurchaseOrderForm({
     e.preventDefault();
 
     try {
-      await apiRequest("POST", "/api/v1/admin/pembelian-produk", {
+      // const payload = {
+      //   supplier_id: supplierId,
+      //   tanggal_po: tanggalPurchaseOrder,
+      //   total_harga: totalHarga,
+      //   detail_items: produkVariantList.map((item) => ({
+      //     produk_variant_id: item.produkVariant?.id,
+      //     qty_diterima: item.qty,
+      //     harga_satuan: item.harga,
+      //     harga_produk: item.harga,
+      //     total_harga: item.qty * item.harga,
+      //   })),
+      // };
+
+      // console.log("Payload Submit PO :", payload);
+      await apiRequest("POST", "/api/v1/admin/purchase-order", {
         supplier_id: supplierId,
-        nomor_pembelian: nomorPembelian,
-        nomor_faktur: nomorFaktur,
-        tanggal_pembelian: tanggalPembelian,
+        tanggal_po: tanggalPurchaseOrder,
         total_harga: totalHarga,
         detail_items: produkVariantList.map((item) => ({
           produk_variant_id: item.produkVariant?.id,
@@ -162,9 +183,6 @@ export default function AdminTambahPurchaseOrderForm({
           harga_satuan: item.harga,
           harga_produk: item.harga,
           total_harga: item.qty * item.harga,
-          pegawai_id: null,
-          satuan_produk_id: null,
-          tanggal_kadaluarsa: null,
         })),
       });
       onSuccess();
@@ -174,17 +192,20 @@ export default function AdminTambahPurchaseOrderForm({
   };
 
   return (
-    <DialogContent className="sm:max-w-4xl h-[90vh] overflow-y-auto">
+    <DialogContent className="sm:max-w-7xl h-[90vh] flex flex-col">
       <DialogHeader>
         <DialogTitle>Tambah Purchase Order</DialogTitle>
         <DialogDescription>
           Tambahkan Purchase Order ke Dalam Daftar.
         </DialogDescription>
       </DialogHeader>
-      <form onSubmit={handleSubmit} className="flex flex-col h-full space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col flex-1 overflow-hidden"
+      >
         {/* Supplier Produk */}
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="supplier-produk" className="text-center">
+        <div className="grid grid-cols-4 items-center gap-4 py-4">
+          <Label htmlFor="supplier-produk">
             Supplier Produk <i className="text-red-500">*</i>
           </Label>
           <div className="col-span-3">
@@ -281,8 +302,8 @@ export default function AdminTambahPurchaseOrderForm({
         </div>
 
         {/* Tanggal Purchase Order */}
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="tanggal-purchase-order" className="text-center">
+        <div className="grid grid-cols-4 items-center gap-4 py-4">
+          <Label htmlFor="tanggal-purchase-order">
             Tanggal Purchase Order <i className="text-red-500">*</i>
           </Label>
           <Input
@@ -292,11 +313,11 @@ export default function AdminTambahPurchaseOrderForm({
             className="col-span-3"
           />
         </div>
+        <Label htmlFor="daftar-produk" className="text-left py-4">
+          Daftar Produk Variant<i className="text-red-500">*</i>
+        </Label>
 
         <div className="flex flex-col gap-4 py-4 flex-1 overflow-y-auto">
-          <Label htmlFor="daftar-produk" className="text-left">
-            Daftar Produk Variant<i className="text-red-500">*</i>
-          </Label>
           {produkVariantList.map((item, index) => (
             <div key={index} className="grid grid-cols-12 gap-2 items-center">
               <div className="col-span-4">
@@ -305,7 +326,8 @@ export default function AdminTambahPurchaseOrderForm({
                   onChange={(produk) => {
                     const newList = [...produkVariantList];
                     newList[index].produkVariant = produk;
-                    newList[index].harga = produk.Harga?.[0]?.harga_jual || 0;
+                    newList[index].harga =
+                      produk.produk?.Harga?.[0]?.harga_jual || 0;
                     setProdukVariantList(newList);
                   }}
                 >
@@ -315,7 +337,9 @@ export default function AdminTambahPurchaseOrderForm({
                       onClick={() => setProdukVariantOpen(true)}
                     >
                       <span className="block truncate">
-                        {item.produkVariant?.sku || "Pilih Produk"}
+                        {item.produkVariant
+                          ? `${item.produkVariant.produk?.nama_produk || ""} - ${item.produkVariant.sku || ""} - ${item.produkVariant.ukuran || ""} - ${item.produkVariant.warna || ""}`
+                          : "Pilih Produk"}
                       </span>
                       <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                         <ChevronUpDownIcon
@@ -331,7 +355,7 @@ export default function AdminTambahPurchaseOrderForm({
                       leaveTo="opacity-0"
                       afterLeave={() => setProdukVariantOpen(false)}
                     >
-                      <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover pt-0 pb-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
+                      {/* <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover pt-0 pb-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
                         <div className="sticky top-0 z-20 bg-popover p-2 border-b">
                           <Input
                             placeholder="Cari produk..."
@@ -381,7 +405,9 @@ export default function AdminTambahPurchaseOrderForm({
                                         selected ? "font-medium" : "font-normal"
                                       }`}
                                     >
-                                      {produk.sku} — {produk.produk?.nama_produk}
+                                      {produk.produk?.nama_produk} -{" "}
+                                      {produk.sku} - {produk.ukuran} -{" "}
+                                      {produk.warna}
                                     </span>
                                     {selected && (
                                       <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
@@ -392,6 +418,105 @@ export default function AdminTambahPurchaseOrderForm({
                                 )}
                               </Listbox.Option>
                             ))
+                        ) : (
+                          <div className="py-2 px-4 text-muted-foreground italic">
+                            Tidak ada data
+                          </div>
+                        )}
+                      </Listbox.Options> */}
+                      <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover pt-0 pb-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
+                        <div className="sticky top-0 z-20 bg-popover p-2 border-b">
+                          <Input
+                            placeholder="Cari produk..."
+                            value={searchProdukVariant}
+                            onChange={(e) =>
+                              setSearchProdukVariant(e.target.value)
+                            }
+                            onKeyDownCapture={(e) => {
+                              if (e.key === " ") e.stopPropagation();
+                            }}
+                            className="h-8 text-sm"
+                          />
+                        </div>
+
+                        {produkVariantLoading ? (
+                          <div className="py-2 px-4 text-muted-foreground italic">
+                            Loading...
+                          </div>
+                        ) : Object.keys(groupedProdukVariant).length > 0 ? (
+                          // Render setiap grup produk
+                          Object.entries(groupedProdukVariant).map(
+                            ([namaProduk, variants]) => {
+                              // Filter variants yang belum dipilih
+                              const availableVariants = variants.filter(
+                                (produk) => {
+                                  const selectedProdukVariantIds =
+                                    produkVariantList
+                                      .filter((_, i) => i !== index)
+                                      .map((item) => item.produkVariant?.id)
+                                      .filter(Boolean);
+                                  return !selectedProdukVariantIds.includes(
+                                    produk.id,
+                                  );
+                                },
+                              );
+
+                              // Jika tidak ada variant yang tersedia di grup ini, skip
+                              if (availableVariants.length === 0) return null;
+
+                              return (
+                                <div key={namaProduk}>
+                                  {/* Header grup - nama produk */}
+                                  <div className="sticky top-10 z-10 bg-muted/50 px-4 py-2 text-sm font-semibold border-t border-b">
+                                    {namaProduk}
+                                  </div>
+
+                                  {/* List variants dalam grup */}
+                                  {availableVariants.map((produk) => (
+                                    <Listbox.Option
+                                      key={produk.id}
+                                      className={({ active }) =>
+                                        `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                                          active
+                                            ? "bg-accent text-accent-foreground"
+                                            : "text-popover-foreground"
+                                        }`
+                                      }
+                                      value={produk}
+                                    >
+                                      {({ selected }) => (
+                                        <>
+                                          <span
+                                            className={`block truncate ${
+                                              selected
+                                                ? "font-medium"
+                                                : "font-normal"
+                                            }`}
+                                          >
+                                            {/* Hanya menampilkan SKU, ukuran, dan warna */}
+                                            <div className="pl-4">
+                                              {produk.sku} - {produk.ukuran} -{" "}
+                                              {produk.warna}
+                                              {produk.stock !== undefined && (
+                                                <span className="text-xs text-muted-foreground ml-2">
+                                                  (Stock: {produk.stock})
+                                                </span>
+                                              )}
+                                            </div>
+                                          </span>
+                                          {selected && (
+                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
+                                              <CheckIcon className="h-5 w-5" />
+                                            </span>
+                                          )}
+                                        </>
+                                      )}
+                                    </Listbox.Option>
+                                  ))}
+                                </div>
+                              );
+                            },
+                          )
                         ) : (
                           <div className="py-2 px-4 text-muted-foreground italic">
                             Tidak ada data

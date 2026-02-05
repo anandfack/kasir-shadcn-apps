@@ -423,8 +423,9 @@ model PurchaseOrderDetail {
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
-  pegawai    Pegawai?  @relation(fields: [pegawaiId], references: [id])
-  pegawaiId  Int?
+
+  pegawai    Pegawai? @relation(fields: [pegawai_id], references: [id])
+  pegawai_id Int?
 
   @@map("purchaseorderdetail_t")
 }
@@ -467,8 +468,8 @@ model PenerimaanBarangDetail {
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
-  pegawai    Pegawai?  @relation(fields: [pegawaiId], references: [id])
-  pegawaiId  Int?
+  pegawai    Pegawai?  @relation(fields: [pegawai_id], references: [id])
+  pegawai_id Int?
 
   @@map("penerimaanbarangdetail_t")
 }
