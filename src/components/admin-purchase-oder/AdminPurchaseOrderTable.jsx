@@ -42,8 +42,6 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/apiRequest";
 import useFetchAdminPurchaseOrder from "@/hooks/admin-purchase-order/useFetchAdminPurchaseOrder";
-// import TambahPembelianProduk from "./TambahPembelianProduk";
-// import DetailPembelianProduk from "./DetailPembelianProduk";
 // import ReturPembelianProduk from "./ReturPembelianProduk";
 // import PembayaranPembelianProduk from "./PembayaranPembelianProduk";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
@@ -51,6 +49,7 @@ import { formatTanggalTanpaJam } from "@/lib/formatTanggal";
 import { formatRupiah } from "@/lib/formatRupiah";
 import { Badge } from "../ui/badge";
 import AdminTambahPurchaseOrderForm from "./AdminTambahPurchaseOrderForm";
+import AdminDetailPurchaseOrder from "./AdminDetailPurchaseOrder";
 
 const AdminPurchaseOrderTable = () => {
   const { toast } = useToast();
@@ -90,28 +89,28 @@ const AdminPurchaseOrderTable = () => {
   const [isDialogPembayaranOpen, setIsDialogPembayaranOpen] = useState(false);
   const [selectedPembayaranId, setSelectedPembayaranId] = useState(null);
 
-  //   const fetchDetailPembelian = useCallback(
-  //     async (id) => {
-  //       setIsDetailLoading(true);
-  //       try {
-  //         const res = await apiRequest(
-  //           "GET",
-  //           `/api/v1/admin/pembelian-produk/${id}`,
-  //         );
-  //         setDetailData(res);
-  //         setIsDetailDialogOpen(true);
-  //       } catch (err) {
-  //         toast({
-  //           title: "Gagal mengambil detail",
-  //           description: getApiErrorMessage(error),
-  //           variant: "destructive",
-  //         });
-  //       } finally {
-  //         setIsDetailLoading(false);
-  //       }
-  //     },
-  //     [toast, error],
-  //   );
+    const fetchDetailPurchaseOrder = useCallback(
+      async (id) => {
+        setIsDetailLoading(true);
+        try {
+          const res = await apiRequest(
+            "GET",
+            `/api/v1/admin/purchase-order/${id}`,
+          );
+          setDetailData(res);
+          setIsDetailDialogOpen(true);
+        } catch (err) {
+          toast({
+            title: "Gagal mengambil detail",
+            description: getApiErrorMessage(error),
+            variant: "destructive",
+          });
+        } finally {
+          setIsDetailLoading(false);
+        }
+      },
+      [toast, error],
+    );
 
   const statusBadgeVariant = (status) => {
     switch (status) {
@@ -440,11 +439,11 @@ const AdminPurchaseOrderTable = () => {
           </Button>
         </div>
       </div>
-      {/* <DetailPembelianProduk
+      <AdminDetailPurchaseOrder
         open={isDetailDialogOpen}
         onOpenChange={setIsDetailDialogOpen}
         data={detailData}
-      /> */}
+      />
       <Dialog open={isDialogReturOpen} onOpenChange={setIsDialogReturOpen}>
         {/* <ReturPembelianProduk
           open={isDialogReturOpen}
