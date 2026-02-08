@@ -42,6 +42,7 @@ export async function GET(req, { params }) {
                   select: {
                     id: true,
                     nama_satuan: true,
+                    kode_satuan: true,
                   },
                 },
                 produk: {

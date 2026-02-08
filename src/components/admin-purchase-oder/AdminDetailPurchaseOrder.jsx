@@ -14,8 +14,6 @@ import { useMemo } from "react";
 export default function AdminDetailPurchaseOrder({ open, onOpenChange, data }) {
   const rows = data?.data || [];
 
-  console.log("data detail purchase order:", rows);
-
   const groupedDetails = useMemo(() => {
     if (!rows?.details) return [];
 

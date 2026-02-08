@@ -16,6 +16,7 @@ import {
   CreditCardIcon,
   EyeIcon,
   Loader2,
+  PackageCheckIcon,
   SquarePen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ import { formatRupiah } from "@/lib/formatRupiah";
 import { Badge } from "../ui/badge";
 import AdminTambahPurchaseOrderForm from "./AdminTambahPurchaseOrderForm";
 import AdminDetailPurchaseOrder from "./AdminDetailPurchaseOrder";
+import AdminTerimaPurchaseOrderForm from "./AdminTerimaPurchaseOrderForm";
 
 const AdminPurchaseOrderTable = () => {
   const { toast } = useToast();
@@ -82,35 +84,38 @@ const AdminPurchaseOrderTable = () => {
   const [isDetailDialogOpen, setIsDetailDialogOpen] = useState(false);
   const [detailData, setDetailData] = useState(null);
   const [isDetailLoading, setIsDetailLoading] = useState(false);
-  const [isReturDialogOpen, setIsReturDialogOpen] = useState(false);
-  const [isDialogReturOpen, setIsDialogReturOpen] = useState(false);
-  const [selectedReturId, setSelectedReturId] = useState(null);
+  // const [isReturDialogOpen, setIsReturDialogOpen] = useState(false);
+  const [isTerimaDialogOpen, setIsTerimaDialogOpen] = useState(false);
+  // const [isDialogReturOpen, setIsDialogReturOpen] = useState(false);
+  const [isDialogTerimaOpen, setIsDialogTerimaOpen] = useState(false);
+  // const [selectedReturId, setSelectedReturId] = useState(null);
+  const [selectedTerimaId, setSelectedTerimaId] = useState(null);
   const [isPembayaranDialogOpen, setIsPembayaranDialogOpen] = useState(false);
   const [isDialogPembayaranOpen, setIsDialogPembayaranOpen] = useState(false);
   const [selectedPembayaranId, setSelectedPembayaranId] = useState(null);
 
-    const fetchDetailPurchaseOrder = useCallback(
-      async (id) => {
-        setIsDetailLoading(true);
-        try {
-          const res = await apiRequest(
-            "GET",
-            `/api/v1/admin/purchase-order/${id}`,
-          );
-          setDetailData(res);
-          setIsDetailDialogOpen(true);
-        } catch (err) {
-          toast({
-            title: "Gagal mengambil detail",
-            description: getApiErrorMessage(error),
-            variant: "destructive",
-          });
-        } finally {
-          setIsDetailLoading(false);
-        }
-      },
-      [toast, error],
-    );
+  const fetchDetailPurchaseOrder = useCallback(
+    async (id) => {
+      setIsDetailLoading(true);
+      try {
+        const res = await apiRequest(
+          "GET",
+          `/api/v1/admin/purchase-order/${id}`,
+        );
+        setDetailData(res);
+        setIsDetailDialogOpen(true);
+      } catch (err) {
+        toast({
+          title: "Gagal mengambil detail",
+          description: getApiErrorMessage(error),
+          variant: "destructive",
+        });
+      } finally {
+        setIsDetailLoading(false);
+      }
+    },
+    [toast, error],
+  );
 
   const statusBadgeVariant = (status) => {
     switch (status) {
@@ -272,24 +277,24 @@ const AdminPurchaseOrderTable = () => {
                 }}
               >
                 <CreditCardIcon />
-              </Button>
+              </Button> */}
               <Button
-                variant="destructive"
-                className="text-xs"
-                title="Retur"
+              variant="secondary"
+                className="text-xs text-emerald-500 border-emerald-500 hover:bg-emerald-500/10"
+                title="Terima Barang"
                 onClick={() => {
-                  setSelectedReturId(loadData.id);
-                  setIsDialogReturOpen(true);
+                  setSelectedTerimaId(loadData.id);
+                  setIsDialogTerimaOpen(true);
                 }}
               >
-                <ArrowDownUp />
-              </Button> */}
+                <PackageCheckIcon />
+              </Button>
             </div>
           );
         },
       },
     ],
-    [],
+    [fetchDetailPurchaseOrder],
   );
 
   const table = useReactTable({
@@ -444,20 +449,20 @@ const AdminPurchaseOrderTable = () => {
         onOpenChange={setIsDetailDialogOpen}
         data={detailData}
       />
-      <Dialog open={isDialogReturOpen} onOpenChange={setIsDialogReturOpen}>
-        {/* <ReturPembelianProduk
-          open={isDialogReturOpen}
-          onOpenChange={setIsReturDialogOpen}
-          pembelianId={selectedReturId}
+      <Dialog open={isDialogTerimaOpen} onOpenChange={setIsDialogTerimaOpen}>
+        <AdminTerimaPurchaseOrderForm
+          open={isDialogTerimaOpen}
+          onOpenChange={setIsTerimaDialogOpen}
+          terimaId={selectedTerimaId}
           data={detailData}
-          onClose={() => setIsDialogReturOpen(false)}
+          onClose={() => setIsDialogTerimaOpen(false)}
           onSuccess={() => {
             toast({
               title: "Sukses!",
-              description: "Data pembelian produk berhasil ditambahkan.",
+              description: "Data penerimaan berhasil ditambahkan.",
             });
             setRefreshKey((prev) => prev + 1);
-            setIsDialogReturOpen(false);
+            setIsDialogTerimaOpen(false);
           }}
           onError={(error) => {
             toast({
@@ -465,9 +470,9 @@ const AdminPurchaseOrderTable = () => {
               description: getApiErrorMessage(error),
               variant: "destructive",
             });
-            console.error("Error retur:", error);
+            console.error("Error terima:", error);
           }}
-        /> */}
+        />
       </Dialog>
       <Dialog
         open={isDialogPembayaranOpen}
