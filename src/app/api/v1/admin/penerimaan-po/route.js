@@ -14,7 +14,12 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const { purchase_order_id, total_harga, details_penerimaan } = body;
+    const {
+      purchase_order_id,
+      tanggal_penerimaan,
+      total_harga,
+      details_penerimaan,
+    } = body;
 
     const pegawai_id = auth.user.id;
 
@@ -38,6 +43,13 @@ export async function POST(req) {
 
     if (!details_penerimaan || details_penerimaan.length === 0) {
       errors.details = "Detail penerimaan wajib diisi";
+    }
+
+    if (!tanggal_penerimaan || tanggal_penerimaan.trim() === "") {
+      errors.tanggal_penerimaan = "Tanggal penerimaan wajib diisi";
+    }
+    if (!tanggal_penerimaan || tanggal_penerimaan.trim() === "") {
+      errors.tanggal_penerimaan = "Tanggal penerimaan wajib diisi";
     }
 
     if (Object.keys(errors).length > 0) {
@@ -65,7 +77,7 @@ export async function POST(req) {
           purchase_order_id: purchase_order_id,
           pegawai_id: pegawai_id,
           nomor_penerimaan: nomorPenerimaan,
-          tanggal_penerimaan: new Date(),
+          tanggal_penerimaan: new Date(tanggal_penerimaan),
           status_penerimaan: "SELESAI",
           created_at: new Date(),
           updated_at: new Date(),

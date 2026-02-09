@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/apiRequest";
 import { formatRupiah } from "@/lib/formatRupiah";
 import { formatTanggal } from "@/lib/formatTanggal";
-import { Loader2Icon, PackageCheckIcon } from "lucide-react";
+import { CalendarIcon, Loader2Icon, PackageCheckIcon } from "lucide-react";
 
 export default function AdminTerimaPurchaseOrderForm({
   open,
@@ -132,6 +132,7 @@ export default function AdminTerimaPurchaseOrderForm({
     try {
       const payload = {
         purchase_order_id: terimaId,
+        tanggal_penerimaan: purchaseOrder.tanggal_penerimaan,
         total_harga: details.reduce(
           (sum, item) => sum + item.qtyTerima * item.harga_satuan,
           0,
@@ -144,22 +145,20 @@ export default function AdminTerimaPurchaseOrderForm({
         })),
       };
 
-      // console.log("payload penerimaan pembelian:", payload);
-
       await apiRequest("POST", `/api/v1/admin/penerimaan-po`, payload);
 
       onSuccess?.();
       onClose();
     } catch (err) {
       console.error(err);
-      onError?.();
+      onError?.(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <DialogContent className="h-[90vh] sm:max-w-7xl flex flex-col">
+    <DialogContent className="h-[90vh] sm:max-w-7xl flex flex-col overflow-auto">
       <div className="text-sm space-y-2">
         <DialogHeader>
           <DialogTitle>Penerimaan</DialogTitle>
@@ -181,7 +180,26 @@ export default function AdminTerimaPurchaseOrderForm({
         <div>
           <strong>Status:</strong> {purchaseOrder.status_po}
         </div>
+        <div className="p-3 border rounded-lg bg-muted/40 flex items-center gap-4">
+          <CalendarIcon className="w-5 h-5 text-emerald-500" />
 
+          <div className="flex flex-col gap-2">
+            <p className="text-xs text-muted-foreground">
+              Tanggal Penerimaan Barang
+            </p>
+
+            <Input
+              type="date"
+              value={purchaseOrder.tanggal_penerimaan || ""}
+              onChange={(e) =>
+                setPurchaseOrder((prev) => ({
+                  ...prev,
+                  tanggal_penerimaan: e.target.value,
+                }))
+              }
+            />
+          </div>
+        </div>
         <div className="mt-4 flex-1 overflow-y-auto py-4">
           <h3 className="font-semibold mb-2">Detail Purchase Order</h3>
 
