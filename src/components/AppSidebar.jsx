@@ -68,7 +68,7 @@ export function AppSidebar() {
     },
     {
       icon: <ShoppingCartIcon />,
-      name: "Penerimaan Barang",
+      name: "Penerimaan Purchase Order",
       href: "/admin/penerimaan-po",
     },
   ];

@@ -52,6 +52,8 @@ import { Badge } from "../ui/badge";
 // import AdminDetailPurchaseOrder from "./AdminDetailPurchaseOrder";
 // import AdminTerimaPurchaseOrderForm from "./AdminTerimaPurchaseOrderForm";
 import useFetchAdminPenerimaanPo from "@/hooks/admin-penerimaan-po/useFetchAdminPenerimaanPo";
+import AdminDetailPurchaseOrder from "../admin-purchase-oder/AdminDetailPurchaseOrder";
+import AdminDetailPenerimaanPo from "./AdminDetailPenerimaanPo";
 
 const AdminPenerimaanPo = () => {
   const { toast } = useToast();
@@ -94,28 +96,28 @@ const AdminPenerimaanPo = () => {
   const [isDialogPembayaranOpen, setIsDialogPembayaranOpen] = useState(false);
   const [selectedPembayaranId, setSelectedPembayaranId] = useState(null);
 
-  //   const fetchDetailPurchaseOrder = useCallback(
-  //     async (id) => {
-  //       setIsDetailLoading(true);
-  //       try {
-  //         const res = await apiRequest(
-  //           "GET",
-  //           `/api/v1/admin/purchase-order/${id}`,
-  //         );
-  //         setDetailData(res);
-  //         setIsDetailDialogOpen(true);
-  //       } catch (err) {
-  //         toast({
-  //           title: "Gagal mengambil detail",
-  //           description: getApiErrorMessage(error),
-  //           variant: "destructive",
-  //         });
-  //       } finally {
-  //         setIsDetailLoading(false);
-  //       }
-  //     },
-  //     [toast, error],
-  //   );
+    const fetchDetailPenerimaanPo = useCallback(
+      async (id) => {
+        setIsDetailLoading(true);
+        try {
+          const res = await apiRequest(
+            "GET",
+            `/api/v1/admin/penerimaan-po/${id}`,
+          );
+          setDetailData(res);
+          setIsDetailDialogOpen(true);
+        } catch (err) {
+          toast({
+            title: "Gagal mengambil detail",
+            description: getApiErrorMessage(error),
+            variant: "destructive",
+          });
+        } finally {
+          setIsDetailLoading(false);
+        }
+      },
+      [toast, error],
+    );
 
   const statusBadgeVariant = (status) => {
     switch (status) {
@@ -292,7 +294,7 @@ const AdminPenerimaanPo = () => {
                 className="text-xs text-sky-400 border-sky-400 hover:bg-sky-400/10 transition-colors"
                 title="Detail"
                 onClick={() => {
-                  fetchDetailPurchaseOrder(loadData.id);
+                  fetchDetailPenerimaanPo(loadData.id);
                 }}
               >
                 <EyeIcon />
@@ -485,11 +487,11 @@ const AdminPenerimaanPo = () => {
           </Button>
         </div>
       </div>
-      {/* <AdminDetailPurchaseOrder
+      <AdminDetailPenerimaanPo
         open={isDetailDialogOpen}
         onOpenChange={setIsDetailDialogOpen}
         data={detailData}
-      /> */}
+      />
       {/* <Dialog open={isDialogTerimaOpen} onOpenChange={setIsDialogTerimaOpen}>
         <AdminTerimaPurchaseOrderForm
           open={isDialogTerimaOpen}
