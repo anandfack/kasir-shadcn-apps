@@ -13,6 +13,7 @@ import { apiRequest } from "@/lib/apiRequest";
 import { formatRupiah } from "@/lib/formatRupiah";
 import { formatTanggal } from "@/lib/formatTanggal";
 import { CalendarIcon, Loader2Icon, PackageCheckIcon } from "lucide-react";
+import { Badge } from "../ui/badge";
 
 export default function AdminTerimaPurchaseOrderForm({
   open,
@@ -117,6 +118,39 @@ export default function AdminTerimaPurchaseOrderForm({
     0,
   );
 
+  const totalSisaDatabase = purchaseOrder.details.reduce((acc, item) => {
+    const sisa = Math.max(item.jumlah_produk - item.qty_diterima, 0);
+    return acc + sisa;
+  }, 0);
+
+  const isComplete = totalSisaDatabase === 0;
+
+  const showSubmitButton = !isComplete;
+
+  const renderStatusBadge = (status) => {
+    switch (status) {
+      case "DRAFT":
+        return <Badge variant="secondary">Draft</Badge>;
+
+      case "PARTIAL":
+        return (
+          <Badge className="bg-amber-500 hover:bg-amber-600 text-white">
+            Partial
+          </Badge>
+        );
+
+      case "COMPLETE":
+        return (
+          <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white">
+            Complete
+          </Badge>
+        );
+
+      default:
+        return <Badge variant="outline">{status}</Badge>;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -177,9 +211,11 @@ export default function AdminTerimaPurchaseOrderForm({
           <strong>Total Harga Pembelian:</strong>{" "}
           {formatRupiah(purchaseOrder.total_harga)}
         </div>
-        <div>
-          <strong>Status:</strong> {purchaseOrder.status_po}
+        <div className="flex items-center gap-2">
+          <strong>Status:</strong>
+          {renderStatusBadge(purchaseOrder.status_po)}
         </div>
+
         <div className="p-3 border rounded-lg bg-muted/40 flex items-center gap-4">
           <CalendarIcon className="w-5 h-5 text-emerald-500" />
 
@@ -191,6 +227,7 @@ export default function AdminTerimaPurchaseOrderForm({
             <Input
               type="date"
               value={purchaseOrder.tanggal_penerimaan || ""}
+              disabled={isComplete}
               onChange={(e) =>
                 setPurchaseOrder((prev) => ({
                   ...prev,
@@ -208,7 +245,7 @@ export default function AdminTerimaPurchaseOrderForm({
               Belum ada detail produk
             </div>
           ) : (
-            <div className="overflow-auto rounded border max-h-[300px]">
+            <div className="overflow-auto rounded border max-h-[400px]">
               <table className="w-full text-sm overflow-y-auto">
                 <thead className="bg-muted sticky top-0">
                   <tr>
@@ -380,25 +417,27 @@ export default function AdminTerimaPurchaseOrderForm({
         </div>
       </div>
 
-      <div className="border-t pt-4 flex justify-end gap-2 bg-background">
-        <Button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
-        >
-          {loading ? (
-            <>
-              <Loader2Icon className="w-4 h-4 animate-spin" />
-              Menyimpan...
-            </>
-          ) : (
-            <>
-              <PackageCheckIcon className="w-4 h-4" />
-              Simpan Penerimaan
-            </>
-          )}
-        </Button>
-      </div>
+      {!isComplete && (
+        <div className="border-t pt-4 flex justify-end gap-2 bg-background">
+          <Button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2Icon className="w-4 h-4 animate-spin" />
+                Menyimpan...
+              </>
+            ) : (
+              <>
+                <PackageCheckIcon className="w-4 h-4" />
+                Simpan Penerimaan
+              </>
+            )}
+          </Button>
+        </div>
+      )}
     </DialogContent>
   );
 }

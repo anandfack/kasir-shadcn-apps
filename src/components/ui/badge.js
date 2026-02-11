@@ -7,20 +7,27 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground",
-        secondary: "bg-secondary text-secondary-foreground",
-        destructive: "bg-destructive text-destructive-foreground",
+        default: "bg-primary text-primary-foreground border-transparent",
+
+        secondary: "bg-secondary text-secondary-foreground border-transparent",
+
+        destructive:
+          "bg-destructive/15 text-destructive border border-destructive/20",
+
         outline: "text-foreground",
 
-        success: "bg-emerald-100 text-emerald-800 border-emerald-200",
-        warning: "bg-yellow-100 text-yellow-800 border-yellow-200",
-        info: "bg-blue-100 text-blue-800 border-blue-200",
+        success:
+          "bg-emerald-500/15 text-emerald-400 border border-emerald-500/20",
+
+        warning: "bg-amber-500/15 text-amber-400 border border-amber-500/20",
+
+        info: "bg-sky-500/15 text-sky-400 border border-sky-500/20",
       },
     },
     defaultVariants: {
       variant: "default",
     },
-  }
+  },
 );
 
 function Badge({ className, variant, ...props }) {

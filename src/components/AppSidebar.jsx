@@ -69,7 +69,7 @@ export function AppSidebar() {
     {
       icon: <ShoppingCartIcon />,
       name: "Penerimaan Barang",
-      href: "/admin/penerimaan-barang",
+      href: "/admin/penerimaan-po",
     },
   ];
 

@@ -10,13 +10,13 @@ export default function AdminShell({ children, user }) {
   return (
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <SidebarProvider>
-        <div className="flex min-h-screen w-screen bg-background">
+        <div className="flex min-h-screen w-screen bg-background overflow-hidden">
           <AppSidebar />
 
-          <div className="flex flex-col flex-1">
+          <div className="flex flex-col flex-1 min-w-0">
             <AdminNavbar user={user} />
 
-            <main className="flex-1 px-6 py-6">{children}</main>
+            <main className="flex-1 px-6 py-6 min-w-0">{children}</main>
 
             <SidebarTrigger />
           </div>

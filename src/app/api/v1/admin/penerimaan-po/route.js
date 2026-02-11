@@ -5,6 +5,93 @@ import { generateDocumentNumber } from "@/lib/documentNumber";
 
 const prisma = new PrismaClient();
 
+export async function GET(req) {
+  try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
+    const penerimaan = await prisma.penerimaanBarang.findMany({
+      select: {
+        id: true,
+        purchaseOrder: {
+          select: {
+            id: true,
+            nomor_po: true,
+            supplier: {
+              select: {
+                id: true,
+                nama_supplier: true,
+              },
+            },
+          },
+        },
+        pegawai: {
+          select: {
+            id: true,
+            nama_pegawai: true,
+          },
+        },
+        nomor_penerimaan: true,
+        tanggal_penerimaan: true,
+        status_penerimaan: true,
+        details: {
+          select: {
+            jumlah_produk: true,
+            total_harga: true,
+          },
+        },
+      },
+      where: {
+        deleted_at: null,
+      },
+    });
+
+    // function hitungStatusPembayaran(pembayaran, totalTagihan) {
+    //   const totalBayar =
+    //     pembayaran?.reduce((sum, p) => sum + p.jumlah_bayar, 0) ?? 0;
+
+    //   if (totalBayar === 0) return "BELUM_BAYAR";
+    //   if (totalBayar > totalTagihan) return "OVERPAID";
+    //   if (totalBayar >= totalTagihan) return "LUNAS";
+    //   return "SEBAGIAN";
+    // }
+
+    // const result = penerimaan.map((p) => {
+    //   const totalBayar = p.pembayaranPembelian.reduce(
+    //     (sum, pay) => sum + pay.jumlah_bayar,
+    //     0,
+    //   );
+
+    //   return {
+    //     ...p,
+    //     total_bayar: totalBayar,
+    //     status_pembayaran: hitungStatusPembayaran(
+    //       p.pembayaranPembelian,
+    //       p.total_harga,
+    //     ),
+    //   };
+    // });
+    return jsonResponse(
+      {
+        message: "OK",
+        data: penerimaan,
+      },
+      200,
+    );
+  } catch (error) {
+    console.error("Error:", error);
+    return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500,
+    );
+  }
+}
+
 export async function POST(req) {
   try {
     const auth = verifyAuth(req);
