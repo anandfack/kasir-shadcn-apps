@@ -424,8 +424,9 @@ model PurchaseOrderDetail {
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
 
-  pegawai    Pegawai? @relation(fields: [pegawai_id], references: [id])
-  pegawai_id Int?
+  pegawai                 Pegawai?                 @relation(fields: [pegawai_id], references: [id])
+  pegawai_id              Int?
+  penerimaanBarangDetails PenerimaanBarangDetail[]
 
   @@map("purchaseorderdetail_t")
 }
@@ -457,6 +458,9 @@ model PenerimaanBarangDetail {
 
   penerimaan_barang_id Int
   penerimaanBarang     PenerimaanBarang @relation(fields: [penerimaan_barang_id], references: [id])
+
+  purchase_order_detail_id Int
+  purchaseOrderDetail      PurchaseOrderDetail @relation(fields: [purchase_order_detail_id], references: [id])
 
   produk_variant_id Int
   produkVariant     ProdukVariant @relation(fields: [produk_variant_id], references: [id])

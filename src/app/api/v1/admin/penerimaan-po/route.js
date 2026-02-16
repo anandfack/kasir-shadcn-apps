@@ -151,13 +151,6 @@ export async function POST(req) {
         prefix: "PB",
         tanggal: new Date(),
       });
-      const nomorMutasi = await generateDocumentNumber({
-        tx,
-        model: "mutasiStokVariant",
-        field: "nomor_mutasi",
-        prefix: "MT",
-        tanggal: new Date(),
-      });
 
       const penerimaanPo = await tx.penerimaanBarang.create({
         data: {
@@ -171,70 +164,155 @@ export async function POST(req) {
         },
       });
 
+      // for (const item of details_penerimaan) {
+      //   const poDetail = await tx.purchaseOrderDetail.findFirst({
+      //     where: {
+      //       id: item.purchase_order_detail_id,
+      //     },
+      //   });
+
+      //   if (!poDetail) {
+      //     throw new Error("Detail PO tidak ditemukan");
+      //   }
+
+      //   if (poDetail.purchase_order_id !== purchase_order_id) {
+      //     throw new Error("Detail tidak sesuai PO");
+      //   }
+
+      //   if (!item.purchase_order_detail_id) {
+      //     throw new Error("Detail PO wajib diisi");
+      //   }
+
+      //   const nomorMutasi = await generateDocumentNumber({
+      //     tx,
+      //     model: "mutasiStokVariant",
+      //     field: "nomor_mutasi",
+      //     prefix: "MT",
+      //     tanggal: new Date(),
+      //   });
+
+      //   await tx.penerimaanBarangDetail.create({
+      //     data: {
+      //       penerimaan_barang_id: penerimaanPo.id,
+      //       produk_variant_id: item.produk_variant_id,
+      //       purchase_order_detail_id: item.purchase_order_detail_id,
+      //       harga_satuan: item.harga_satuan,
+      //       jumlah_produk: item.jumlah_produk,
+      //       total_harga: item.total_harga,
+      //       pegawai_id: pegawai_id,
+      //       created_at: new Date(),
+      //       updated_at: new Date(),
+      //     },
+      //   });
+
+      //   const totalDiterima = (poDetail.qty_diterima ?? 0) + item.jumlah_produk;
+
+      //   if (totalDiterima > poDetail.jumlah_produk) {
+      //     throw new Error("Qty penerimaan melebihi qty PO");
+      //   }
+
+      //   await tx.purchaseOrderDetail.update({
+      //     where: {
+      //       id: poDetail.id,
+      //     },
+      //     data: {
+      //       qty_diterima: totalDiterima,
+      //     },
+      //   });
+
+      //   const stokVariant = await tx.stokVariant.findUnique({
+      //     where: {
+      //       produk_variant_id: item.produk_variant_id,
+      //     },
+      //   });
+      //   if (stokVariant) {
+      //     await tx.stokVariant.update({
+      //       where: {
+      //         id: stokVariant.id,
+      //       },
+      //       data: {
+      //         jumlah_stok: stokVariant.jumlah_stok + item.jumlah_produk,
+      //       },
+      //     });
+      //   } else {
+      //     await tx.stokVariant.create({
+      //       data: {
+      //         produk_variant_id: item.produk_variant_id,
+      //         jumlah_stok: item.jumlah_produk,
+      //         minimal_stok: 0,
+      //         maksimal_stok: 0,
+      //       },
+      //     });
+      //   }
+
+      //   await tx.mutasiStokVariant.create({
+      //     data: {
+      //       produk_variant_id: item.produk_variant_id,
+      //       tipe_mutasi: "MASUK",
+      //       jumlah_mutasi: item.jumlah_produk,
+      //       keterangan_mutasi: nomorPenerimaan,
+      //       pegawai_id: pegawai_id,
+      //       tanggal_mutasi: new Date(),
+      //       nomor_mutasi: nomorMutasi,
+      //     },
+      //   });
+      // }
+
       for (const item of details_penerimaan) {
-        const poDetail = await tx.purchaseOrderDetail.findFirst({
-          where: {
-            purchase_order_id: purchase_order_id,
-            produk_variant_id: item.produk_variant_id,
-          },
+        if (!item.purchase_order_detail_id) {
+          throw new Error("Detail PO wajib ada");
+        }
+
+        if (item.jumlah_produk <= 0) {
+          throw new Error("Qty harus lebih dari 0");
+        }
+
+        const poDetail = await tx.purchaseOrderDetail.findUnique({
+          where: { id: item.purchase_order_detail_id },
         });
 
         if (!poDetail) {
           throw new Error("Detail PO tidak ditemukan");
         }
 
+        if (poDetail.purchase_order_id !== purchase_order_id) {
+          throw new Error("Detail tidak sesuai PO");
+        }
+
+        const sisaQty = poDetail.jumlah_produk - (poDetail.qty_diterima ?? 0);
+
+        if (item.jumlah_produk > sisaQty) {
+          throw new Error("Qty melebihi sisa PO");
+        }
+
+        const nomorMutasi = await generateDocumentNumber({
+          tx,
+          model: "mutasiStokVariant",
+          field: "nomor_mutasi",
+          prefix: "MT",
+          tanggal: new Date(),
+        });
+
         await tx.penerimaanBarangDetail.create({
           data: {
             penerimaan_barang_id: penerimaanPo.id,
+            purchase_order_detail_id: poDetail.id,
             produk_variant_id: item.produk_variant_id,
             harga_satuan: item.harga_satuan,
             jumlah_produk: item.jumlah_produk,
             total_harga: item.total_harga,
-            pegawai_id: pegawai_id,
-            created_at: new Date(),
-            updated_at: new Date(),
+            pegawai_id,
           },
         });
-
-        const totalDiterima = (poDetail.qty_diterima ?? 0) + item.jumlah_produk;
-
-        if (totalDiterima > poDetail.jumlah_produk) {
-          throw new Error("Qty penerimaan melebihi qty PO");
-        }
 
         await tx.purchaseOrderDetail.update({
-          where: {
-            id: poDetail.id,
-          },
+          where: { id: poDetail.id },
           data: {
-            qty_diterima: totalDiterima,
+            qty_diterima: {
+              increment: item.jumlah_produk,
+            },
           },
         });
-
-        const stokVariant = await tx.stokVariant.findUnique({
-          where: {
-            produk_variant_id: item.produk_variant_id,
-          },
-        });
-        if (stokVariant) {
-          await tx.stokVariant.update({
-            where: {
-              id: stokVariant.id,
-            },
-            data: {
-              jumlah_stok: stokVariant.jumlah_stok + item.jumlah_produk,
-            },
-          });
-        } else {
-          await tx.stokVariant.create({
-            data: {
-              produk_variant_id: item.produk_variant_id,
-              jumlah_stok: item.jumlah_produk,
-              minimal_stok: 0,
-              maksimal_stok: 0,
-            },
-          });
-        }
 
         await tx.mutasiStokVariant.create({
           data: {
@@ -242,7 +320,7 @@ export async function POST(req) {
             tipe_mutasi: "MASUK",
             jumlah_mutasi: item.jumlah_produk,
             keterangan_mutasi: nomorPenerimaan,
-            pegawai_id: pegawai_id,
+            pegawai_id,
             tanggal_mutasi: new Date(),
             nomor_mutasi: nomorMutasi,
           },

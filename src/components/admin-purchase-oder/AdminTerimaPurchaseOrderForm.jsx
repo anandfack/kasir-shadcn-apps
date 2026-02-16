@@ -173,6 +173,7 @@ export default function AdminTerimaPurchaseOrderForm({
         ),
         details_penerimaan: details.map((item) => ({
           produk_variant_id: item.produkVariant.id,
+          purchase_order_detail_id: item.id,
           jumlah_produk: item.qtyTerima,
           harga_satuan: item.harga_satuan,
           total_harga: item.qtyTerima * item.harga_satuan,

@@ -39,6 +39,7 @@ export async function GET(req, { params }) {
         details: {
           select: {
             id: true,
+            jumlah_produk: true,
             produkVariant: {
               select: {
                 id: true,
@@ -61,77 +62,22 @@ export async function GET(req, { params }) {
                 },
               },
             },
+            purchaseOrderDetail: {
+              select: {
+                id: true,
+                jumlah_produk: true,
+                qty_diterima: true,
+                harga_satuan: true,
+              },
+            },
           },
         },
-        // total_harga: true,
-        // details: {
-        //   select: {
-        //     id: true,
-        //     harga_satuan: true,
-        //     jumlah_produk: true,
-        //     qty_diterima: true,
-        //     total_harga: true,
-        //     produkVariant: {
-        //       select: {
-        //         id: true,
-        //         sku: true,
-        //         ukuran: true,
-        //         warna: true,
-        //         satuan: {
-        //           select: {
-        //             id: true,
-        //             nama_satuan: true,
-        //             kode_satuan: true,
-        //           },
-        //         },
-        //         produk: {
-        //           select: {
-        //             id: true,
-        //             nama_produk: true,
-        //             kode_produk: true,
-        //           },
-        //         },
-        //       },
-        //     },
-        //   },
-        // },
-        // supplier: {
-        //   select: {
-        //     id: true,
-        //     nama_supplier: true,
-        //     alamat_supplier: true,
-        //   },
-        // },
         pegawai: {
           select: {
             id: true,
             nama_pegawai: true,
           },
         },
-        // ReturPembelian: {
-        //   select: {
-        //     id: true,
-        //     nomor_retur: true,
-        //     tanggal_retur: true,
-        //     total_harga: true,
-        //     keterangan_retur: true,
-        //     DetailReturPembelian: {
-        //       select: {
-        //         id: true,
-        //         harga_satuan: true,
-        //         jumlah_produk: true,
-        //         total_harga: true,
-        //         produk: {
-        //           select: {
-        //             id: true,
-        //             nama_produk: true,
-        //             kode_produk: true,
-        //           },
-        //         },
-        //       },
-        //     },
-        //   },
-        // },
       },
     });
 
