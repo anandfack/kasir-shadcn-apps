@@ -54,6 +54,7 @@ import { Badge } from "../ui/badge";
 import useFetchAdminPenerimaanPo from "@/hooks/admin-penerimaan-po/useFetchAdminPenerimaanPo";
 import AdminDetailPurchaseOrder from "../admin-purchase-oder/AdminDetailPurchaseOrder";
 import AdminDetailPenerimaanPo from "./AdminDetailPenerimaanPo";
+import AdminReturPenerimaanPo from "./AdminReturPenerimaanPo";
 
 const AdminPenerimaanPo = () => {
   const { toast } = useToast();
@@ -96,28 +97,28 @@ const AdminPenerimaanPo = () => {
   const [isDialogPembayaranOpen, setIsDialogPembayaranOpen] = useState(false);
   const [selectedPembayaranId, setSelectedPembayaranId] = useState(null);
 
-    const fetchDetailPenerimaanPo = useCallback(
-      async (id) => {
-        setIsDetailLoading(true);
-        try {
-          const res = await apiRequest(
-            "GET",
-            `/api/v1/admin/penerimaan-po/${id}`,
-          );
-          setDetailData(res);
-          setIsDetailDialogOpen(true);
-        } catch (err) {
-          toast({
-            title: "Gagal mengambil detail",
-            description: getApiErrorMessage(error),
-            variant: "destructive",
-          });
-        } finally {
-          setIsDetailLoading(false);
-        }
-      },
-      [toast, error],
-    );
+  const fetchDetailPenerimaanPo = useCallback(
+    async (id) => {
+      setIsDetailLoading(true);
+      try {
+        const res = await apiRequest(
+          "GET",
+          `/api/v1/admin/penerimaan-po/${id}`,
+        );
+        setDetailData(res);
+        setIsDetailDialogOpen(true);
+      } catch (err) {
+        toast({
+          title: "Gagal mengambil detail",
+          description: getApiErrorMessage(error),
+          variant: "destructive",
+        });
+      } finally {
+        setIsDetailLoading(false);
+      }
+    },
+    [toast, error],
+  );
 
   const statusBadgeVariant = (status) => {
     switch (status) {
@@ -492,6 +493,57 @@ const AdminPenerimaanPo = () => {
         onOpenChange={setIsDetailDialogOpen}
         data={detailData}
       />
+      {/* <Dialog open={isDialogReturOpen} onOpenChange={setIsDialogReturOpen}>
+        <AdminReturPenerimaanPo
+          open={isDialogReturOpen}
+          onOpenChange={setIsReturDialogOpen}
+          penerimaanPoId={selectedReturId}
+          data={detailData}
+          onClose={() => setIsDialogReturOpen(false)}
+          onSuccess={() => {
+            toast({
+              title: "Sukses!",
+              description: "Data pembelian produk berhasil ditambahkan.",
+            });
+            setRefreshKey((prev) => prev + 1);
+            setIsDialogReturOpen(false);
+          }}
+          onError={(error) => {
+            toast({
+              title: "Terjadi kesalahan",
+              description: getApiErrorMessage(error),
+              variant: "destructive",
+            });
+            console.error("Error retur:", error);
+          }}
+        />
+      </Dialog> */}
+      <Dialog open={isDialogReturOpen} onOpenChange={setIsDialogReturOpen}>
+        {isDialogReturOpen && (
+          <AdminReturPenerimaanPo
+            key={selectedReturId}
+            open={isDialogReturOpen}
+            penerimaanPoId={selectedReturId}
+            onClose={() => setIsDialogReturOpen(false)}
+            onSuccess={() => {
+              toast({
+                title: "Sukses!",
+                description: "Data retur berhasil ditambahkan.",
+              });
+              setRefreshKey((prev) => prev + 1);
+              setIsDialogReturOpen(false);
+            }}
+            onError={(error) => {
+              toast({
+                title: "Terjadi kesalahan",
+                description: getApiErrorMessage(error),
+                variant: "destructive",
+              });
+            }}
+          />
+        )}
+      </Dialog>
+
       {/* <Dialog open={isDialogTerimaOpen} onOpenChange={setIsDialogTerimaOpen}>
         <AdminTerimaPurchaseOrderForm
           open={isDialogTerimaOpen}

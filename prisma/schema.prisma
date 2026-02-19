@@ -448,7 +448,8 @@ model PenerimaanBarang {
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
 
-  details PenerimaanBarangDetail[]
+  details          PenerimaanBarangDetail[]
+  returPenerimaans ReturPenerimaan[]
 
   @@map("penerimaanbarang_t")
 }
@@ -468,12 +469,54 @@ model PenerimaanBarangDetail {
   harga_satuan  Float
   jumlah_produk Int
   total_harga   Float
+  qty_retur     Int   @default(0)
 
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  deleted_at DateTime?
-  pegawai    Pegawai?  @relation(fields: [pegawai_id], references: [id])
-  pegawai_id Int?
+  created_at             DateTime                @default(now())
+  updated_at             DateTime                @updatedAt
+  deleted_at             DateTime?
+  pegawai                Pegawai?                @relation(fields: [pegawai_id], references: [id])
+  pegawai_id             Int?
+  detailReturPenerimaans DetailReturPenerimaan[]
 
   @@map("penerimaanbarangdetail_t")
+}
+
+model ReturPenerimaan {
+  id          Int    @id @default(autoincrement())
+  nomor_retur String @unique
+
+  penerimaanbarang_id Int
+  penerimaan          PenerimaanBarang @relation(fields: [penerimaanbarang_id], references: [id])
+
+  tanggal_retur DateTime
+  total_harga   Float
+  alasan_retur  String?
+  status        String
+
+  created_at             DateTime                @default(now())
+  updated_at             DateTime                @updatedAt
+  deleted_at             DateTime?
+  detailReturPenerimaans DetailReturPenerimaan[]
+
+  @@map("returpenerimaan_t")
+}
+
+model DetailReturPenerimaan {
+  id Int @id @default(autoincrement())
+
+  returpenerimaan_id Int
+  returPenerimaan    ReturPenerimaan @relation(fields: [returpenerimaan_id], references: [id])
+
+  penerimaanbarangdetail_id Int
+  penerimaanBarangDetail    PenerimaanBarangDetail @relation(fields: [penerimaanbarangdetail_id], references: [id])
+
+  harga_satuan     Float
+  jumlah_produk    Int
+  total_harga      Float
+  keterangan_retur String?
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  deleted_at       DateTime?
+
+  @@map("detailreturpenerimaan_t")
 }
