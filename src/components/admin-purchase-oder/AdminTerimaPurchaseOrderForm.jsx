@@ -299,7 +299,7 @@ export default function AdminTerimaPurchaseOrderForm({
                         <td className="p-2 border text-center">
                           {item?.produkVariant?.produk?.nama_produk}
                         </td>
-                        <td className="p-2 border text-center">
+                        <td className="p-2 border text-center font-mono">
                           {item.produkVariant?.sku}
                         </td>
                         <td className="p-2 border text-center">

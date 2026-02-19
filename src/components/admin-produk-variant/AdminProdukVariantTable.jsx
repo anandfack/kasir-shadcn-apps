@@ -193,7 +193,7 @@ const AdminProdukVarianTable = () => {
                 >
                   <div>{v.ukuran}</div>
                   <div>{v.warna}</div>
-                  <div className="text-xs truncate">{v.sku}</div>
+                  <div className="text-xs truncate font-mono">{v.sku}</div>
                   <div>
                     <Badge
                       variant={v.is_aktif ? "secondary" : "destructive"}

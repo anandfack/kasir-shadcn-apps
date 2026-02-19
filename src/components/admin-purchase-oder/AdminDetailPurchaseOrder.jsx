@@ -155,7 +155,7 @@ export default function AdminDetailPurchaseOrder({ open, onOpenChange, data }) {
                             : ""}
                         </td>
 
-                        <td className="p-2 border">
+                        <td className="p-2 border font-mono">
                           {item?.produkVariant?.sku || "-"}
                         </td>
 

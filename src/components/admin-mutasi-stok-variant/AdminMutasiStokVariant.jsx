@@ -130,7 +130,7 @@ export default function AdminMutasiStokVariant({
                             )}
                           </div>
 
-                          <div className="text-[11px] text-muted-foreground truncate">
+                          <div className="text-[11px] text-muted-foreground truncate font-mono">
                             SKU: {item.produkVariant?.sku || "-"}
                           </div>
                         </td>
