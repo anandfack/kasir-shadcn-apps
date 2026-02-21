@@ -41,6 +41,7 @@ export async function GET(req, { params }) {
             id: true,
             jumlah_produk: true,
             harga_satuan: true,
+            qty_retur: true,
             produkVariant: {
               select: {
                 id: true,

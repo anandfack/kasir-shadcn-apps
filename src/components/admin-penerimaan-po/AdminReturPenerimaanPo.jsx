@@ -112,6 +112,7 @@ export default function AdminReturPenerimaanPo({
         ),
         details_retur: details.map((item) => ({
           produkvariant_id: item.produkVariant.id,
+          detail_penerimaan_id: item.id,
           jumlah_produk: item.qtyRetur,
           harga_satuan: item.harga_satuan,
           total_harga: item.qtyRetur * item.harga_satuan,
@@ -121,7 +122,7 @@ export default function AdminReturPenerimaanPo({
 
       console.log("Payload Retur:", payload);
 
-      //   await apiRequest("POST", `/api/v1/admin/retur-produk`, payload);
+      await apiRequest("POST", `/api/v1/admin/retur-penerimaan`, payload);
 
       onSuccess?.();
       onClose();
