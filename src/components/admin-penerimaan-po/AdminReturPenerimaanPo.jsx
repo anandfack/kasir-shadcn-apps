@@ -13,10 +13,17 @@ import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/apiRequest";
 import { formatRupiah } from "@/lib/formatRupiah";
 import { formatTanggal } from "@/lib/formatTanggal";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, SaveIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
 
 export default function AdminReturPenerimaanPo({
-  //   open,
   penerimaanPoId,
   onClose,
   onError,
@@ -25,7 +32,8 @@ export default function AdminReturPenerimaanPo({
   const [penerimaan, setPenerimaan] = useState(null);
   const [returItems, setReturItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [tanggalRetur, setTanggalRetur] = useState("");
+  // const [tanggalRetur, setTanggalRetur] = useState("");
+  const [tanggalRetur, setTanggalRetur] = useState(new Date());
 
   useEffect(() => {
     if (!open || !penerimaanPoId) return;
@@ -47,7 +55,6 @@ export default function AdminReturPenerimaanPo({
 
         setPenerimaan(data);
 
-        // Inisialisasi returItems dari details penerimaan
         const initialRetur = (data.details || []).map((item) => ({
           penerimaan_barang_detail_id: item.id,
           tanggal_retur: "-",
@@ -65,7 +72,6 @@ export default function AdminReturPenerimaanPo({
     fetchDetail();
   }, [penerimaanPoId, onError]);
 
-  // ✅ LETAKKAN DI SINI (sejajar effect di atas)
   useEffect(() => {
     return () => {
       setPenerimaan(null);
@@ -75,21 +81,33 @@ export default function AdminReturPenerimaanPo({
 
   if (!penerimaan) return null;
 
-  const totalAwal = penerimaan.details?.reduce(
-    (acc, item) => acc + (item.total_harga || 0),
+  const totalQtyAwal = penerimaan.details.reduce(
+    (acc, item) => acc + item.jumlah_produk,
     0,
   );
 
-  const totalRetur = returItems.reduce(
-    (acc, item) => acc + (item.qtyRetur || 0) * (item.harga_satuan || 0),
+  const totalQtyReturSebelumnya = penerimaan.details.reduce(
+    (acc, item) => acc + (item.qty_retur || 0),
     0,
   );
 
-  const totalSetelahRetur = totalAwal - totalRetur;
+  const totalQtyReturBaru = penerimaan.details.reduce(
+    (acc, item) => acc + (item.qtyRetur || 0),
+    0,
+  );
 
-  /**
-   * Submit retur produk
-   */
+  const totalNominalAwal = penerimaan.details.reduce(
+    (acc, item) => acc + item.jumlah_produk * item.harga_satuan,
+    0,
+  );
+
+  const totalNominalRetur = penerimaan.details.reduce(
+    (acc, item) => acc + (item.qtyRetur || 0) * item.harga_satuan,
+    0,
+  );
+
+  const totalNominalSetelah = totalNominalAwal - totalNominalRetur;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -105,7 +123,8 @@ export default function AdminReturPenerimaanPo({
     try {
       const payload = {
         penerimaan_id: penerimaanPoId,
-        tanggal_retur: tanggalRetur,
+        // tanggal_retur: tanggalRetur,
+        tanggal_retur: tanggalRetur.toISOString(),
         total_harga: details.reduce(
           (sum, item) => sum + item.qtyRetur * item.harga_satuan,
           0,
@@ -136,7 +155,10 @@ export default function AdminReturPenerimaanPo({
 
   return (
     <DialogContent className="h-[90vh] sm:max-w-7xl flex flex-col overflow-auto">
+      {/* <DialogContent className="h-[90vh] sm:max-w-7xl flex flex-col"> */}
       <div className="text-sm space-y-2 flex-1 overflow-auto">
+        {/* <div className="text-sm space-y-2 flex-1 overflow-y-auto pr-2"> */}
+        {/* <div className="text-sm space-y-2 flex-1 pr-2"> */}
         <DialogHeader>
           <DialogTitle>Retur Penerimaan</DialogTitle>
           <DialogDescription>
@@ -144,32 +166,54 @@ export default function AdminReturPenerimaanPo({
             {formatTanggal(penerimaan.tanggal_penerimaan)}
           </DialogDescription>
         </DialogHeader>
-
         <div>
           <strong>Supplier:</strong>{" "}
           {penerimaan.purchaseOrder?.supplier?.nama_supplier || "-"}
         </div>
-
         <div>
           <strong>Petugas:</strong> {penerimaan.pegawai?.nama_pegawai || "-"}
         </div>
+        <div className="flex flex-col gap-2 max-w-xs">
+          <p className="text-xs text-muted-foreground">Tanggal Retur</p>
 
-        <div className="p-3 border rounded-lg bg-muted/40 flex items-center gap-4">
-          <CalendarIcon className="w-5 h-5 text-emerald-500" />
+          <Popover modal={false}>
+            <PopoverTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="justify-start text-left font-normal"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4 text-rose-500" />
+                {format(tanggalRetur, "dd MMMM yyyy", { locale: id })}
+              </Button>
+            </PopoverTrigger>
 
-          <div className="flex flex-col gap-2">
-            <p className="text-xs text-muted-foreground">
-              Tanggal Penerimaan Barang
-            </p>
-
-            <Input
-              type="date"
-              value={tanggalRetur}
-              onChange={(e) => setTanggalRetur(e.target.value)}
-            />
-          </div>
+            <PopoverContent
+              align="start"
+              side="bottom"
+              sideOffset={8}
+              className="w-auto p-0"
+              style={{ pointerEvents: "auto" }}
+            >
+              <Calendar
+                mode="single"
+                locale={id}
+                selected={tanggalRetur}
+                captionLayout="dropdown"
+                fromYear={2020}
+                toYear={new Date().getFullYear()}
+                disabled={{ after: new Date() }}
+                onSelect={(date) => {
+                  if (date) {
+                    setTanggalRetur(date);
+                  }
+                }}
+                initialFocus
+                className="rounded-lg border"
+              />
+            </PopoverContent>
+          </Popover>
         </div>
-
         <div className="mt-4 flex-1 overflow-y-auto py-4">
           <h3 className="font-semibold mb-2">Detail Penerimaan</h3>
 
@@ -186,8 +230,6 @@ export default function AdminReturPenerimaanPo({
                     <th className="p-2 border">Produk</th>
                     <th className="p-2 border">SKU</th>
                     <th className="p-2 border">Qty Diterima</th>
-                    <th className="p-2 border">Harga</th>
-                    <th className="p-2 border">Subtotal</th>
                     <th className="p-2 border">Sudah Retur</th>
                     <th className="p-2 border">Qty Retur</th>
                     <th className="p-2 border">Nominal Retur</th>
@@ -202,8 +244,6 @@ export default function AdminReturPenerimaanPo({
 
                     const nominalRetur =
                       (item.qtyRetur || 0) * item.harga_satuan;
-
-                    const subTotal = item.jumlah_produk * item.harga_satuan;
 
                     const satuan =
                       item.produkVariant?.satuan?.kode_satuan || "";
@@ -232,20 +272,14 @@ export default function AdminReturPenerimaanPo({
                         </td>
 
                         <td className="p-2 border text-center">
-                          {formatRupiah(item.harga_satuan)}
-                        </td>
-
-                        <td className="p-2 border text-center">
-                          {formatRupiah(subTotal)}
-                        </td>
-
-                        <td className="p-2 border text-center">
                           {item.qty_retur || 0} {satuan}
                         </td>
 
                         <td className="p-2 border text-center">
                           <Input
-                            type="number"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             min={0}
                             max={sisaRetur}
                             className="w-20"
@@ -274,7 +308,8 @@ export default function AdminReturPenerimaanPo({
                           <Textarea
                             className="text-xs"
                             placeholder="Alasan retur"
-                            value={item.alasan}
+                            value={item.alasan || ""}
+                            disabled={!item.qtyRetur}
                             onChange={(e) => {
                               const value = e.target.value;
                               setPenerimaan((prev) => ({
@@ -292,33 +327,39 @@ export default function AdminReturPenerimaanPo({
                     );
                   })}
                 </tbody>
-
-                <tfoot className="sticky bottom-0 bg-muted font-semibold z-10">
-                  <tr>
-                    <td colSpan={7} className="p-2 border text-center">
-                      TOTAL RETUR
-                    </td>
-                    <td className="p-2 border text-center">
-                      {penerimaan.details.reduce(
-                        (acc, item) => acc + (item.qtyRetur || 0),
-                        0,
-                      )}
-                    </td>
-                    <td className="p-2 border text-center">
-                      {formatRupiah(
-                        penerimaan.details.reduce(
-                          (acc, item) =>
-                            acc + (item.qtyRetur || 0) * item.harga_satuan,
-                          0,
-                        ),
-                      )}
-                    </td>
-                    <td className="p-2 border"></td>
-                  </tr>
-                </tfoot>
               </table>
             </div>
           )}
+        </div>
+      </div>
+
+      <div className="mt-4 p-4 rounded-xl border bg-muted/30">
+        <h4 className="font-semibold mb-3">Ringkasan Retur</h4>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+          <div>
+            <p className="text-muted-foreground">Total Qty Awal</p>
+            <p className="font-semibold">{totalQtyAwal}</p>
+          </div>
+
+          <div>
+            <p className="text-muted-foreground">Total Retur Sebelumnya</p>
+            <p className="font-semibold text-amber-600">
+              {totalQtyReturSebelumnya}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-muted-foreground">Total Retur Sekarang</p>
+            <p className="font-semibold text-rose-600">{totalQtyReturBaru}</p>
+          </div>
+
+          <div>
+            <p className="text-muted-foreground">Total Nominal Retur</p>
+            <p className="font-semibold text-rose-600">
+              {formatRupiah(totalNominalRetur)}
+            </p>
+          </div>
         </div>
       </div>
 
@@ -326,8 +367,9 @@ export default function AdminReturPenerimaanPo({
         <Button
           onClick={handleSubmit}
           disabled={loading}
-          className="bg-rose-600 hover:bg-rose-700 text-white"
+          className="bg-rose-600 hover:bg-rose-700 text-white flex items-center"
         >
+          <SaveIcon className="w-4 h-4" />
           {loading ? "Menyimpan..." : "Simpan Retur"}
         </Button>
       </div>

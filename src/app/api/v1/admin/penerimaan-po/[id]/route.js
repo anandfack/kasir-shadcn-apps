@@ -36,6 +36,31 @@ export async function GET(req, { params }) {
             },
           },
         },
+        returPenerimaans: {
+          where: {
+            deleted_at: null,
+          },
+          select: {
+            id: true,
+            nomor_retur: true,
+            tanggal_retur: true,
+            total_harga: true,
+            status: true,
+            detailReturPenerimaans: {
+              where: {
+                deleted_at: null,
+              },
+              select: {
+                id: true,
+                jumlah_produk: true,
+                harga_satuan: true,
+                total_harga: true,
+                keterangan_retur: true,
+                penerimaanbarangdetail_id: true,
+              },
+            },
+          },
+        },
         details: {
           select: {
             id: true,

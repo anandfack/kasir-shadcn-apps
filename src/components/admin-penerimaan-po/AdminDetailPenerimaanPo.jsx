@@ -10,10 +10,33 @@ import {
 import { formatRupiah } from "@/lib/formatRupiah";
 import { formatTanggal } from "@/lib/formatTanggal";
 import { Badge } from "../ui/badge";
-import { React, useMemo } from "react";
+import { useMemo } from "react";
+import React from "react";
 
 export default function AdminDetailPenerimaanPo({ open, onOpenChange, data }) {
   const rows = data?.data || [];
+
+  const returMap = useMemo(() => {
+    if (!rows?.returPenerimaans) return {};
+
+    const map = {};
+
+    rows.returPenerimaans.forEach((retur) => {
+      retur.detailReturPenerimaans?.forEach((detail) => {
+        const detailId = detail.penerimaanbarangdetail_id;
+
+        if (!map[detailId]) map[detailId] = [];
+
+        map[detailId].push({
+          ...detail,
+          nomor_retur: retur.nomor_retur,
+          tanggal_retur: retur.tanggal_retur,
+        });
+      });
+    });
+
+    return map;
+  }, [rows?.returPenerimaans]);
 
   const renderStatusBadge = (status) => {
     switch (status) {
@@ -57,65 +80,52 @@ export default function AdminDetailPenerimaanPo({ open, onOpenChange, data }) {
       map[produkId].items.push(item);
     });
 
-    console.log("groupedDetails", map);
-
     return Object.values(map);
   }, [rows?.details]);
 
-  const totals = useMemo(() => {
-    if (!rows?.details) {
-      return {
-        totalQtyPO: 0,
-        totalQtySudah: 0,
-        totalQtySekarang: 0,
-        totalSisa: 0,
-        totalSubtotal: 0,
-      };
-    }
+  // Hitung ringkasan penerimaan
+  const summary = useMemo(() => {
+    if (!rows?.details) return {};
 
-    return rows.details.reduce(
-      (acc, item) => {
-        const qtyPO = item?.purchaseOrderDetail?.jumlah_produk || 0;
-        const qtySudah = item?.purchaseOrderDetail?.qty_diterima || 0;
-        const qtySekarang = item?.jumlah_produk || 0;
+    let totalQtyAwal = 0;
+    let totalQtySudah = 0;
+    let totalQtySekarang = 0;
+    let totalQtyRetur = 0;
+    let totalNominal = 0;
+    let satuan = "";
 
-        const hargaSatuan = item?.purchaseOrderDetail?.harga_satuan || 0;
+    rows.details.forEach((item) => {
+      const qtyPO = item?.purchaseOrderDetail?.jumlah_produk || 0;
+      const qtySudah = item?.purchaseOrderDetail?.qty_diterima || 0;
+      const qtySekarang = item?.jumlah_produk || 0;
+      const hargaSatuan = item?.purchaseOrderDetail?.harga_satuan || 0;
 
-        acc.totalQtyPO += qtyPO;
-        acc.totalQtySudah += qtySudah;
-        acc.totalQtySekarang += qtySekarang;
-        acc.totalSisa += qtyPO - qtySudah;
-        acc.totalSubtotal += qtySekarang * hargaSatuan;
+      // Ambil satuan dari item pertama saja
+      if (!satuan) satuan = item?.produkVariant?.satuan?.kode_satuan || "";
 
-        return acc;
-      },
-      {
-        totalQtyPO: 0,
-        totalQtySudah: 0,
-        totalQtySekarang: 0,
-        totalSisa: 0,
-        totalSubtotal: 0,
-      },
-    );
-  }, [rows?.details]);
+      totalQtyAwal += qtyPO;
+      totalQtySudah += qtySudah;
+      totalQtySekarang += qtySekarang;
+      totalNominal += qtySekarang * hargaSatuan;
 
-  const satuanFooter =
-    rows?.details?.[0]?.produkVariant?.satuan?.kode_satuan || "";
+      // Tambahkan retur
+      const returs = returMap[item.id] || [];
+      returs.forEach((r) => {
+        totalQtyRetur += r.jumlah_produk || 0;
+        totalNominal -= r.total_harga || 0;
+      });
+    });
 
-  //   const returMap = {};
-  //   rows?.ReturPembelian?.forEach((retur) => {
-  //     retur.DetailReturPembelian?.forEach((detail) => {
-  //       const idProduk = detail.produk?.id;
-  //       if (!returMap[idProduk]) returMap[idProduk] = [];
-  //       returMap[idProduk].push({ ...detail, nomor_retur: retur.nomor_retur });
-  //     });
-  //   });
+    return {
+      totalQtyAwal,
+      totalQtySudah,
+      totalQtySekarang,
+      totalQtyRetur,
+      totalNominal,
+      satuan,
+    };
+  }, [rows?.details, returMap]);
 
-  //   const totalAwal = rows?.total_harga || 0;
-  //   const totalRetur = rows?.ReturPembelian?.reduce((acc, retur) => {
-  //     return acc + (retur.total_harga || 0);
-  //   }, 0);
-  //   const totalSetelahRetur = totalAwal - totalRetur;
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="h-[90vh] sm:max-w-7xl overflow-auto">
@@ -134,10 +144,6 @@ export default function AdminDetailPenerimaanPo({ open, onOpenChange, data }) {
           <div>
             <strong>Petugas:</strong> {rows?.pegawai?.nama_pegawai || "-"}
           </div>
-          {/* <div>
-            <strong>Total Harga Pembelian:</strong>{" "}
-            {formatRupiah(rows?.total_harga || 0)}
-          </div> */}
           <div className="flex items-center gap-2">
             <strong>Status:</strong>
             {renderStatusBadge(rows?.status_penerimaan)}
@@ -182,82 +188,145 @@ export default function AdminDetailPenerimaanPo({ open, onOpenChange, data }) {
                         item?.produkVariant?.satuan?.kode_satuan || "-";
 
                       return (
-                        <tr key={`${groupIndex}-${itemIndex}`}>
-                          {/* Nomor */}
-                          <td className="p-2 border align-top">
-                            {itemIndex === 0 ? groupIndex + 1 : ""}
-                          </td>
+                        <React.Fragment key={`${groupIndex}-${itemIndex}`}>
+                          {/* ROW PRODUK */}
+                          <tr>
+                            <td className="p-2 border align-top">
+                              {itemIndex === 0 ? groupIndex + 1 : ""}
+                            </td>
 
-                          {/* Nama Produk hanya tampil sekali */}
-                          <td className="p-2 border">
-                            {itemIndex === 0
-                              ? group.produk?.nama_produk || "-"
-                              : ""}
-                          </td>
+                            <td className="p-2 border">
+                              {itemIndex === 0
+                                ? group.produk?.nama_produk || "-"
+                                : ""}
+                            </td>
 
-                          <td className="p-2 border font-mono">
-                            {item?.produkVariant?.sku || "-"}
-                          </td>
+                            <td className="p-2 border font-mono">
+                              {item?.produkVariant?.sku || "-"}
+                            </td>
 
-                          <td className="p-2 border">
-                            {item?.produkVariant?.warna || "-"}
-                          </td>
+                            <td className="p-2 border">
+                              {item?.produkVariant?.warna || "-"}
+                            </td>
 
-                          <td className="p-2 border">
-                            {item?.produkVariant?.ukuran || "-"}
-                          </td>
+                            <td className="p-2 border">
+                              {item?.produkVariant?.ukuran || "-"}
+                            </td>
 
-                          <td className="p-2 border">
-                            {qtyPO} {satuan}
-                          </td>
-                          <td className="p-2 border">
-                            {qtySekarang} {satuan}
-                          </td>
-                          <td className="p-2 border">
-                            {qtySudah} {satuan}
-                          </td>
-                          <td className="p-2 border">
-                            {sisa} {satuan}
-                          </td>
+                            <td className="p-2 border text-right">
+                              {qtyPO} {satuan}
+                            </td>
 
-                          <td className="p-2 border">
-                            {formatRupiah(hargaSatuan)}
-                          </td>
+                            <td className="p-2 border text-right">
+                              {qtySekarang} {satuan}
+                            </td>
 
-                          <td className="p-2 border">
-                            {formatRupiah(totalHarga)}
-                          </td>
-                        </tr>
+                            <td className="p-2 border text-right">
+                              {qtySudah} {satuan}
+                            </td>
+
+                            <td className="p-2 border text-right">
+                              {sisa} {satuan}
+                            </td>
+
+                            <td className="p-2 border text-right">
+                              {formatRupiah(hargaSatuan)}
+                            </td>
+
+                            <td className="p-2 border text-right">
+                              {formatRupiah(totalHarga)}
+                            </td>
+                          </tr>
+
+                          {/* ROW RETUR (JIKA ADA) */}
+                          {returMap[item.id]?.map((retur, rIndex) => (
+                            <tr
+                              key={`retur-${item.id}-${rIndex}`}
+                              className="text-rose-700 text-xs"
+                            >
+                              {/* Skip kolom No, Nama Produk, SKU, Warna */}
+                              <td
+                                colSpan={6}
+                                className="p-2 border italic text-center"
+                              >
+                                ↳ Retur {retur.nomor_retur}
+                              </td>
+
+                              {/* Kolom Qty Diterima Sekarang → qty retur */}
+                              <td className="p-2 border text-right">
+                                - {retur.jumlah_produk} {satuan}
+                              </td>
+
+                              {/* Kolom Qty Sudah Diterima → kosong */}
+                              <td className="p-2 border"></td>
+
+                              {/* Kolom Sisa → kosong */}
+                              <td className="p-2 border"></td>
+
+                              {/* Kolom Harga */}
+                              <td className="p-2 border text-right">
+                                - {formatRupiah(retur.harga_satuan)}
+                              </td>
+
+                              {/* Kolom Subtotal */}
+                              <td className="p-2 border text-right">
+                                - {formatRupiah(retur.total_harga)}
+                              </td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
                       );
                     }),
                   )}
                 </tbody>
-                <tfoot className="sticky bottom-0 bg-muted font-semibold text-xs z-10">
-                  <tr>
-                    <td className="p-2 border text-center" colSpan={10}>
-                      TOTAL
-                    </td>
-                    <td className="p-2 border text-left">
-                      {formatRupiah(totals.totalSubtotal)}
-                    </td>
-                  </tr>
-                </tfoot>
               </table>
             </div>
-            {/* {rows?.ReturPembelian?.length > 0 && (
-              <div className="mt-4 text-sm space-y-1">
+            <div className="mt-4 p-4 rounded-xl border bg-muted/30">
+              <h4 className="font-semibold mb-3">
+                Ringkasan Penerimaan Purchase Order
+              </h4>
+
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
                 <div>
-                  <strong>Total Awal:</strong> {formatRupiah(totalAwal)}
+                  <p className="text-muted-foreground">Total Qty Awal</p>
+                  <p className="font-semibold">
+                    {summary.totalQtyAwal} {summary.satuan}
+                  </p>
                 </div>
+
                 <div>
-                  <strong>Total Retur:</strong> - {formatRupiah(totalRetur)}
+                  <p className="text-muted-foreground">
+                    Total Diterima Sebelumnya
+                  </p>
+                  <p className="font-semibold">
+                    {summary.totalQtySudah} {summary.satuan}
+                  </p>
                 </div>
-                <div className="font-semibold">
-                  <strong>Total Setelah Retur:</strong>{" "}
-                  {formatRupiah(totalSetelahRetur)}
+
+                <div>
+                  <p className="text-muted-foreground">
+                    Total Diterima Sekarang
+                  </p>
+                  <p className="font-semibold">
+                    {summary.totalQtySekarang} {summary.satuan}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-muted-foreground">Total Retur</p>
+                  <p className="font-semibold text-rose-600">
+                    {summary.totalQtyRetur} {summary.satuan}
+                  </p>
+                </div>
+
+                <div>
+                  <p className="text-muted-foreground">Total Nominal</p>
+                  <p className="font-semibold">
+                    {formatRupiah(summary.totalNominal)}
+                  </p>
                 </div>
               </div>
-            )} */}
+            </div>
           </div>
         </div>
       </DialogContent>

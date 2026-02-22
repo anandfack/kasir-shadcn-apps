@@ -1,7 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import jsonResponse from "@/lib/jsonResponse";
 import { verifyAuth } from "@/lib/verifyAuth";
-import { generateDocumentNumber } from "@/lib/documentNumber";
+import {
+  generateDocumentNumber,
+  newGenerateDocumentNumber,
+} from "@/lib/documentNumber";
 // import { date } from "zod";
 
 const prisma = new PrismaClient();
@@ -110,18 +113,13 @@ export async function POST(req) {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      const nomorRetur = await generateDocumentNumber({
+      const nomorRetur = await newGenerateDocumentNumber({
         tx,
-        model: "returPenerimaan",
-        field: "nomor_retur",
         prefix: "RTR-PN",
         tanggal: new Date(),
       });
-
-      const nomorMutasi = await generateDocumentNumber({
+      const nomorMutasi = await newGenerateDocumentNumber({
         tx,
-        model: "mutasiStokVariant",
-        field: "nomor_mutasi",
         prefix: "MT",
         tanggal: new Date(),
       });

@@ -520,3 +520,12 @@ model DetailReturPenerimaan {
 
   @@map("detailreturpenerimaan_t")
 }
+
+model DocumentCounter {
+  id      Int    @id @default(autoincrement())
+  prefix  String
+  date    String
+  counter Int    @default(0)
+
+  @@unique([prefix, date], name: "unique_prefix_date")
+}
