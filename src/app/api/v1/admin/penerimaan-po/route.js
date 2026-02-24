@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import jsonResponse from "@/lib/jsonResponse";
 import { verifyAuth } from "@/lib/verifyAuth";
-import { generateDocumentNumber } from "@/lib/documentNumber";
+import { newGenerateDocumentNumber } from "@/lib/documentNumber";
 
 const prisma = new PrismaClient();
 
@@ -105,6 +105,10 @@ export async function POST(req) {
       purchase_order_id,
       tanggal_penerimaan,
       total_harga,
+      nomor_faktur,
+      tanggal_faktur,
+      nomor_surat_jalan,
+      tanggal_surat_jalan,
       details_penerimaan,
     } = body;
 
@@ -135,8 +139,17 @@ export async function POST(req) {
     if (!tanggal_penerimaan || tanggal_penerimaan.trim() === "") {
       errors.tanggal_penerimaan = "Tanggal penerimaan wajib diisi";
     }
-    if (!tanggal_penerimaan || tanggal_penerimaan.trim() === "") {
-      errors.tanggal_penerimaan = "Tanggal penerimaan wajib diisi";
+    if (!tanggal_faktur || tanggal_faktur.trim() === "") {
+      errors.tanggal_faktur = "Tanggal faktur wajib diisi";
+    }
+    if (!tanggal_surat_jalan || tanggal_surat_jalan.trim() === "") {
+      errors.tanggal_surat_jalan = "Tanggal surat jalan wajib diisi";
+    }
+    if (!nomor_faktur || nomor_faktur.trim() === "") {
+      errors.nomor_faktur = "Tanggal surat jalan wajib diisi";
+    }
+    if (!nomor_surat_jalan || nomor_surat_jalan.trim() === "") {
+      errors.nomor_surat_jalan = "Tanggal surat jalan wajib diisi";
     }
 
     if (Object.keys(errors).length > 0) {
@@ -144,10 +157,8 @@ export async function POST(req) {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      const nomorPenerimaan = await generateDocumentNumber({
+      const nomorPenerimaan = await newGenerateDocumentNumber({
         tx,
-        model: "penerimaanBarang",
-        field: "nomor_penerimaan",
         prefix: "PB",
         tanggal: new Date(),
       });
@@ -159,6 +170,10 @@ export async function POST(req) {
           nomor_penerimaan: nomorPenerimaan,
           tanggal_penerimaan: new Date(tanggal_penerimaan),
           status_penerimaan: "SELESAI",
+          nomor_faktur: nomor_faktur,
+          tanggal_faktur: new Date(tanggal_faktur),
+          nomor_surat_jalan: nomor_surat_jalan,
+          tanggal_surat_jalan: new Date(tanggal_surat_jalan),
           created_at: new Date(),
           updated_at: new Date(),
         },
@@ -191,10 +206,8 @@ export async function POST(req) {
           throw new Error("Qty melebihi sisa PO");
         }
 
-        const nomorMutasi = await generateDocumentNumber({
+        const nomorMutasi = await newGenerateDocumentNumber({
           tx,
-          model: "mutasiStokVariant",
-          field: "nomor_mutasi",
           prefix: "MT",
           tanggal: new Date(),
         });

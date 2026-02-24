@@ -440,9 +440,13 @@ model PenerimaanBarang {
   pegawai_id Int
   pegawai    Pegawai @relation(fields: [pegawai_id], references: [id])
 
-  nomor_penerimaan   String   @unique
-  tanggal_penerimaan DateTime
-  status_penerimaan  String
+  nomor_penerimaan    String    @unique
+  tanggal_penerimaan  DateTime
+  status_penerimaan   String
+  nomor_faktur        String?
+  tanggal_faktur      DateTime?
+  nomor_surat_jalan   String?
+  tanggal_surat_jalan DateTime?
 
   created_at DateTime  @default(now())
   updated_at DateTime  @updatedAt

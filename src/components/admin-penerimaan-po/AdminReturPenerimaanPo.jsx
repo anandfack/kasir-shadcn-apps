@@ -205,6 +205,13 @@ export default function AdminReturPenerimaanPo({
                 disabled={{ after: new Date() }}
                 onSelect={(date) => {
                   if (date) {
+                    const now = new Date();
+                    date.setHours(
+                      now.getHours(),
+                      now.getMinutes(),
+                      now.getSeconds(),
+                      now.getMilliseconds(),
+                    );
                     setTanggalRetur(date);
                   }
                 }}

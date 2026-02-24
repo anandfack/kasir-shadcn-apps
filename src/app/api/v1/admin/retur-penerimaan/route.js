@@ -1,10 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import jsonResponse from "@/lib/jsonResponse";
 import { verifyAuth } from "@/lib/verifyAuth";
-import {
-  generateDocumentNumber,
-  newGenerateDocumentNumber,
-} from "@/lib/documentNumber";
+import { newGenerateDocumentNumber } from "@/lib/documentNumber";
 // import { date } from "zod";
 
 const prisma = new PrismaClient();

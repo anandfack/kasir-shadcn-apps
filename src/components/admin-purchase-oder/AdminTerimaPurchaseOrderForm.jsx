@@ -12,8 +12,29 @@ import { Button } from "@/components/ui/button";
 import { apiRequest } from "@/lib/apiRequest";
 import { formatRupiah } from "@/lib/formatRupiah";
 import { formatTanggal } from "@/lib/formatTanggal";
-import { CalendarIcon, Loader2Icon, PackageCheckIcon } from "lucide-react";
+import {
+  CalendarIcon,
+  Loader2Icon,
+  PackageCheckIcon,
+  SaveIcon,
+} from "lucide-react";
 import { Badge } from "../ui/badge";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export default function AdminTerimaPurchaseOrderForm({
   open,
@@ -24,6 +45,11 @@ export default function AdminTerimaPurchaseOrderForm({
 }) {
   const [purchaseOrder, setPurchaseOrder] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [tanggalPenerimaan, setTanggalPenerimaan] = useState(new Date());
+  const [tanggalFaktur, setTanggalFaktur] = useState(new Date());
+  const [tanggalSuratJalan, setTanggalSuratJalan] = useState(new Date());
+  const [nomorFaktur, setNomorFaktur] = useState("");
+  const [nomorSuratJalan, setNomorSuratJalan] = useState("");
 
   useEffect(() => {
     if (!open || !terimaId) return;
@@ -166,7 +192,11 @@ export default function AdminTerimaPurchaseOrderForm({
     try {
       const payload = {
         purchase_order_id: terimaId,
-        tanggal_penerimaan: purchaseOrder.tanggal_penerimaan,
+        tanggal_penerimaan: tanggalPenerimaan.toISOString(),
+        tanggal_faktur: tanggalFaktur.toISOString(),
+        tanggal_surat_jalan: tanggalSuratJalan.toISOString(),
+        nomor_faktur: nomorFaktur,
+        nomor_surat_jalan: nomorSuratJalan,
         total_harga: details.reduce(
           (sum, item) => sum + item.qtyTerima * item.harga_satuan,
           0,
@@ -179,6 +209,8 @@ export default function AdminTerimaPurchaseOrderForm({
           total_harga: item.qtyTerima * item.harga_satuan,
         })),
       };
+
+      // console.log("payload: ", payload);
 
       await apiRequest("POST", `/api/v1/admin/penerimaan-po`, payload);
 
@@ -217,27 +249,185 @@ export default function AdminTerimaPurchaseOrderForm({
           {renderStatusBadge(purchaseOrder.status_po)}
         </div>
 
-        <div className="p-3 border rounded-lg bg-muted/40 flex items-center gap-4">
-          <CalendarIcon className="w-5 h-5 text-emerald-500" />
+        <Card size="xs" className="w-full max-w-full py-4 text-xs">
+          <CardContent>
+            <div className="flex flex-col gap-4 max-w-full">
+              <p className="text-xs text-muted-foreground">
+                Tanggal Penerimaan
+              </p>
+              <Popover modal={false}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="justify-start text-left font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4 text-emerald-500" />
+                    {format(tanggalPenerimaan, "dd MMMM yyyy", { locale: id })}
+                  </Button>
+                </PopoverTrigger>
 
-          <div className="flex flex-col gap-2">
-            <p className="text-xs text-muted-foreground">
-              Tanggal Penerimaan Barang
-            </p>
+                <PopoverContent
+                  align="start"
+                  side="bottom"
+                  sideOffset={8}
+                  className="w-auto p-0"
+                  style={{ pointerEvents: "auto" }}
+                >
+                  <Calendar
+                    mode="single"
+                    locale={id}
+                    selected={tanggalPenerimaan}
+                    captionLayout="dropdown"
+                    fromYear={2020}
+                    toYear={new Date().getFullYear()}
+                    disabled={{ after: new Date() }}
+                    onSelect={(date) => {
+                      if (date) {
+                        const now = new Date();
+                        date.setHours(
+                          now.getHours(),
+                          now.getMinutes(),
+                          now.getSeconds(),
+                          now.getMilliseconds(),
+                        );
+                        setTanggalPenerimaan(date);
+                      }
+                    }}
+                    initialFocus
+                    className="rounded-lg border"
+                  />
+                </PopoverContent>
+              </Popover>
+              {/* faktur */}
+              <div className="flex justify-between items-center gap-4">
+                <div className="flex flex-col gap-4 w-full">
+                  <p className="text-xs text-muted-foreground">Nomor Faktur</p>
+                  <Input
+                    placeholder="Masukkan nomor faktur"
+                    value={nomorFaktur}
+                    onChange={(e) => setNomorFaktur(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-4 w-full">
+                  <p className="text-xs text-muted-foreground">
+                    Tanggal Faktur
+                  </p>
+                  <Popover modal={false}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="justify-start text-left font-normal"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4 text-emerald-500" />
+                        {format(tanggalFaktur, "dd MMMM yyyy", {
+                          locale: id,
+                        })}
+                      </Button>
+                    </PopoverTrigger>
 
-            <Input
-              type="date"
-              value={purchaseOrder.tanggal_penerimaan || ""}
-              disabled={isComplete}
-              onChange={(e) =>
-                setPurchaseOrder((prev) => ({
-                  ...prev,
-                  tanggal_penerimaan: e.target.value,
-                }))
-              }
-            />
-          </div>
-        </div>
+                    <PopoverContent
+                      align="start"
+                      side="bottom"
+                      sideOffset={8}
+                      className="w-auto p-0"
+                      style={{ pointerEvents: "auto" }}
+                    >
+                      <Calendar
+                        mode="single"
+                        locale={id}
+                        selected={tanggalFaktur}
+                        captionLayout="dropdown"
+                        fromYear={2020}
+                        toYear={new Date().getFullYear()}
+                        disabled={{ after: new Date() }}
+                        onSelect={(date) => {
+                          if (date) {
+                            const now = new Date();
+                            date.setHours(
+                              now.getHours(),
+                              now.getMinutes(),
+                              now.getSeconds(),
+                              now.getMilliseconds(),
+                            );
+                            setTanggalFaktur(date);
+                          }
+                        }}
+                        initialFocus
+                        className="rounded-lg border"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+              {/* surat jalan */}
+              <div className="flex justify-between items-center gap-4">
+                <div className="flex flex-col gap-4 w-full">
+                  <p className="text-xs text-muted-foreground">
+                    Nomor Surat Jalan
+                  </p>
+                  <Input
+                    placeholder="Masukkan nomor faktur"
+                    value={nomorSuratJalan}
+                    onChange={(e) => setNomorSuratJalan(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col gap-4 w-full">
+                  <p className="text-xs text-muted-foreground">
+                    Tanggal Surat Jalan
+                  </p>
+                  <Popover modal={false}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="justify-start text-left font-normal"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4 text-emerald-500" />
+                        {format(tanggalSuratJalan, "dd MMMM yyyy", {
+                          locale: id,
+                        })}
+                      </Button>
+                    </PopoverTrigger>
+
+                    <PopoverContent
+                      align="start"
+                      side="bottom"
+                      sideOffset={8}
+                      className="w-auto p-0"
+                      style={{ pointerEvents: "auto" }}
+                    >
+                      <Calendar
+                        mode="single"
+                        locale={id}
+                        selected={tanggalSuratJalan}
+                        captionLayout="dropdown"
+                        fromYear={2020}
+                        toYear={new Date().getFullYear()}
+                        disabled={{ after: new Date() }}
+                        onSelect={(date) => {
+                          if (date) {
+                            const now = new Date();
+                            date.setHours(
+                              now.getHours(),
+                              now.getMinutes(),
+                              now.getSeconds(),
+                              now.getMilliseconds(),
+                            );
+                            setTanggalSuratJalan(date);
+                          }
+                        }}
+                        initialFocus
+                        className="rounded-lg border"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
         <div className="mt-4 flex-1 overflow-y-auto py-4">
           <h3 className="font-semibold mb-2">Detail Purchase Order</h3>
 
