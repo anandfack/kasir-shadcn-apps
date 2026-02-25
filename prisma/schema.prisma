@@ -35,6 +35,7 @@ model Pegawai {
   purchaseOrderDetails    PurchaseOrderDetail[]
   penerimaanBarangs       PenerimaanBarang[]
   penerimaanBarangDetails PenerimaanBarangDetail[]
+  pembayaranInvoices      PembayaranInvoice[]
 
   @@map("pegawai_m")
 }
@@ -452,8 +453,10 @@ model PenerimaanBarang {
   updated_at DateTime  @updatedAt
   deleted_at DateTime?
 
-  details          PenerimaanBarangDetail[]
-  returPenerimaans ReturPenerimaan[]
+  details            PenerimaanBarangDetail[]
+  returPenerimaans   ReturPenerimaan[]
+  invoicePembelians  InvoicePembelian[]
+  invoicePenerimaans InvoicePenerimaan[]
 
   @@map("penerimaanbarang_t")
 }
@@ -532,4 +535,60 @@ model DocumentCounter {
   counter Int    @default(0)
 
   @@unique([prefix, date], name: "unique_prefix_date")
+  @@map("documentcounter_t")
+}
+
+model InvoicePembelian {
+  id Int @id @default(autoincrement())
+
+  penerimaan_id    Int
+  penerimaanBarang PenerimaanBarang @relation(fields: [penerimaan_id], references: [id])
+
+  nomor_invoice   String   @unique
+  tanggal_invoice DateTime
+  total_tagihan   Float
+  sisa_tagihan    Float
+  status          String
+
+  created_at         DateTime            @default(now())
+  updated_at         DateTime            @updatedAt
+  invoicePenerimaans InvoicePenerimaan[]
+  pembayaranInvoices PembayaranInvoice[]
+
+  @@map("invoicepembelian_t")
+}
+
+model InvoicePenerimaan {
+  id Int @id @default(autoincrement())
+
+  invoice_id    Int
+  penerimaan_id Int
+
+  invoice          InvoicePembelian @relation(fields: [invoice_id], references: [id])
+  penerimaanBarang PenerimaanBarang @relation(fields: [penerimaan_id], references: [id])
+
+  @@unique([invoice_id, penerimaan_id])
+  @@map("invoicepenerimaan_t")
+}
+
+model PembayaranInvoice {
+  id Int @id @default(autoincrement())
+
+  invoice_id Int
+  invoice    InvoicePembelian @relation(fields: [invoice_id], references: [id])
+
+  nomor_pembayaran String?
+  tanggal_bayar    DateTime
+  jumlah_bayar     Float
+  metode_bayar     String
+  nomor_referensi  String?
+
+  pegawai_id Int
+  pegawai    Pegawai @relation(fields: [pegawai_id], references: [id])
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+
+  @@map("pembayaraninvoice_t")
 }

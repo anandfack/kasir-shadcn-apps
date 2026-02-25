@@ -25,6 +25,8 @@ import {
   MailCheckIcon,
   SettingsIcon,
   LogOutIcon,
+  ClipboardListIcon,
+  PackageCheckIcon,
 } from "lucide-react";
 import handleLogout from "@/components/logout/handleLogout";
 
@@ -62,14 +64,19 @@ export function AppSidebar() {
       href: "/admin/pembelian-produk",
     },
     {
-      icon: <ShoppingCartIcon />,
+      icon: <ClipboardListIcon />,
       name: "Purchase Order",
       href: "/admin/purchase-order",
     },
     {
-      icon: <ShoppingCartIcon />,
+      icon: <PackageCheckIcon />,
       name: "Penerimaan Purchase Order",
       href: "/admin/penerimaan-po",
+    },
+    {
+      icon: <ReceiptIcon />,
+      name: "Inovice",
+      href: "/admin/invoice",
     },
   ];
 
