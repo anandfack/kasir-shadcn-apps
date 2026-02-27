@@ -40,7 +40,22 @@ export async function GET(req) {
         details: {
           select: {
             jumlah_produk: true,
+            harga_satuan: true,
             total_harga: true,
+          },
+        },
+        returPenerimaans: {
+          select: {
+            id: true,
+            total_harga: true,
+            detailReturPenerimaans: {
+              select: {
+                id: true,
+                harga_satuan: true,
+                jumlah_produk: true,
+                total_harga: true,
+              },
+            },
           },
         },
       },

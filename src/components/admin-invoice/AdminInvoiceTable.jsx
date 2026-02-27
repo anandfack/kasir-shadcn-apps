@@ -50,6 +50,7 @@ import { Badge } from "../ui/badge";
 // import AdminDetailPenerimaanPo from "./AdminDetailPenerimaanPo";
 // import AdminReturPenerimaanPo from "./AdminReturPenerimaanPo";
 import useFetchAdminInvoice from "@/hooks/admin-invoice/useFetchAdminInvoice";
+import AdminTambahInvoice from "./AdminTambahInvoiceForm";
 
 const AdminInvoiceTable = () => {
   const { toast } = useToast();
@@ -340,7 +341,7 @@ const AdminInvoiceTable = () => {
   return (
     <div className="w-full">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between py-4">
-        {/* <Dialog
+        <Dialog
           open={isDialogTambahOpen}
           onOpenChange={(isOpen) => setIsDialogTambahOpen(isOpen)}
         >
@@ -352,12 +353,12 @@ const AdminInvoiceTable = () => {
               <CirclePlus /> Tambah Purchase Order
             </Button>
           </DialogTrigger>
-          <AdminTambahPurchaseOrderForm
+          <AdminTambahInvoice
             open={isDialogTambahOpen}
             onSuccess={() => {
               toast({
                 title: "Sukses!",
-                description: "Data pembelian produk berhasil ditambahkan.",
+                description: "Data invoice berhasil ditambahkan.",
               });
               setRefreshKey((prev) => prev + 1);
               setIsDialogTambahOpen(false);
@@ -372,7 +373,7 @@ const AdminInvoiceTable = () => {
               setIsDialogTambahOpen(true);
             }}
           />
-        </Dialog> */}
+        </Dialog>
         <Input
           placeholder="Cari Invoice ..."
           className="max-w-sm text-xs md:text-sm"
