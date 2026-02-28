@@ -13,7 +13,22 @@ export async function GET(req) {
       return jsonResponse({ message: auth.error }, 401);
     }
 
+    const { searchParams } = new URL(req.url);
+    const withotuInvoicePenerimaan = searchParams.get(
+      "without_invoice_penerimaan",
+    );
+
+    const whereCondition = {
+      deleted_at: null,
+      ...(withotuInvoicePenerimaan === "true" && {
+        invoicePenerimaans: {
+          none: {},
+        },
+      }),
+    };
+
     const penerimaan = await prisma.penerimaanBarang.findMany({
+      where: whereCondition,
       select: {
         id: true,
         purchaseOrder: {
@@ -44,24 +59,10 @@ export async function GET(req) {
             total_harga: true,
           },
         },
-        returPenerimaans: {
-          select: {
-            id: true,
-            total_harga: true,
-            detailReturPenerimaans: {
-              select: {
-                id: true,
-                harga_satuan: true,
-                jumlah_produk: true,
-                total_harga: true,
-              },
-            },
-          },
-        },
       },
-      where: {
-        deleted_at: null,
-      },
+      // where: {
+      //   deleted_at: null,
+      // },
     });
 
     // function hitungStatusPembayaran(pembayaran, totalTagihan) {

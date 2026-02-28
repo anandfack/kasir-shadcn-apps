@@ -16,17 +16,6 @@ import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/apiRequest";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { useEffect } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { formatRupiah } from "@/lib/formatRupiah";
-import { set } from "date-fns";
 import { formatTanggalTanpaJam } from "@/lib/formatTanggal";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -50,7 +39,11 @@ export default function AdminTambahInvoice({ open, onSuccess, onError }) {
 
   const { data: penerimaanPoData, isLoading: penerimaanPoLoading } = useQuery({
     queryKey: ["penerimaan-po"],
-    queryFn: () => apiRequest("GET", "/api/v1/admin/penerimaan-po"),
+    queryFn: () =>
+      apiRequest(
+        "GET",
+        "/api/v1/admin/penerimaan-po?without_invoice_penerimaan=true",
+      ),
     staleTime: 1000 * 60 * 5,
   });
 
@@ -62,22 +55,6 @@ export default function AdminTambahInvoice({ open, onSuccess, onError }) {
     if (Array.isArray(penerimaanPoData.data?.data))
       return penerimaanPoData.data.data;
   }, [penerimaanPoData]);
-
-  //   const penerimaanPoDataList = useMemo(() => {
-  //     if (!penerimaanPoData) return [];
-
-  //     // langsung array
-  //     if (Array.isArray(penerimaanPoData)) return penerimaanPoData;
-
-  //     // { data: [] }
-  //     if (Array.isArray(penerimaanPoData.data)) return penerimaanPoData.data;
-
-  //     // { data: { data: [] } }
-  //     if (Array.isArray(penerimaanPoData.data?.data))
-  //       return penerimaanPoData.data.data;
-
-  //     return [];
-  //   }, [penerimaanPoData]);
 
   const filteredPenerimaanPo = useMemo(() => {
     if (!penerimaanPoDataList) return [];
@@ -121,29 +98,12 @@ export default function AdminTambahInvoice({ open, onSuccess, onError }) {
       const payload = {
         tanggal_invoice: tanggalInvoice.toISOString(),
         detail_items: penerimaanPoList.map((item) => {
-          const totalPenerimaan =
-            item.penerimaanPo?.details?.reduce(
-              (sum, d) => sum + Number(d.total_harga || 0),
-              0,
-            ) || 0;
-
-          const totalRetur =
-            item.penerimaanPo?.returPenerimaans?.reduce(
-              (sum, r) => sum + Number(r.total_harga || 0),
-              0,
-            ) || 0;
-
-          const totalTagihan = totalPenerimaan - totalRetur;
-
           return {
             penerimaan_id: item.penerimaanPo?.id,
-            total_tagihan: totalTagihan,
-            sisa_tagihan: totalTagihan,
           };
         }),
       };
-
-      console.log("Payload Submit Invoice :", payload);
+      await apiRequest("POST", `/api/v1/admin/invoice`, payload);
       onSuccess();
     } catch (error) {
       onError();

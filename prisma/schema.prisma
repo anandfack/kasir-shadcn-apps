@@ -36,6 +36,7 @@ model Pegawai {
   penerimaanBarangs       PenerimaanBarang[]
   penerimaanBarangDetails PenerimaanBarangDetail[]
   pembayaranInvoices      PembayaranInvoice[]
+  invoicePembelians       InvoicePembelian[]
 
   @@map("pegawai_m")
 }
@@ -455,7 +456,6 @@ model PenerimaanBarang {
 
   details            PenerimaanBarangDetail[]
   returPenerimaans   ReturPenerimaan[]
-  invoicePembelians  InvoicePembelian[]
   invoicePenerimaans InvoicePenerimaan[]
 
   @@map("penerimaanbarang_t")
@@ -541,8 +541,8 @@ model DocumentCounter {
 model InvoicePembelian {
   id Int @id @default(autoincrement())
 
-  penerimaan_id    Int
-  penerimaanBarang PenerimaanBarang @relation(fields: [penerimaan_id], references: [id])
+  pegawai_id Int?
+  pegawai    Pegawai? @relation(fields: [pegawai_id], references: [id])
 
   nomor_invoice   String   @unique
   tanggal_invoice DateTime
