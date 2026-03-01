@@ -111,7 +111,7 @@ export default function AdminTambahInvoice({ open, onSuccess, onError }) {
   };
 
   return (
-    <DialogContent className="sm:max-w-7xl h-[90vh] flex flex-col">
+    <DialogContent className="sm:max-w-4xl h-[90vh] flex flex-col">
       <DialogHeader>
         <DialogTitle>Tambah Invoice</DialogTitle>
         <DialogDescription>

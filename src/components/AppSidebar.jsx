@@ -45,9 +45,9 @@ export function AppSidebar() {
     { icon: <UsersIcon />, name: "Pegawai", href: "/admin/pegawai" },
   ];
   const informasiMenuItems = [
-    { icon: <BoxesIcon />, name: "Stok", href: "/admin/stock-produk" },
+    // { icon: <BoxesIcon />, name: "Stok", href: "/admin/stock-produk" },
     { icon: <BoxesIcon />, name: "Stok Variant", href: "/admin/stok-variant" },
-    { icon: <Undo2Icon />, name: "Retur", href: "/admin/retur-produk" },
+    // { icon: <Undo2Icon />, name: "Retur", href: "/admin/retur-produk" },
     {
       icon: <ReceiptIcon />,
       name: "Penjualan",
@@ -58,11 +58,11 @@ export function AppSidebar() {
     // { icon: <HistoryIcon />, name: "Riwayat Harga", href: "#" },
   ];
   const trasactionMenuItems = [
-    {
-      icon: <ShoppingCartIcon />,
-      name: "Pembelian",
-      href: "/admin/pembelian-produk",
-    },
+    // {
+    //   icon: <ShoppingCartIcon />,
+    //   name: "Pembelian",
+    //   href: "/admin/pembelian-produk",
+    // },
     {
       icon: <ClipboardListIcon />,
       name: "Purchase Order",

@@ -50,6 +50,7 @@ import { Badge } from "../ui/badge";
 import useFetchAdminInvoice from "@/hooks/admin-invoice/useFetchAdminInvoice";
 import AdminTambahInvoice from "./AdminTambahInvoiceForm";
 import AdminDetailInvoice from "./AdminDetailinvoice";
+import PembayaranPembelianProduk from "../pembelian-produk/PembayaranPembelianProduk";
 
 const AdminInvoiceTable = () => {
   const { toast } = useToast();
@@ -125,20 +126,20 @@ const AdminInvoiceTable = () => {
     }
   };
 
-  //   const statusPembayaranBadge = (status) => {
-  //     if (status === "BELUM_BAYAR") {
-  //       return "secondary";
-  //     }
-  //     if (status === "SEBAGIAN") {
-  //       return "warning";
-  //     }
-  //     if (status === "LUNAS") {
-  //       return "success";
-  //     }
-  //     if (status === "OVERPAID") {
-  //       return "destructive";
-  //     }
-  //   };
+  const statusPembayaranBadge = (status) => {
+    if (status === "BELUM_BAYAR") {
+      return "secondary";
+    }
+    if (status === "SEBAGIAN") {
+      return "warning";
+    }
+    if (status === "LUNAS") {
+      return "success";
+    }
+    if (status === "OVERPAID") {
+      return "destructive";
+    }
+  };
 
   const columns = useMemo(
     () => [
@@ -213,52 +214,6 @@ const AdminInvoiceTable = () => {
           return <Badge variant={statusBadgeVariant(status)}>{status}</Badge>;
         },
       },
-      //   {
-      //     id: "nomor_po",
-      //     accessorFn: (row) => row.purchaseOrder?.nomor_po,
-      //     header: ({ column }) => (
-      //       <Button
-      //         variant="link"
-      //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      //         className="p-0"
-      //       >
-      //         Nomor Purchase Order
-      //         <ArrowUpDown />
-      //       </Button>
-      //     ),
-      //     cell: ({ row }) => <div>{row.getValue("nomor_po")}</div>,
-      //   },
-      //   {
-      //     id: "supplier",
-      //     accessorFn: (row) => row.purchaseOrder?.supplier?.nama_supplier,
-      //     header: ({ column }) => (
-      //       <Button
-      //         variant="link"
-      //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      //         className="p-0"
-      //       >
-      //         Supplier
-      //         <ArrowUpDown />
-      //       </Button>
-      //     ),
-      //     cell: ({ row }) => <div>{row.getValue("supplier")}</div>,
-      //   },
-      //   {
-      //     id: "pegawai_penerima",
-      //     accessorFn: (row) => row.pegawai?.nama_pegawai,
-      //     header: ({ column }) => (
-      //       <Button
-      //         variant="link"
-      //         onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      //         className="p-0"
-      //       >
-      //         Pegawai Penerima
-      //         <ArrowUpDown />
-      //       </Button>
-      //     ),
-      //     cell: ({ row }) => <div>{row.getValue("pegawai_penerima")}</div>,
-      //   },
-
       {
         id: "actions",
         header: () => <div className="text-center">Actions</div>,
@@ -269,7 +224,7 @@ const AdminInvoiceTable = () => {
               <Button
                 variant="secondary"
                 className="text-xs text-sky-400 border-sky-400 hover:bg-sky-400/10 transition-colors"
-                title="Detail"
+                title="Detail Invoice"
                 onClick={() => {
                   fetchDetailInvoice(loadData.id);
                 }}
@@ -278,14 +233,14 @@ const AdminInvoiceTable = () => {
               </Button>
               <Button
                 variant="secondary"
-                className="text-xs text-rose-400 border-rose-400 hover:bg-rose-400/10 transition-colors"
-                title="Retur Penerimaan"
+                className="text-xs text-emerald-400 border-emerald-400 hover:bg-emerald-400/10 transition-colors"
+                title="Bayar Invoice"
                 onClick={() => {
-                  setSelectedReturId(loadData.id);
-                  setIsDialogReturOpen(true);
+                  setSelectedPembayaranId(loadData.id);
+                  setIsDialogPembayaranOpen(true);
                 }}
               >
-                <ArrowDownUp />
+                <CreditCardIcon />
               </Button>
             </div>
           );
@@ -443,58 +398,7 @@ const AdminInvoiceTable = () => {
         onOpenChange={setIsDetailDialogOpen}
         data={detailData}
       />
-      {/* <Dialog open={isDialogReturOpen} onOpenChange={setIsDialogReturOpen}>
-        {isDialogReturOpen && (
-          <AdminReturPenerimaanPo
-            key={selectedReturId}
-            open={isDialogReturOpen}
-            penerimaanPoId={selectedReturId}
-            onClose={() => setIsDialogReturOpen(false)}
-            onSuccess={() => {
-              toast({
-                title: "Sukses!",
-                description: "Data retur berhasil ditambahkan.",
-              });
-              setRefreshKey((prev) => prev + 1);
-              setIsDialogReturOpen(false);
-            }}
-            onError={(error) => {
-              toast({
-                title: "Terjadi kesalahan",
-                description: getApiErrorMessage(error),
-                variant: "destructive",
-              });
-            }}
-          />
-        )}
-      </Dialog> */}
-
-      {/* <Dialog open={isDialogTerimaOpen} onOpenChange={setIsDialogTerimaOpen}>
-        <AdminTerimaPurchaseOrderForm
-          open={isDialogTerimaOpen}
-          onOpenChange={setIsTerimaDialogOpen}
-          terimaId={selectedTerimaId}
-          data={detailData}
-          onClose={() => setIsDialogTerimaOpen(false)}
-          onSuccess={() => {
-            toast({
-              title: "Sukses!",
-              description: "Data penerimaan berhasil ditambahkan.",
-            });
-            setRefreshKey((prev) => prev + 1);
-            setIsDialogTerimaOpen(false);
-          }}
-          onError={(error) => {
-            toast({
-              title: "Terjadi kesalahan",
-              description: getApiErrorMessage(error),
-              variant: "destructive",
-            });
-            console.error("Error terima:", error);
-          }}
-        />
-      </Dialog> */}
-      {/* <Dialog
+      <Dialog
         open={isDialogPembayaranOpen}
         onOpenChange={setIsDialogPembayaranOpen}
       >
@@ -523,7 +427,7 @@ const AdminInvoiceTable = () => {
             console.error("Error pembayaran:", error);
           }}
         />
-      </Dialog> */}
+      </Dialog>
     </div>
   );
 };
