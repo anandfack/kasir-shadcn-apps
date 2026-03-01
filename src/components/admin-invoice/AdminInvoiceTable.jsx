@@ -46,11 +46,10 @@ import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import { formatTanggalTanpaJam } from "@/lib/formatTanggal";
 import { formatRupiah } from "@/lib/formatRupiah";
 import { Badge } from "../ui/badge";
-// import AdminDetailPurchaseOrder from "../admin-purchase-oder/AdminDetailPurchaseOrder";
-// import AdminDetailPenerimaanPo from "./AdminDetailPenerimaanPo";
 // import AdminReturPenerimaanPo from "./AdminReturPenerimaanPo";
 import useFetchAdminInvoice from "@/hooks/admin-invoice/useFetchAdminInvoice";
 import AdminTambahInvoice from "./AdminTambahInvoiceForm";
+import AdminDetailInvoice from "./AdminDetailinvoice";
 
 const AdminInvoiceTable = () => {
   const { toast } = useToast();
@@ -93,28 +92,25 @@ const AdminInvoiceTable = () => {
   const [isDialogPembayaranOpen, setIsDialogPembayaranOpen] = useState(false);
   const [selectedPembayaranId, setSelectedPembayaranId] = useState(null);
 
-  //   const fetchDetailPenerimaanPo = useCallback(
-  //     async (id) => {
-  //       setIsDetailLoading(true);
-  //       try {
-  //         const res = await apiRequest(
-  //           "GET",
-  //           `/api/v1/admin/penerimaan-po/${id}`,
-  //         );
-  //         setDetailData(res);
-  //         setIsDetailDialogOpen(true);
-  //       } catch (err) {
-  //         toast({
-  //           title: "Gagal mengambil detail",
-  //           description: getApiErrorMessage(error),
-  //           variant: "destructive",
-  //         });
-  //       } finally {
-  //         setIsDetailLoading(false);
-  //       }
-  //     },
-  //     [toast, error],
-  //   );
+  const fetchDetailInvoice = useCallback(
+    async (id) => {
+      setIsDetailLoading(true);
+      try {
+        const res = await apiRequest("GET", `/api/v1/admin/invoice/${id}`);
+        setDetailData(res);
+        setIsDetailDialogOpen(true);
+      } catch (err) {
+        toast({
+          title: "Gagal mengambil detail",
+          description: getApiErrorMessage(error),
+          variant: "destructive",
+        });
+      } finally {
+        setIsDetailLoading(false);
+      }
+    },
+    [toast, error],
+  );
 
   const statusBadgeVariant = (status) => {
     switch (status) {
@@ -275,7 +271,7 @@ const AdminInvoiceTable = () => {
                 className="text-xs text-sky-400 border-sky-400 hover:bg-sky-400/10 transition-colors"
                 title="Detail"
                 onClick={() => {
-                  fetchDetailPenerimaanPo(loadData.id);
+                  fetchDetailInvoice(loadData.id);
                 }}
               >
                 <EyeIcon />
@@ -296,7 +292,7 @@ const AdminInvoiceTable = () => {
         },
       },
     ],
-    [],
+    [fetchDetailInvoice],
   );
 
   const table = useReactTable({
@@ -442,11 +438,11 @@ const AdminInvoiceTable = () => {
           </Button>
         </div>
       </div>
-      {/* <AdminDetailPenerimaanPo
+      <AdminDetailInvoice
         open={isDetailDialogOpen}
         onOpenChange={setIsDetailDialogOpen}
         data={detailData}
-      /> */}
+      />
       {/* <Dialog open={isDialogReturOpen} onOpenChange={setIsDialogReturOpen}>
         {isDialogReturOpen && (
           <AdminReturPenerimaanPo
