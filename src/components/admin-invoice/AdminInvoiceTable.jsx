@@ -114,9 +114,9 @@ const AdminInvoiceTable = () => {
 
   const statusBadgeVariant = (status) => {
     switch (status) {
-      case "SELESAI":
+      case "PAID":
         return "success";
-      case "SEBAGIAN":
+      case "PARTIAL":
         return "warning";
       case "BATAL":
         return "destructive";

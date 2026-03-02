@@ -50,10 +50,9 @@ export default function AdminPembayaranInvoice({
   const [loading, setLoading] = useState(false);
   const [jumlahBayar, setJumlahBayar] = useState("");
   const [metodeBayar, setMetodeBayar] = useState("");
-  const [tanggalBayar, setTanggalBayar] = useState("");
+  const [tanggalBayar, setTanggalBayar] = useState(new Date());
   const [nomorReferensi, setNomorReferensi] = useState("");
   const [nomorRekening, setNomorRekening] = useState("");
-  const [tanggalRetur, setTanggalRetur] = useState(new Date());
 
   useEffect(() => {
     if (!open || !invoiceId) return;
@@ -96,14 +95,14 @@ export default function AdminPembayaranInvoice({
         invoice_id: invoice.id,
         jumlah_bayar: Number(jumlahBayar),
         metode_bayar: metodeBayar,
-        // nomor_referensi: metodeBayar === "TRANSFER" ? nomorReferensi : null,
-        // nomor_rekening: metodeBayar === "TRANSFER" ? nomorRekening : null,
-        tanggal_retur: tanggalRetur.toISOString(),
+        nomor_referensi: metodeBayar === "TRANSFER" ? nomorReferensi : null,
+        nomor_rekening: metodeBayar === "TRANSFER" ? nomorRekening : null,
+        tanggal_bayar: tanggalBayar.toISOString(),
       };
 
       console.log("Payload: ", payload);
 
-      // await apiRequest("POST", "/api/v1/admin/pembayaran-invoice", payload);
+      await apiRequest("POST", "/api/v1/admin/pembayaran-invoice", payload);
 
       onSuccess?.();
     } catch (error) {
@@ -128,16 +127,18 @@ export default function AdminPembayaranInvoice({
           <strong>Total Tagihan:</strong> {formatRupiah(invoice.total_tagihan)}
         </div>
 
-        <div>
-          <strong>Sisa Tagihan:</strong> {formatRupiah(sisaTagihan)}
-        </div>
+        {invoice?.status !== "PAID" && (
+          <div>
+            <strong>Sisa Tagihan:</strong> {formatRupiah(sisaTagihan)}
+          </div>
+        )}
 
         <div>
           <strong>Status:</strong> <Badge>{invoice.status}</Badge>
         </div>
 
         {/* FORM PEMBAYARAN */}
-        {invoice.status !== "LUNAS" && (
+        {invoice.status !== "PAID" && (
           <Accordion type="single" collapsible defaultValue="form">
             <AccordionItem value="form">
               <AccordionTrigger className="text-lg font-semibold">
@@ -158,7 +159,7 @@ export default function AdminPembayaranInvoice({
                               className="justify-start text-left font-normal"
                             >
                               <CalendarIcon className="mr-2 h-4 w-4 text-rose-500" />
-                              {format(tanggalRetur, "dd MMMM yyyy", {
+                              {format(tanggalBayar, "dd MMMM yyyy", {
                                 locale: id,
                               })}
                             </Button>
@@ -174,7 +175,7 @@ export default function AdminPembayaranInvoice({
                             <Calendar
                               mode="single"
                               locale={id}
-                              selected={tanggalRetur}
+                              selected={tanggalBayar}
                               captionLayout="dropdown"
                               fromYear={2020}
                               toYear={new Date().getFullYear()}
@@ -188,7 +189,7 @@ export default function AdminPembayaranInvoice({
                                     now.getSeconds(),
                                     now.getMilliseconds(),
                                   );
-                                  setTanggalRetur(date);
+                                  setTanggalBayar(date);
                                 }
                               }}
                               initialFocus
@@ -312,6 +313,7 @@ export default function AdminPembayaranInvoice({
                         <th className="p-2 border">Tanggal</th>
                         <th className="p-2 border">Metode</th>
                         <th className="p-2 border">Referensi</th>
+                        <th className="p-2 border">Rekening</th>
                         <th className="p-2 border">Petugas</th>
                         <th className="p-2 border text-right">Jumlah</th>
                       </tr>
@@ -333,6 +335,9 @@ export default function AdminPembayaranInvoice({
                             {item.nomor_referensi || "-"}
                           </td>
                           <td className="p-2 border text-center">
+                            {item.nomor_rekening || "-"}
+                          </td>
+                          <td className="p-2 border text-center">
                             {item.pegawai?.nama_pegawai}
                           </td>
                           <td className="p-2 border text-right">
@@ -344,7 +349,7 @@ export default function AdminPembayaranInvoice({
                     <tfoot>
                       <tr>
                         <td
-                          colSpan={6}
+                          colSpan={7}
                           className="p-2 border text-right font-semibold"
                         >
                           Total Dibayar
@@ -353,17 +358,19 @@ export default function AdminPembayaranInvoice({
                           {formatRupiah(totalBayar)}
                         </td>
                       </tr>
-                      <tr>
-                        <td
-                          colSpan={6}
-                          className="p-2 border text-right font-semibold"
-                        >
-                          Sisa Tagihan
-                        </td>
-                        <td className="p-2 border text-right font-semibold">
-                          {formatRupiah(sisaTagihan)}
-                        </td>
-                      </tr>
+                      {invoice?.status !== "PAID" && (
+                        <tr>
+                          <td
+                            colSpan={7}
+                            className="p-2 border text-right font-semibold"
+                          >
+                            Sisa Tagihan
+                          </td>
+                          <td className="p-2 border text-right font-semibold">
+                            {formatRupiah(sisaTagihan)}
+                          </td>
+                        </tr>
+                      )}
                     </tfoot>
                   </table>
                 </div>
