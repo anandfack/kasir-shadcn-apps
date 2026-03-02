@@ -582,6 +582,7 @@ model PembayaranInvoice {
   jumlah_bayar     Float
   metode_bayar     String
   nomor_referensi  String?
+  nomor_rekening   String?
 
   pegawai_id Int
   pegawai    Pegawai @relation(fields: [pegawai_id], references: [id])

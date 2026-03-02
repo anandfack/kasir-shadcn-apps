@@ -46,11 +46,10 @@ import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import { formatTanggalTanpaJam } from "@/lib/formatTanggal";
 import { formatRupiah } from "@/lib/formatRupiah";
 import { Badge } from "../ui/badge";
-// import AdminReturPenerimaanPo from "./AdminReturPenerimaanPo";
 import useFetchAdminInvoice from "@/hooks/admin-invoice/useFetchAdminInvoice";
 import AdminTambahInvoice from "./AdminTambahInvoiceForm";
 import AdminDetailInvoice from "./AdminDetailinvoice";
-import PembayaranPembelianProduk from "../pembelian-produk/PembayaranPembelianProduk";
+import AdminPembayaranInvoice from "./AdminPembayaranInvoice";
 
 const AdminInvoiceTable = () => {
   const { toast } = useToast();
@@ -402,10 +401,10 @@ const AdminInvoiceTable = () => {
         open={isDialogPembayaranOpen}
         onOpenChange={setIsDialogPembayaranOpen}
       >
-        <PembayaranPembelianProduk
+        <AdminPembayaranInvoice
           open={isDialogPembayaranOpen}
           onOpenChange={setIsPembayaranDialogOpen}
-          pembelianId={selectedPembayaranId}
+          invoiceId={selectedPembayaranId}
           data={detailData}
           statusBadgeVariant={statusBadgeVariant}
           statusPembayaranBadge={statusPembayaranBadge}
@@ -413,7 +412,7 @@ const AdminInvoiceTable = () => {
           onSuccess={() => {
             toast({
               title: "Sukses!",
-              description: "Pembayaran berhasil ditambahkan.",
+              description: "Pembayaran invoice berhasil ditambahkan.",
             });
             setRefreshKey((prev) => prev + 1);
             // setIsDialogPembayaranOpen(false);
