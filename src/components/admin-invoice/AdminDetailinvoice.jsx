@@ -13,7 +13,7 @@ import { Badge } from "../ui/badge";
 import React, { useMemo } from "react";
 
 export default function AdminDetailInvoice({ open, onOpenChange, data }) {
-  const rows = data?.data || {};
+  const rows = data?.data ?? {};
 
   const renderStatusBadge = (status) => {
     switch (status) {
@@ -29,6 +29,12 @@ export default function AdminDetailInvoice({ open, onOpenChange, data }) {
         return (
           <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white">
             PAID
+          </Badge>
+        );
+      case "OVERPAID":
+        return (
+          <Badge className="bg-blue-600 hover:bg-blue-700 text-white">
+            OVERPAID
           </Badge>
         );
       default:
@@ -49,20 +55,22 @@ export default function AdminDetailInvoice({ open, onOpenChange, data }) {
       const penerimaan = ip?.penerimaanBarang;
 
       // ======================
-      // HITUNG DETAIL MASUK
+      // DETAIL MASUK
       // ======================
       penerimaan?.details?.forEach((detail) => {
         const qty = detail?.jumlah_produk || 0;
         const harga = detail?.harga_satuan || 0;
 
-        if (!satuan) satuan = detail?.produkVariant?.satuan?.kode_satuan || "";
+        if (!satuan) {
+          satuan = detail?.produkVariant?.satuan?.kode_satuan || "";
+        }
 
         totalQtyMasuk += qty;
         totalNominal += detail?.total_harga || qty * harga;
       });
 
       // ======================
-      // HITUNG RETUR
+      // RETUR
       // ======================
       penerimaan?.returPenerimaans?.forEach((retur) => {
         retur?.detailReturPenerimaans?.forEach((d) => {
@@ -73,21 +81,33 @@ export default function AdminDetailInvoice({ open, onOpenChange, data }) {
     });
 
     // ======================
-    // HITUNG PEMBAYARAN
+    // PEMBAYARAN (HANYA YANG BELUM DIBATALKAN)
     // ======================
-    rows?.pembayaranInvoices?.forEach((p) => {
-      totalDibayar += p?.jumlah_bayar || 0;
-    });
+    rows?.pembayaranInvoices
+      ?.filter((p) => !p.deleted_at)
+      .forEach((p) => {
+        totalDibayar += p?.jumlah_bayar || 0;
+      });
+
+    const totalTagihan = rows?.total_tagihan || 0;
+
+    const overpay =
+      totalDibayar > totalTagihan ? totalDibayar - totalTagihan : 0;
 
     return {
       totalQtyMasuk,
       totalQtyRetur,
       totalNominal,
       totalDibayar,
+      overpay,
       sisaTagihan: rows?.sisa_tagihan || 0,
       satuan,
     };
   }, [rows]);
+  const overpay =
+    summary.totalDibayar > summary.totalNominal
+      ? summary.totalDibayar - summary.totalNominal
+      : 0;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -321,7 +341,7 @@ export default function AdminDetailInvoice({ open, onOpenChange, data }) {
             <div className="mt-4 p-4 rounded-xl border bg-muted/30">
               <h4 className="font-semibold mb-3">Ringkasan Invoice</h4>
 
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-12 text-sm text-center">
                 <div>
                   <p className="text-muted-foreground">Total Qty Masuk</p>
                   <p className="font-semibold">{summary.totalQtyMasuk}</p>
@@ -354,6 +374,14 @@ export default function AdminDetailInvoice({ open, onOpenChange, data }) {
                     {formatRupiah(rows?.sisa_tagihan || 0)}
                   </p>
                 </div>
+                {overpay > 0 && (
+                  <div>
+                    <p className="text-muted-foreground">Kelebihan Bayar</p>
+                    <p className="font-semibold text-blue-600">
+                      {formatRupiah(overpay || 0)}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           </div>

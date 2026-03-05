@@ -209,6 +209,87 @@ export async function POST(req) {
         });
       }
 
+      // cari invoice dari penerimaan
+      // =============================
+      // CARI INVOICE BERDASARKAN PENERIMAAN
+      // =============================
+      const invoice = await tx.invoicePembelian.findFirst({
+        where: {
+          invoicePenerimaans: {
+            some: {
+              penerimaan_id: penerimaan.id,
+            },
+          },
+        },
+      });
+
+      if (invoice) {
+        // =============================
+        // TOTAL PEMBAYARAN
+        // =============================
+        const pembayaran = await tx.pembayaranInvoice.aggregate({
+          where: {
+            invoice_id: invoice.id,
+            deleted_at: null,
+          },
+          _sum: {
+            jumlah_bayar: true,
+          },
+        });
+
+        const totalBayar = Number(pembayaran._sum.jumlah_bayar || 0);
+
+        // =============================
+        // TOTAL RETUR
+        // =============================
+        const returAgg = await tx.returPenerimaan.aggregate({
+          where: {
+            penerimaanbarang_id: penerimaan.id,
+            deleted_at: null,
+          },
+          _sum: {
+            total_harga: true,
+          },
+        });
+
+        const totalRetur = Number(returAgg._sum.total_harga || 0);
+
+        // =============================
+        // HITUNG TOTAL TAGIHAN BARU
+        // =============================
+        const totalTagihanBaru = Math.max(
+          Number(invoice.total_tagihan) - totalRetur,
+          0,
+        );
+
+        // =============================
+        // HITUNG SISA TAGIHAN
+        // =============================
+        const sisaTagihan = Math.max(totalTagihanBaru - totalBayar, 0);
+
+        // =============================
+        // STATUS INVOICE
+        // =============================
+        let status = "UNPAID";
+
+        if (totalBayar >= totalTagihanBaru && totalTagihanBaru > 0) {
+          status = "PAID";
+        } else if (totalBayar > 0 && totalBayar < totalTagihanBaru) {
+          status = "PARTIAL";
+        }
+
+        // =============================
+        // UPDATE INVOICE
+        // =============================
+        await tx.invoicePembelian.update({
+          where: { id: invoice.id },
+          data: {
+            total_tagihan: totalTagihanBaru,
+            sisa_tagihan: sisaTagihan,
+            status: status,
+          },
+        });
+      }
       return retur;
     });
 
