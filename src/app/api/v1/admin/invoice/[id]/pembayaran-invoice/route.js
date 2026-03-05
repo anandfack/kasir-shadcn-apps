@@ -38,6 +38,7 @@ export async function GET(req, { params }) {
             metode_bayar: true,
             nomor_referensi: true,
             nomor_rekening: true,
+            deleted_at: true,
             pegawai: {
               select: {
                 id: true,

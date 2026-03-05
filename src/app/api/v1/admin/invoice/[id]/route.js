@@ -31,6 +31,12 @@ export async function GET(req, { params }) {
             nama_pegawai: true,
           },
         },
+        pembayaranInvoices: {
+          select: {
+            id: true,
+            jumlah_bayar: true,
+          },
+        },
         invoicePenerimaans: {
           select: {
             id: true,

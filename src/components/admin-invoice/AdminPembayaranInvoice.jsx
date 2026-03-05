@@ -29,7 +29,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import { CalendarIcon, SaveIcon } from "lucide-react";
+import { CalendarIcon, SaveIcon, TrashIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
@@ -38,6 +38,17 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function AdminPembayaranInvoice({
   open,
@@ -53,6 +64,7 @@ export default function AdminPembayaranInvoice({
   const [tanggalBayar, setTanggalBayar] = useState(new Date());
   const [nomorReferensi, setNomorReferensi] = useState("");
   const [nomorRekening, setNomorRekening] = useState("");
+  const [batalPembayaran, setBatalPembayaran] = useState(null);
 
   useEffect(() => {
     if (!open || !invoiceId) return;
@@ -82,7 +94,7 @@ export default function AdminPembayaranInvoice({
     );
   }, [invoice]);
 
-  const sisaTagihan = (invoice?.total_tagihan || 0) - totalBayar;
+  const sisaTagihan = invoice?.sisa_tagihan || 0;
 
   if (!invoice) return null;
 
@@ -113,8 +125,31 @@ export default function AdminPembayaranInvoice({
     }
   };
 
+  const handleBatal = async () => {
+    if (!batalPembayaran) return;
+
+    try {
+      await apiRequest(
+        "POST",
+        `/api/v1/admin/pembayaran-invoice/${batalPembayaran.id}/batal`,
+      );
+
+      const result = await apiRequest(
+        "GET",
+        `/api/v1/admin/invoice/${invoiceId}/pembayaran-invoice`,
+      );
+
+      setInvoice(result.data);
+      setBatalPembayaran(null);
+
+      onSuccess?.();
+    } catch (error) {
+      console.error(error);
+      onError?.(error);
+    }
+  };
   return (
-    <DialogContent className="sm:max-w-7xl max-h-[90vh] overflow-y-auto">
+    <DialogContent className="sm:max-w-7xl max-h-[90vh] overflow-y-auto text-xs">
       <div className="text-sm space-y-3">
         <DialogHeader>
           <DialogTitle>Pembayaran Invoice</DialogTitle>
@@ -316,6 +351,8 @@ export default function AdminPembayaranInvoice({
                         <th className="p-2 border">Rekening</th>
                         <th className="p-2 border">Petugas</th>
                         <th className="p-2 border text-right">Jumlah</th>
+                        <th className="p-2 border text-center">Status Bayar</th>
+                        <th className="p-2 border text-center">Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -343,6 +380,71 @@ export default function AdminPembayaranInvoice({
                           <td className="p-2 border text-right">
                             {formatRupiah(item.jumlah_bayar)}
                           </td>
+                          <td className="p-2 border text-center">
+                            <span
+                              className={
+                                item.deleted_at
+                                  ? "text-red-500 font-semibold"
+                                  : "text-green-600 font-semibold"
+                              }
+                            >
+                              {item.deleted_at ? "CANCELLED" : "SUCCESS"}
+                            </span>
+                          </td>
+                          <td className="p-2 border text-center">
+                            <AlertDialog>
+                              <AlertDialogTrigger
+                                asChild
+                                disabled={!!item.deleted_at}
+                              >
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  disabled={!!item.deleted_at}
+                                  className="text-xs text-rose-400 border-rose-400 hover:bg-rose-400/10 transition-colors"
+                                  onClick={() => setBatalPembayaran(item)}
+                                >
+                                  <TrashIcon />
+                                </Button>
+                              </AlertDialogTrigger>
+
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>
+                                    Batalkan Pembayaran?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Pembayaran sebesar{" "}
+                                    <strong>
+                                      {formatRupiah(item.jumlah_bayar)}
+                                    </strong>{" "}
+                                    akan dibatalkan dan sisa tagihan invoice
+                                    akan bertambah kembali.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Tutup</AlertDialogCancel>
+                                  <AlertDialogAction onClick={handleBatal}>
+                                    Ya, Batalkan
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </td>
+
+                          {/* <td className="p-2 border text-center">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              className="text-xs text-rose-400 border-rose-400 hover:bg-rose-400/10 transition-colors"
+                              onClick={() =>
+                                handleBatal(item.id, item.jumlah_bayar)
+                              }
+                            >
+                              <TrashIcon />
+                            </Button>
+                          </td> */}
                         </tr>
                       ))}
                     </tbody>

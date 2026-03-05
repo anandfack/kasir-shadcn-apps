@@ -25,10 +25,10 @@ export default function AdminDetailInvoice({ open, onOpenChange, data }) {
             Partial
           </Badge>
         );
-      case "SELESAI":
+      case "PAID":
         return (
           <Badge className="bg-emerald-600 hover:bg-emerald-700 text-white">
-            SELESAI
+            PAID
           </Badge>
         );
       default:
@@ -76,7 +76,7 @@ export default function AdminDetailInvoice({ open, onOpenChange, data }) {
     // HITUNG PEMBAYARAN
     // ======================
     rows?.pembayaranInvoices?.forEach((p) => {
-      totalDibayar += p?.nominal_bayar || 0;
+      totalDibayar += p?.jumlah_bayar || 0;
     });
 
     return {

@@ -74,6 +74,7 @@ export async function POST(req) {
       const totalPembayaran = await tx.pembayaranInvoice.aggregate({
         where: {
           invoice_id: invoice.id,
+          deleted_at: null,
         },
         _sum: {
           jumlah_bayar: true,

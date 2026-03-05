@@ -34,10 +34,14 @@ export default function AdminTambahInvoice({ open, onSuccess, onError }) {
     },
   ]);
   const [tanggalInvoice, setTanggalInvoice] = useState(new Date());
-  const [penerimaanPoOpen, setPenerimaanPoOpen] = useState(false);
+  // const [penerimaanPoOpen, setPenerimaanPoOpen] = useState(false);
   const [searchPenerimaanPo, setSearchPenerimaanPo] = useState("");
 
-  const { data: penerimaanPoData, isLoading: penerimaanPoLoading } = useQuery({
+  const {
+    data: penerimaanPoData,
+    isLoading: penerimaanPoLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["penerimaan-po"],
     queryFn: () =>
       apiRequest(
@@ -46,6 +50,12 @@ export default function AdminTambahInvoice({ open, onSuccess, onError }) {
       ),
     staleTime: 1000 * 60 * 5,
   });
+
+  useEffect(() => {
+    if (open) {
+      refetch();
+    }
+  }, [open, refetch]);
 
   const penerimaanPoDataList = useMemo(() => {
     if (!penerimaanPoData) return [];
@@ -185,6 +195,14 @@ export default function AdminTambahInvoice({ open, onSuccess, onError }) {
             return (
               <div key={index} className="flex gap-2 items-center mx-2">
                 <div className="flex-1">
+                  {/* <Listbox
+                    value={item.penerimaanPo}
+                    onChange={(penerimaan) => {
+                      const newList = [...penerimaanPoList];
+                      newList[index].penerimaanPo = penerimaan;
+                      setPenerimaanPoList(newList);
+                    }}
+                  > */}
                   <Listbox
                     value={item.penerimaanPo}
                     onChange={(penerimaan) => {
@@ -193,109 +211,122 @@ export default function AdminTambahInvoice({ open, onSuccess, onError }) {
                       setPenerimaanPoList(newList);
                     }}
                   >
-                    <div className="relative mt-1">
-                      <Listbox.Button
-                        className="relative w-full h-10 cursor-default rounded-md bg-background py-2 pl-3 pr-10 text-left border border-input shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input sm:text-sm"
-                        onClick={() => setPenerimaanPoOpen(true)}
-                      >
-                        <span className="block truncate">
-                          {item.penerimaanPo
-                            ? `${item.penerimaanPo.nomor_penerimaan || ""}${" "} ${"-"} ${""} ${item.penerimaanPo?.purchaseOrder?.supplier?.nama_supplier || ""} ${" "} ${"-"} ${""} ${formatTanggalTanpaJam(item.penerimaanPo?.tanggal_penerimaan)}`
-                            : "Pilih Penerimaan Purchase Order"}
-                        </span>
-                        <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                          <ChevronUpDownIcon
-                            className="h-5 w-5 text-muted-foreground"
-                            aria-hidden="true"
-                          />
-                        </span>
-                      </Listbox.Button>
-                      <Transition
-                        as={Fragment}
-                        leave="transition ease-in duration-100"
-                        leaveFrom="opacity-100"
-                        leaveTo="opacity-0"
-                        afterLeave={() => setPenerimaanPoOpen(false)}
-                      >
-                        <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover pt-0 pb-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
-                          <div className="sticky top-0 z-20 bg-popover p-2 border-b">
-                            <Input
-                              placeholder="Cari penerimaan Purchase Order..."
-                              value={searchPenerimaanPo}
-                              onChange={(e) =>
-                                setSearchPenerimaanPo(e.target.value)
-                              }
-                              onKeyDownCapture={(e) => {
-                                if (e.key === " ") e.stopPropagation();
-                              }}
-                              className="h-8 text-sm"
-                            />
-                          </div>
-                          {penerimaanPoLoading ? (
-                            <div className="py-2 px-4 text-muted-foreground italic">
-                              Loading...
-                            </div>
-                          ) : filteredPenerimaanPo &&
-                            filteredPenerimaanPo.length > 0 ? (
-                            filteredPenerimaanPo
-                              .filter((penerimaan) => {
-                                const selectedPenerimaanPoIds = penerimaanPoList
-                                  .filter((_, i) => i !== index)
-                                  .map((item) => item.penerimaanPo?.id)
-                                  .filter(Boolean);
-
-                                return !selectedPenerimaanPoIds.includes(
-                                  penerimaan.id,
-                                );
-                              })
-                              .map((penerimaan) => (
-                                <Listbox.Option
-                                  key={penerimaan.id}
-                                  className={({ active }) =>
-                                    `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                                      active
-                                        ? "bg-accent text-accent-foreground"
-                                        : "text-popover-foreground"
-                                    }`
+                    {({ open }) => (
+                      <>
+                        <div className="relative mt-1">
+                          <Listbox.Button
+                            className="relative w-full h-10 cursor-default rounded-md bg-background py-2 pl-3 pr-10 text-left border border-input shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input sm:text-sm"
+                            // onClick={() => setPenerimaanPoOpen(true)}
+                          >
+                            <span className="block truncate">
+                              {item.penerimaanPo
+                                ? `${item.penerimaanPo.nomor_penerimaan || ""}${" "} ${"-"} ${""} ${item.penerimaanPo?.purchaseOrder?.supplier?.nama_supplier || ""} ${" "} ${"-"} ${""} ${formatTanggalTanpaJam(item.penerimaanPo?.tanggal_penerimaan)}`
+                                : "Pilih Penerimaan Purchase Order"}
+                            </span>
+                            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                              <ChevronUpDownIcon
+                                className="h-5 w-5 text-muted-foreground"
+                                aria-hidden="true"
+                              />
+                            </span>
+                          </Listbox.Button>
+                          {/* <Transition
+                            as={Fragment}
+                            leave="transition ease-in duration-100"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
+                            afterLeave={() => setPenerimaanPoOpen(false)}
+                          > */}
+                          <Transition
+                            show={open}
+                            as={Fragment}
+                            leave="transition ease-in duration-100"
+                            leaveFrom="opacity-100"
+                            leaveTo="opacity-0"
+                          >
+                            <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover pt-0 pb-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
+                              <div className="sticky top-0 z-20 bg-popover p-2 border-b">
+                                <Input
+                                  autoFocus
+                                  placeholder="Cari penerimaan Purchase Order..."
+                                  value={searchPenerimaanPo}
+                                  onChange={(e) =>
+                                    setSearchPenerimaanPo(e.target.value)
                                   }
-                                  value={penerimaan}
-                                >
-                                  {({ selected }) => (
-                                    <>
-                                      <span
-                                        className={`block truncate ${
-                                          selected
-                                            ? "font-medium"
-                                            : "font-normal"
-                                        }`}
-                                      >
-                                        {penerimaan.nomor_penerimaan} -{" "}
-                                        {
-                                          penerimaan.purchaseOrder?.supplier
-                                            ?.nama_supplier
-                                        }{" "}
-                                        -{" "}
-                                        {formatTanggalTanpaJam(
-                                          penerimaan?.tanggal_penerimaan,
-                                        )}
-                                      </span>
-                                      {selected && (
-                                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                                          <CheckIcon className="h-5 w-5" />
-                                        </span>
+                                  onKeyDownCapture={(e) => {
+                                    if (e.key === " ") e.stopPropagation();
+                                  }}
+                                  className="h-8 text-sm"
+                                />
+                              </div>
+                              {penerimaanPoLoading ? (
+                                <div className="py-2 px-4 text-muted-foreground italic">
+                                  Loading...
+                                </div>
+                              ) : filteredPenerimaanPo &&
+                                filteredPenerimaanPo.length > 0 ? (
+                                filteredPenerimaanPo
+                                  .filter((penerimaan) => {
+                                    const selectedPenerimaanPoIds =
+                                      penerimaanPoList
+                                        .filter((_, i) => i !== index)
+                                        .map((item) => item.penerimaanPo?.id)
+                                        .filter(Boolean);
+
+                                    return !selectedPenerimaanPoIds.includes(
+                                      penerimaan.id,
+                                    );
+                                  })
+                                  .map((penerimaan) => (
+                                    <Listbox.Option
+                                      key={penerimaan.id}
+                                      className={({ active }) =>
+                                        `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                                          active
+                                            ? "bg-accent text-accent-foreground"
+                                            : "text-popover-foreground"
+                                        }`
+                                      }
+                                      value={penerimaan}
+                                    >
+                                      {({ selected }) => (
+                                        <>
+                                          <span
+                                            className={`block truncate ${
+                                              selected
+                                                ? "font-medium"
+                                                : "font-normal"
+                                            }`}
+                                          >
+                                            {penerimaan.nomor_penerimaan} -{" "}
+                                            {
+                                              penerimaan.purchaseOrder?.supplier
+                                                ?.nama_supplier
+                                            }{" "}
+                                            -{" "}
+                                            {formatTanggalTanpaJam(
+                                              penerimaan?.tanggal_penerimaan,
+                                            )}
+                                          </span>
+                                          {selected && (
+                                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
+                                              <CheckIcon className="h-5 w-5" />
+                                            </span>
+                                          )}
+                                        </>
                                       )}
-                                    </>
-                                  )}
-                                </Listbox.Option>
-                              ))
-                          ) : (
-                            <div className="py-2 px-4 text-muted-foreground italic">
-                              Tidak ada data
-                            </div>
-                          )}
-                        </Listbox.Options>
-                      </Transition>
-                    </div>
+                                    </Listbox.Option>
+                                  ))
+                              ) : (
+                                <div className="py-2 px-4 text-muted-foreground italic">
+                                  Tidak ada data
+                                </div>
+                              )}
+                            </Listbox.Options>
+                          </Transition>
+                        </div>
+                      </>
+                    )}
                   </Listbox>
                 </div>
 
