@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiRequest } from "@/lib/apiRequest";
 import { Switch } from "../ui/switch";
+import { Loader2Icon, SaveIcon } from "lucide-react";
 
 const AdminUpdateProdukVariantForm = ({
   initialData,
@@ -140,9 +141,27 @@ const AdminUpdateProdukVariantForm = ({
 
       {/* Tombol Simpan */}
       <div className="flex justify-end">
-        <Button onClick={handleSubmit} disabled={!isChanged || isLoading}>
-          {isLoading ? "Loading..." : "Simpan"}
+        <Button
+          onClick={handleSubmit}
+          disabled={!isChanged || isLoading}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+        >
+          {isLoading ? (
+            <>
+              <Loader2Icon className="w-4 h-4 animate-spin" />
+              Menyimpan...
+            </>
+          ) : (
+            <>
+              <SaveIcon className="w-4 h-4" />
+              Simpan Perubahan
+            </>
+          )}
         </Button>
+
+        {/* <Button onClick={handleSubmit} disabled={!isChanged || isLoading}>
+          {isLoading ? "Loading..." : "Simpan"}
+        </Button> */}
       </div>
     </div>
   );

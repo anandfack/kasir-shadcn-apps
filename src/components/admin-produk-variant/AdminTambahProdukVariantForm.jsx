@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiRequest } from "@/lib/apiRequest";
+import { CirclePlusIcon, Loader2Icon, SaveIcon, XIcon } from "lucide-react";
 
 export default function AdminTambahProdukVariantForm({ onSuccess, onError }) {
   /** =========================
@@ -94,7 +95,7 @@ export default function AdminTambahProdukVariantForm({ onSuccess, onError }) {
     !selectedProduk || variantList.some((v) => !v.sku || !v.ukuran || !v.warna);
 
   return (
-    <DialogContent className="sm:max-w-4xl h-[90vh] overflow-y-auto">
+    <DialogContent className="sm:max-w-4xl h-[90vh] flex flex-col">
       <DialogHeader>
         <DialogTitle>Tambah Produk Variant</DialogTitle>
         <DialogDescription>
@@ -102,11 +103,15 @@ export default function AdminTambahProdukVariantForm({ onSuccess, onError }) {
         </DialogDescription>
       </DialogHeader>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-4 items-center gap-4">
-          <Label className="text-center">Produk</Label>
-
-          <div className="col-span-3">
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col flex-1 min-h-0 space-y-6"
+      >
+        <div className="flex items-center gap-5">
+          <Label className="text-center flex items-center gap-2">
+            Produk <span className="text-rose-500">*</span>
+          </Label>
+          <div className="w-full">
             <Listbox
               value={selectedProduk}
               onChange={(produk) => {
@@ -188,44 +193,68 @@ export default function AdminTambahProdukVariantForm({ onSuccess, onError }) {
           </div>
         </div>
 
-        <div className="space-y-3">
-          <Label>Daftar Variant</Label>
-
-          {variantList.map((variant, index) => (
-            <div key={index} className="grid grid-cols-4 gap-2 items-center">
-              <Input
-                placeholder="SKU"
-                value={variant.sku}
-                onChange={(e) => updateVariant(index, "sku", e.target.value)}
-              />
-              <Input
-                placeholder="Ukuran"
-                value={variant.ukuran}
-                onChange={(e) => updateVariant(index, "ukuran", e.target.value)}
-              />
-              <Input
-                placeholder="Warna"
-                value={variant.warna}
-                onChange={(e) => updateVariant(index, "warna", e.target.value)}
-              />
-              <Button
-                type="button"
-                variant="destructive"
-                disabled={variantList.length === 1}
-                onClick={() => hapusVariant(index)}
+        <div className="flex flex-col flex-1 min-h-0 space-y-3">
+          <Label className="text-center flex items-center gap-2">
+            Daftar Variant <span className="text-rose-500">*</span>
+          </Label>
+          <div className="flex-1 overflow-y-auto space-y-2 pr-2">
+            {variantList.map((variant, index) => (
+              <div
+                key={index}
+                className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2 items-center"
               >
-                ✕
-              </Button>
-            </div>
-          ))}
-
-          <Button type="button" variant="secondary" onClick={tambahVariant}>
-            + Tambah Variant
+                <Input
+                  placeholder="SKU"
+                  value={variant.sku}
+                  className="font-mono"
+                  onChange={(e) => updateVariant(index, "sku", e.target.value)}
+                />
+                <Input
+                  placeholder="Ukuran"
+                  value={variant.ukuran}
+                  onChange={(e) =>
+                    updateVariant(index, "ukuran", e.target.value)
+                  }
+                />
+                <Input
+                  placeholder="Warna"
+                  value={variant.warna}
+                  onChange={(e) =>
+                    updateVariant(index, "warna", e.target.value)
+                  }
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={variantList.length === 1}
+                  onClick={() => hapusVariant(index)}
+                  title="Hapus"
+                  className="text-xs text-rose-400 border-rose-400 hover:bg-rose-400/10 transition-colors"
+                >
+                  <XIcon />
+                </Button>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="pt-3 border-t">
+          <Button
+            type="button"
+            variant="secondary"
+            title="Tambah"
+            onClick={tambahVariant}
+          >
+            <CirclePlusIcon />
           </Button>
         </div>
 
-        <div className="flex justify-end">
-          <Button type="submit" disabled={disableSubmit}>
+        <div className="flex justify-end pt-4 border-t mt-2">
+          <Button
+            type="submit"
+            disabled={disableSubmit}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+          >
+            <SaveIcon className="w-4 h-4" />
             Simpan
           </Button>
         </div>

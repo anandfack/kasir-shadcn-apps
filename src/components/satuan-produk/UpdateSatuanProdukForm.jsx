@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiRequest } from "@/lib/apiRequest";
+import { Loader2Icon, SaveIcon } from "lucide-react";
 
 const UpdateSatuanProdukForm = ({
   initialData,
@@ -27,7 +28,7 @@ const UpdateSatuanProdukForm = ({
       JSON.stringify(formData) !==
         JSON.stringify({
           ...initialData,
-        })
+        }),
     );
   }, [formData, initialData]);
 
@@ -44,7 +45,7 @@ const UpdateSatuanProdukForm = ({
       const updatedData = await apiRequest(
         "PUT",
         `/api/v1/admin/satuan-produk/${formData.id}`,
-        dataToSend
+        dataToSend,
       );
 
       // Update state dengan data baru
@@ -102,8 +103,22 @@ const UpdateSatuanProdukForm = ({
 
       {/* Tombol Simpan */}
       <div className="flex justify-end">
-        <Button onClick={handleSubmit} disabled={!isChanged || isLoading}>
-          {isLoading ? "Loading..." : "Simpan"}
+        <Button
+          onClick={handleSubmit}
+          disabled={!isChanged || isLoading}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+        >
+          {isLoading ? (
+            <>
+              <Loader2Icon className="w-4 h-4 animate-spin" />
+              Menyimpan...
+            </>
+          ) : (
+            <>
+              <SaveIcon className="w-4 h-4" />
+              Simpan Perubahan
+            </>
+          )}
         </Button>
       </div>
     </div>

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiRequest } from "@/lib/apiRequest";
+import { Loader2Icon, SaveIcon } from "lucide-react";
 
 const AdminUpdateStokVariantForm = ({
   initialData,
@@ -66,16 +67,20 @@ const AdminUpdateStokVariantForm = ({
         <Label htmlFor="minimal-stok" className="text-center">
           Minimal Stok <i className="text-red-500">*</i>
         </Label>
+
         <Input
-          type="number"
+          type="text"
+          inputMode="numeric"
           name="minimal_stok"
           value={formData.minimal_stok ?? ""}
-          onChange={(e) =>
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, ""); // hanya angka
+
             setFormData((prev) => ({
               ...prev,
-              minimal_stok: e.target.value,
-            }))
-          }
+              minimal_stok: value,
+            }));
+          }}
           className="col-span-3"
           placeholder="Masukkan minimal stok"
         />
@@ -86,16 +91,20 @@ const AdminUpdateStokVariantForm = ({
         <Label htmlFor="maksimal-stok" className="text-center">
           Maksimal Stok <i className="text-red-500">*</i>
         </Label>
+
         <Input
-          type="number"
+          type="text"
+          inputMode="numeric"
           name="maksimal_stok"
           value={formData.maksimal_stok ?? ""}
-          onChange={(e) =>
+          onChange={(e) => {
+            const value = e.target.value.replace(/\D/g, ""); // hanya angka
+
             setFormData((prev) => ({
               ...prev,
-              maksimal_stok: e.target.value,
-            }))
-          }
+              maksimal_stok: value,
+            }));
+          }}
           className="col-span-3"
           placeholder="Masukkan maksimal stok"
         />
@@ -111,8 +120,19 @@ const AdminUpdateStokVariantForm = ({
             formData.minimal_stok === "" ||
             formData.maksimal_stok === ""
           }
+          className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
         >
-          Simpan
+          {isLoading ? (
+            <>
+              <Loader2Icon className="w-4 h-4 animate-spin" />
+              Menyimpan...
+            </>
+          ) : (
+            <>
+              <SaveIcon className="w-4 h-4" />
+              Simpan Perubahan
+            </>
+          )}
         </Button>
       </div>
     </div>

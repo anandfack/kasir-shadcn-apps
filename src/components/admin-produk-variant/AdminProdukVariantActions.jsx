@@ -9,16 +9,27 @@ const AdminProdukVariantActions = ({
   return (
     <div className="flex items-center justify-center gap-2">
       <Button
-        variant="outline"
-        className="text-xs"
+        variant="secondary"
+        className="text-xs text-sky-400 border-sky-400 hover:bg-sky-400/10 transition-colors"
         onClick={onMutasiStokVariant}
+        title="Mutasi"
       >
         <ArrowLeftRight className="h-4 w-4" />
       </Button>
-      <Button variant="secondary" className="text-xs" onClick={onEdit}>
+      <Button
+        variant="secondary"
+        className="text-xs text-amber-400 border-amber-400 hover:bg-amber-400/10 transition-colors"
+        onClick={onEdit}
+        title="Edit"
+      >
         <SquarePen />
       </Button>
-      <Button variant="destructive" className="text-xs" onClick={onDelete}>
+      <Button
+        variant="secondary"
+        className="text-xs text-rose-400 border-rose-400 hover:bg-rose-400/10 transition-colors"
+        onClick={onDelete}
+        title="Delete"
+      >
         <Trash2 />
       </Button>
     </div>

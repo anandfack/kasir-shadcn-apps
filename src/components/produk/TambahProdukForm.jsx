@@ -15,6 +15,7 @@ import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { Textarea } from "../ui/textarea";
 import { apiRequest } from "@/lib/apiRequest";
+import { Loader2Icon, SaveIcon } from "lucide-react";
 
 const ProdukForm = ({
   onSuccess,
@@ -64,7 +65,7 @@ const ProdukForm = ({
     if (!searchKategori) return kategoriList;
 
     return kategoriList.filter((item) =>
-      item.nama_kategori.toLowerCase().includes(searchKategori.toLowerCase())
+      item.nama_kategori.toLowerCase().includes(searchKategori.toLowerCase()),
     );
   }, [kategoriList, searchKategori]);
 
@@ -73,7 +74,7 @@ const ProdukForm = ({
     if (!searchSatuan) return satuanList;
 
     return satuanList.filter((item) =>
-      item.nama_satuan.toLowerCase().includes(searchSatuan.toLowerCase())
+      item.nama_satuan.toLowerCase().includes(searchSatuan.toLowerCase()),
     );
   }, [satuanList, searchSatuan]);
 
@@ -82,7 +83,7 @@ const ProdukForm = ({
     if (!searchSupplier) return supplierList;
 
     return supplierList.filter((item) =>
-      item.nama_supplier.toLowerCase().includes(searchSupplier.toLowerCase())
+      item.nama_supplier.toLowerCase().includes(searchSupplier.toLowerCase()),
     );
   }, [supplierList, searchSupplier]);
 
@@ -118,7 +119,7 @@ const ProdukForm = ({
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="kode-produk" className="text-center">
-            Kode Produk <i className="text-red-500">*</i>
+            Kode Produk <i className="text-rose-500">*</i>
           </Label>
           <Input
             id="kode-produk"
@@ -126,12 +127,13 @@ const ProdukForm = ({
             onChange={(e) => setKodeProduk(e.target.value)}
             className="col-span-3"
             placeholder="Masukkan kode produk"
+            required
           />
         </div>
 
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="nama-produk" className="text-center">
-            Nama Produk <i className="text-red-500">*</i>
+            Nama Produk <i className="text-rose-500">*</i>
           </Label>
           <Input
             id="nama-produk"
@@ -139,13 +141,14 @@ const ProdukForm = ({
             onChange={(e) => setNamaProduk(e.target.value)}
             className="col-span-3"
             placeholder="Masukkan nama produk"
+            required
           />
         </div>
 
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="kategori-produk" className="text-center">
-              Kategori Produk <i className="text-red-500">*</i>
+              Kategori Produk <i className="text-rose-500">*</i>
             </Label>
             <div className="col-span-3">
               <Listbox
@@ -155,6 +158,12 @@ const ProdukForm = ({
                   setKategoriId(kategori?.id || "");
                 }}
               >
+                <input
+                  type="hidden"
+                  name="kategori_id"
+                  value={kategoriId}
+                  required
+                />
                 <div className="relative mt-1">
                   <Listbox.Button
                     className="relative w-full h-10 cursor-default rounded-md bg-background py-2 pl-3 pr-10 text-left border border-input shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input sm:text-sm"
@@ -242,7 +251,7 @@ const ProdukForm = ({
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="deskripsi-produk" className="text-center">
-              Deskripsi Produk <i className="text-red-500">*</i>
+              Deskripsi Produk <i className="text-rose-500">*</i>
             </Label>
             <Textarea
               id="deskripsi-produk"
@@ -250,13 +259,14 @@ const ProdukForm = ({
               onChange={(e) => setDeskripsiProduk(e.target.value)}
               className="col-span-3 md:h-60"
               placeholder="Masukkan deskripsi produk"
+              required
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="satuan-produk" className="text-center">
-              Satuan Produk <i className="text-red-500">*</i>
+              Satuan Produk <i className="text-rose-500">*</i>
             </Label>
-            <div className="col-span-3">
+            <div className="col-span-3" required>
               <Listbox
                 value={selectedSatuan}
                 onChange={(satuan) => {
@@ -264,6 +274,7 @@ const ProdukForm = ({
                   setSatuanId(satuan?.id || "");
                 }}
               >
+                <input type="hidden" name="satuan_produk_id" value={satuanId} />
                 <div className="relative mt-1">
                   <Listbox.Button
                     className="relative w-full h-10 cursor-default rounded-md bg-background py-2 pl-3 pr-10 text-left border border-input shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input sm:text-sm"
@@ -350,7 +361,7 @@ const ProdukForm = ({
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="supplier-produk" className="text-center">
-              Supplier Produk <i className="text-red-500">*</i>
+              Supplier Produk <i className="text-rose-500">*</i>
             </Label>
             <div className="col-span-3">
               <Listbox
@@ -360,6 +371,12 @@ const ProdukForm = ({
                   setSupplierId(supplier?.id || "");
                 }}
               >
+                <input
+                  type="hidden"
+                  name="supplier_id"
+                  value={supplierId}
+                  required
+                />
                 <div className="relative mt-1">
                   <Listbox.Button
                     className="relative w-full h-10 cursor-default rounded-md bg-background py-2 pl-3 pr-10 text-left border border-input shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input sm:text-sm"
@@ -447,8 +464,22 @@ const ProdukForm = ({
           </div>
         </div>
         <div className="flex justify-end">
-          <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? "Loading..." : "Simpan"}
+          <Button
+            type="submit"
+            disabled={loading}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2Icon className="w-4 h-4 animate-spin" />
+                Menyimpan...
+              </>
+            ) : (
+              <>
+                <SaveIcon className="w-4 h-4" />
+                Simpan
+              </>
+            )}
           </Button>
         </div>
       </form>

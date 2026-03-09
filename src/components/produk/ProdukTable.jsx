@@ -50,7 +50,7 @@ const ProdukTable = () => {
 
   const { data, loading, error } = useFetchProduk(
     "/api/v1/admin/produk",
-    refreshKey
+    refreshKey,
   );
 
   useEffect(() => {
@@ -123,7 +123,7 @@ const ProdukTable = () => {
         setIsMutasiLoading(false);
       }
     },
-    [toast]
+    [toast],
   );
 
   const dialogTitle = useMemo(() => {
@@ -300,9 +300,9 @@ const ProdukTable = () => {
             <div className="flex items-center justify-center gap-2">
               {/* ✅ Mutasi Stok */}
               <Button
-                variant="ghost"
-                size="icon"
-                title="Mutasi Stok"
+                variant="secondary"
+                className="text-xs text-sky-400 border-sky-400 hover:bg-sky-400/10 transition-colors"
+                title="Mutasi"
                 disabled={isMutasiLoading}
                 onClick={() => {
                   setSelectedProduk(loadData);
@@ -332,7 +332,7 @@ const ProdukTable = () => {
         },
       },
     ],
-    [fetchMutasiStok, isMutasiLoading]
+    [fetchMutasiStok, isMutasiLoading],
   );
 
   const table = useReactTable({
@@ -435,7 +435,7 @@ const ProdukTable = () => {
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}
@@ -450,7 +450,7 @@ const ProdukTable = () => {
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}
@@ -470,7 +470,7 @@ const ProdukTable = () => {
       <Dialog open={isDialogDeleteOpen} onOpenChange={setIsDialogDeleteOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Hapus Data</DialogTitle>
+            <DialogTitle>Hapus Produk</DialogTitle>
             <DialogDescription>
               Apakah kamu yakin ingin menghapus{" "}
               <strong>{deleteData?.nama_produk}</strong>?

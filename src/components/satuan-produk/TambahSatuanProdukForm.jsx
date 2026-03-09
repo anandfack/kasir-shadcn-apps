@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { apiRequest } from "@/lib/apiRequest";
+import { Loader2Icon, SaveIcon } from "lucide-react";
 
 const TambahSatuanProdukForm = ({ onSuccess, onError }) => {
   const [kodeSatuan, setKodeSatuan] = useState("");
@@ -71,8 +72,22 @@ const TambahSatuanProdukForm = ({ onSuccess, onError }) => {
           </div>
         </div>
         <div className="flex justify-end">
-          <Button onClick={handleSubmit} variant="outline" disabled={loading}>
-            {loading ? "Loading..." : "Simpan"}
+          <Button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2Icon className="w-4 h-4 animate-spin" />
+                Menyimpan...
+              </>
+            ) : (
+              <>
+                <SaveIcon className="w-4 h-4" />
+                Simpan
+              </>
+            )}
           </Button>
         </div>
       </form>

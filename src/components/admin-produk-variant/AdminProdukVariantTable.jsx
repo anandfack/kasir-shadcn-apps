@@ -196,10 +196,13 @@ const AdminProdukVarianTable = () => {
                   <div className="text-xs truncate font-mono">{v.sku}</div>
                   <div>
                     <Badge
-                      variant={v.is_aktif ? "secondary" : "destructive"}
-                      className="text-xs"
+                      className={`text-xs ${
+                        v.is_aktif
+                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                          : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                      }`}
                     >
-                      {v.is_aktif ? "Aktif" : "Non-Aktif"}
+                      {v.is_aktif ? "Aktif" : "Tidak Aktif"}
                     </Badge>
                   </div>
 

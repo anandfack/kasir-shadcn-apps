@@ -14,6 +14,7 @@ import { Listbox, Transition } from "@headlessui/react";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/apiRequest";
+import { Loader2Icon, SaveIcon } from "lucide-react";
 
 const TambahHargaProdukForm = ({ onSuccess, onError }) => {
   const [hargaBeli, setHargaBeli] = useState("");
@@ -41,7 +42,7 @@ const TambahHargaProdukForm = ({ onSuccess, onError }) => {
     if (!searchProduk) return produkList;
 
     return produkList.filter((item) =>
-      item.nama_kategori.toLowerCase().includes(searchProduk.toLowerCase())
+      item.nama_kategori.toLowerCase().includes(searchProduk.toLowerCase()),
     );
   }, [produkList, searchProduk]);
 
@@ -173,7 +174,32 @@ const TambahHargaProdukForm = ({ onSuccess, onError }) => {
               </Listbox>
             </div>
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
+          <div className="grid grid-cols-4 gap-4 items-center">
+            <Label htmlFor="harga-beli" className="text-center">
+              Harga Beli <i className="text-red-500">*</i>
+            </Label>
+            <Input
+              type="text"
+              inputMode="numeric"
+              className="col-span-3"
+              value={hargaBeli ? Number(hargaBeli).toLocaleString("id-ID") : ""}
+              onChange={(e) => {
+                // hapus semua selain angka
+                const raw = e.target.value.replace(/\D/g, "");
+
+                if (!raw) {
+                  setHargaBeli("");
+                  return;
+                }
+
+                let numeric = parseInt(raw, 10);
+
+                setHargaBeli(numeric);
+              }}
+              placeholder="Masukkan harga beli"
+            />
+          </div>
+          {/* <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="harga-beli" className="text-center">
               Harga Beli <i className="text-red-500">*</i>
             </Label>
@@ -184,8 +210,33 @@ const TambahHargaProdukForm = ({ onSuccess, onError }) => {
               className="col-span-3"
               placeholder="Masukkan harga beli"
             />
+          </div> */}
+          <div className="grid grid-cols-4 gap-4 items-center">
+            <Label htmlFor="harga-jual" className="text-center">
+              Harga Jual <i className="text-red-500">*</i>
+            </Label>
+            <Input
+              type="text"
+              inputMode="numeric"
+              className="col-span-3"
+              value={hargaJual ? Number(hargaJual).toLocaleString("id-ID") : ""}
+              onChange={(e) => {
+                // hapus semua selain angka
+                const raw = e.target.value.replace(/\D/g, "");
+
+                if (!raw) {
+                  setHargaJual("");
+                  return;
+                }
+
+                let numeric = parseInt(raw, 10);
+
+                setHargaJual(numeric);
+              }}
+              placeholder="Masukkan harga jual"
+            />
           </div>
-          <div className="grid grid-cols-4 items-center gap-4">
+          {/* <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="harga-jual" className="text-center">
               Harga Jual <i className="text-red-500">*</i>
             </Label>
@@ -196,11 +247,25 @@ const TambahHargaProdukForm = ({ onSuccess, onError }) => {
               className="col-span-3"
               placeholder="Masukkan harga jual"
             />
-          </div>
+          </div> */}
         </div>
         <div className="flex justify-end">
-          <Button onClick={handleSubmit} variant="outline" disabled={loading}>
-            {loading ? "Loading..." : "Simpan"}
+          <Button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2Icon className="w-4 h-4 animate-spin" />
+                Menyimpan...
+              </>
+            ) : (
+              <>
+                <SaveIcon className="w-4 h-4" />
+                Simpan
+              </>
+            )}
           </Button>
         </div>
       </form>

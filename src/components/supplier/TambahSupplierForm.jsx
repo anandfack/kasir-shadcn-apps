@@ -13,6 +13,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { apiRequest } from "@/lib/apiRequest";
+import { Loader2Icon, SaveIcon } from "lucide-react";
 
 const TambahSupplierForm = ({ onSuccess, onError }) => {
   const [kodeSupplier, setKodeSupplier] = useState("");
@@ -100,8 +101,22 @@ const TambahSupplierForm = ({ onSuccess, onError }) => {
           </div>
         </div>
         <div className="flex justify-end">
-          <Button onClick={handleSubmit} variant="outline" disabled={loading}>
-            {loading ? "Loading..." : "Simpan"}
+          <Button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2Icon className="w-4 h-4 animate-spin" />
+                Menyimpan...
+              </>
+            ) : (
+              <>
+                <SaveIcon className="w-4 h-4" />
+                Simpan
+              </>
+            )}
           </Button>
         </div>
       </form>

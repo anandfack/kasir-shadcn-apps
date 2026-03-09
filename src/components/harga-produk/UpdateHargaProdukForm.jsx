@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiRequest } from "@/lib/apiRequest";
+import { Loader2Icon, SaveIcon } from "lucide-react";
 
 const UpdateHargaProdukForm = ({
   produkData,
@@ -30,7 +31,7 @@ const UpdateHargaProdukForm = ({
         JSON.stringify({
           ...initialData,
           produk: initialData?.produk?.id || "",
-        })
+        }),
     );
   }, [formData, initialData]);
 
@@ -58,7 +59,7 @@ const UpdateHargaProdukForm = ({
       const updatedData = await apiRequest(
         "PUT",
         `/api/v1/admin/harga-produk/${formData.id}`,
-        dataToSend
+        dataToSend,
       );
 
       if (onSubmit) onSubmit(updatedData);
@@ -76,29 +77,48 @@ const UpdateHargaProdukForm = ({
           Harga Beli <i className="text-red-500">*</i>
         </Label>
         <Input
-          type="number"
+          type="text"
+          inputMode="numeric"
           name="harga_beli"
-          value={formData.harga_beli || ""}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, harga_beli: e.target.value }))
+          value={
+            formData.harga_beli
+              ? Number(formData.harga_beli).toLocaleString("id-ID")
+              : ""
           }
+          onChange={(e) => {
+            const raw = e.target.value.replace(/\D/g, "");
+
+            setFormData((prev) => ({
+              ...prev,
+              harga_beli: raw ? Number(raw) : "",
+            }));
+          }}
           className="col-span-3"
           placeholder="Masukkan harga beli"
         />
       </div>
-
       {/* Harga Jual */}
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="harga-jual" className="text-center">
           Harga Jual <i className="text-red-500">*</i>
         </Label>
         <Input
-          type="number"
+          type="text"
+          inputMode="numeric"
           name="harga_jual"
-          value={formData.harga_jual || ""}
-          onChange={(e) =>
-            setFormData((prev) => ({ ...prev, harga_jual: e.target.value }))
+          value={
+            formData.harga_jual
+              ? Number(formData.harga_jual).toLocaleString("id-ID")
+              : ""
           }
+          onChange={(e) => {
+            const raw = e.target.value.replace(/\D/g, "");
+
+            setFormData((prev) => ({
+              ...prev,
+              harga_jual: raw ? Number(raw) : "",
+            }));
+          }}
           className="col-span-3"
           placeholder="Masukkan harga jual"
         />
@@ -106,8 +126,22 @@ const UpdateHargaProdukForm = ({
 
       {/* Tombol Simpan */}
       <div className="flex justify-end">
-        <Button onClick={handleSubmit} disabled={!isChanged || isLoading}>
-          {isLoading ? "Loading..." : "Simpan"}
+        <Button
+          onClick={handleSubmit}
+          disabled={!isChanged || isLoading}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+        >
+          {isLoading ? (
+            <>
+              <Loader2Icon className="w-4 h-4 animate-spin" />
+              Menyimpan...
+            </>
+          ) : (
+            <>
+              <SaveIcon className="w-4 h-4" />
+              Simpan Perubahan
+            </>
+          )}
         </Button>
       </div>
     </div>

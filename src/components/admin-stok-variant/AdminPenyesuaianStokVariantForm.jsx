@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Loader2Icon, SaveIcon } from "lucide-react";
 
 const AdminPenyesuaianStokVariantForm = ({
   initialData,
@@ -137,16 +138,30 @@ const AdminPenyesuaianStokVariantForm = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-4 items-center gap-4">
+      {/* <div className="grid grid-cols-4 items-center gap-4">
         <div className="col-span-4 text-sm text-right min-h-[20px]">
           {selisih !== 0 &&
             (selisih > 0 ? "➕ Penambahan stok" : "➖ Pengurangan stok")}
         </div>
-      </div>
+      </div> */}
 
       <div className="flex justify-end">
-        <Button type="submit" disabled={loading || selisih === 0}>
-          {loading ? "Menyimpan..." : "Simpan"}
+        <Button
+          onClick={handleSubmit}
+          disabled={loading || selisih === 0}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+        >
+          {loading ? (
+            <>
+              <Loader2Icon className="w-4 h-4 animate-spin" />
+              Menyimpan...
+            </>
+          ) : (
+            <>
+              <SaveIcon className="w-4 h-4" />
+              Simpan Penyesuaian
+            </>
+          )}
         </Button>
       </div>
     </form>

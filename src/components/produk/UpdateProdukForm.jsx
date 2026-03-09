@@ -8,6 +8,7 @@ import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { Textarea } from "../ui/textarea";
 import { Switch } from "../ui/switch";
 import { apiRequest } from "@/lib/apiRequest";
+import { Loader2Icon, SaveIcon } from "lucide-react";
 
 const UpdateProdukForm = ({
   kategoriData,
@@ -45,7 +46,7 @@ const UpdateProdukForm = ({
     if (!searchKategori) return kategoriList;
 
     return kategoriList.filter((item) =>
-      item.nama_kategori.toLowerCase().includes(searchKategori.toLowerCase())
+      item.nama_kategori.toLowerCase().includes(searchKategori.toLowerCase()),
     );
   }, [kategoriList, searchKategori]);
 
@@ -54,7 +55,7 @@ const UpdateProdukForm = ({
     if (!searchSatuan) return satuanList;
 
     return satuanList.filter((item) =>
-      item.nama_satuan.toLowerCase().includes(searchSatuan.toLowerCase())
+      item.nama_satuan.toLowerCase().includes(searchSatuan.toLowerCase()),
     );
   }, [satuanList, searchSatuan]);
 
@@ -63,7 +64,7 @@ const UpdateProdukForm = ({
     if (!searchSupplier) return supplierList;
 
     return supplierList.filter((item) =>
-      item.nama_supplier.toLowerCase().includes(searchSupplier.toLowerCase())
+      item.nama_supplier.toLowerCase().includes(searchSupplier.toLowerCase()),
     );
   }, [supplierList, searchSupplier]);
 
@@ -124,7 +125,7 @@ const UpdateProdukForm = ({
       const updatedData = await apiRequest(
         "PUT",
         `/api/v1/admin/produk/${formData.id}`,
-        dataToSend
+        dataToSend,
       );
 
       setFormData((prev) => ({
@@ -460,8 +461,22 @@ const UpdateProdukForm = ({
 
       {/* Tombol Simpan */}
       <div className="flex justify-end">
-        <Button onClick={handleSubmit} disabled={!isChanged || isLoading}>
-          {isLoading ? "Loading..." : "Simpan"}
+        <Button
+          onClick={handleSubmit}
+          disabled={!isChanged || isLoading}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+        >
+          {isLoading ? (
+            <>
+              <Loader2Icon className="w-4 h-4 animate-spin" />
+              Menyimpan...
+            </>
+          ) : (
+            <>
+              <SaveIcon className="w-4 h-4" />
+              Simpan Perubahan
+            </>
+          )}
         </Button>
       </div>
     </div>
