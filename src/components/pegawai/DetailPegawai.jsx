@@ -17,7 +17,7 @@ export default function DetailPegawai({ open, onOpenChange, data }) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl p-8">
         {/* HEADER */}
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
@@ -27,9 +27,14 @@ export default function DetailPegawai({ open, onOpenChange, data }) {
                 {rows.jabatan_pegawai}
               </p>
             </div>
-
-            <Badge variant={rows.is_aktif ? "default" : "destructive"}>
-              {rows.is_aktif ? "Aktif" : "Nonaktif"}
+            <Badge
+              className={`text-xs ${
+                rows.is_aktif
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+              }`}
+            >
+              {rows.is_aktif ? "Aktif" : "Tidak Aktif"}
             </Badge>
           </DialogTitle>
         </DialogHeader>
@@ -43,8 +48,8 @@ export default function DetailPegawai({ open, onOpenChange, data }) {
               rows.jenis_kelamin === "L"
                 ? "Laki - Laki"
                 : rows.jenis_kelamin === "P"
-                ? "Perempuan"
-                : "-"
+                  ? "Perempuan"
+                  : "-"
             }
           />
           <Item

@@ -49,7 +49,7 @@ const PegawaiTable = () => {
 
   const { data, loading, error } = useFetchPegawai(
     "/api/v1/admin/pegawai",
-    refreshKey
+    refreshKey,
   );
 
   useEffect(() => {
@@ -98,14 +98,14 @@ const PegawaiTable = () => {
         setIsDetailPegawaiLoading(false);
       }
     },
-    [toast]
+    [toast],
   );
 
   const dialogTitle = useMemo(() => `Update Pegawai `, []);
 
   const dialogDescription = useMemo(
     () => `${editData?.nama_pegawai || ""}`,
-    [editData]
+    [editData],
   );
 
   const handleError = useCallback((error) => {
@@ -213,8 +213,8 @@ const PegawaiTable = () => {
             {row.getValue("jenis_kelamin") === "L"
               ? "Laki - Laki"
               : row.getValue("jenis_kelamin") === "P"
-              ? "Perempuan"
-              : "-"}
+                ? "Perempuan"
+                : "-"}
           </div>
         ),
       },
@@ -261,8 +261,14 @@ const PegawaiTable = () => {
         cell: ({ row }) => {
           const isActive = row.getValue("is_aktif");
           return (
-            <Badge variant={isActive ? "secondary" : "destructive"}>
-              {isActive ? "Aktif" : "Non-Aktif"}
+            <Badge
+              className={`text-xs ${
+                isActive
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+              }`}
+            >
+              {isActive ? "Aktif" : "Tidak Aktif"}
             </Badge>
           );
         },
@@ -275,23 +281,11 @@ const PegawaiTable = () => {
 
           return (
             <div className="flex items-center justify-center gap-2">
-              {/* ✅ Detail Pegawai */}
-              <Button
-                variant="ghost"
-                size="icon"
-                title="Detail Pegawai"
-                disabled={isDetailPegawaiLoading}
-                onClick={() => fetchDetailPegawai(loadData.id)}
-              >
-                {isDetailPegawaiLoading ? (
-                  <Loader2 className="animate-spin h-4 w-4" />
-                ) : (
-                  <EyeIcon className="h-4 w-4" />
-                )}
-              </Button>
-
               {/* Edit & Delete tetap */}
               <PegawaiActions
+                onDetail={() => {
+                  fetchDetailPegawai(loadData.id);
+                }}
                 onEdit={() => {
                   setEditData(loadData);
                   setIsDialogUpdateOpen(true);
@@ -306,7 +300,7 @@ const PegawaiTable = () => {
         },
       },
     ],
-    [fetchDetailPegawai, isDetailPegawaiLoading]
+    [fetchDetailPegawai],
   );
 
   const table = useReactTable({
@@ -400,7 +394,7 @@ const PegawaiTable = () => {
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}
@@ -415,7 +409,7 @@ const PegawaiTable = () => {
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiRequest } from "@/lib/apiRequest";
+import { KeyRoundIcon, Loader2Icon, SaveIcon } from "lucide-react";
 
 const ResetPasswordForm = ({ initialData, onSubmit, isLoading, onError }) => {
   const [password, setPassword] = useState("");
@@ -34,7 +35,7 @@ const ResetPasswordForm = ({ initialData, onSubmit, isLoading, onError }) => {
         {
           password,
           confirm_password: confirmPassword,
-        }
+        },
       );
 
       setPassword("");
@@ -80,8 +81,22 @@ const ResetPasswordForm = ({ initialData, onSubmit, isLoading, onError }) => {
       </div>
 
       <div className="flex justify-end">
-        <Button type="submit" disabled={loading || isLoading}>
-          {loading ? "Menyimpan..." : "Reset Password"}
+        <Button
+          onClick={handleSubmit}
+          disabled={loading}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+        >
+          {loading ? (
+            <>
+              <Loader2Icon className="w-4 h-4 animate-spin" />
+              Menyimpan...
+            </>
+          ) : (
+            <>
+              <KeyRoundIcon className="w-4 h-4" />
+              Reset Password
+            </>
+          )}
         </Button>
       </div>
     </form>

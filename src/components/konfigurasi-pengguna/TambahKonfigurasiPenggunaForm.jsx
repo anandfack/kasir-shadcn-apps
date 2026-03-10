@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { apiRequest } from "@/lib/apiRequest";
 import { Listbox, Transition } from "@headlessui/react";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
-import { CheckIcon } from "lucide-react";
+import { CheckIcon, Loader2Icon, SaveIcon } from "lucide-react";
 import { ROLE_OPTIONS } from "@/lib/roleBadge";
 
 const TambahKonfigurasiPenggunaForm = ({
@@ -38,7 +38,7 @@ const TambahKonfigurasiPenggunaForm = ({
     useState("");
 
   const filteredRoles = ROLE_OPTIONS.filter((role) =>
-    role.label.toLowerCase().includes(searchRole.toLowerCase())
+    role.label.toLowerCase().includes(searchRole.toLowerCase()),
   );
 
   const pegawaiList = useMemo(() => {
@@ -55,7 +55,7 @@ const TambahKonfigurasiPenggunaForm = ({
     return pegawaiList.filter((item) =>
       item.nama_kategori
         .toLowerCase()
-        .includes(searchPegawaiWithoutLogin.toLowerCase())
+        .includes(searchPegawaiWithoutLogin.toLowerCase()),
     );
   }, [pegawaiList, searchPegawaiWithoutLogin]);
 
@@ -333,8 +333,22 @@ const TambahKonfigurasiPenggunaForm = ({
           </div>
         </div>
         <div className="flex justify-end">
-          <Button onClick={handleSubmit} variant="outline" disabled={loading}>
-            {loading ? "Loading..." : "Simpan"}
+          <Button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2Icon className="w-4 h-4 animate-spin" />
+                Menyimpan...
+              </>
+            ) : (
+              <>
+                <SaveIcon className="w-4 h-4" />
+                Simpan
+              </>
+            )}
           </Button>
         </div>
       </form>

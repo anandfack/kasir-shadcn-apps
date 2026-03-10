@@ -13,5 +13,9 @@ export const ROLE_OPTIONS = [
 ];
 
 export const roleBadgeMap = Object.fromEntries(
-  ROLE_OPTIONS.map((r) => [r.value, { label: r.label, variant: r.variant }])
+  ROLE_OPTIONS.map((r) => [r.value, { label: r.label, variant: r.variant }]),
 );
+
+export const aktifBadge = [
+  { value: "t", label: "Aktif", variant: "secondary" },
+];

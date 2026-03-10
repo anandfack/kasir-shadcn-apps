@@ -1,24 +1,29 @@
 import { Button } from "@/components/ui/button";
-import { KeyIcon, SquarePen, Trash2 } from "lucide-react";
+import { KeyIcon, KeyRoundIcon, SquarePen, Trash2 } from "lucide-react";
 
 const KonfigurasiPenggunaActions = ({ onEdit, onDelete, onResetPassword }) => {
   return (
     <div className="flex items-center justify-center gap-2">
       <Button
-        title="Ubah"
         variant="secondary"
-        className="text-xs"
+        className="text-xs text-amber-400 border-amber-400 hover:bg-amber-400/10 transition-colors"
         onClick={onEdit}
+        title="Edit"
       >
         <SquarePen />
       </Button>
       <Button
-        title="Reset Password"
-        variant="primary"
-        className="text-xs"
+        // title="Reset Password"
+        // variant="primary"
+        // className="text-xs"
+        // onClick={onResetPassword}
+
+        variant="secondary"
+        className="text-xs text-emerald-400 border-emerald-400 hover:bg-emerald-400/10 transition-colors"
         onClick={onResetPassword}
+        title="Reset Password"
       >
-        <KeyIcon />
+        <KeyRoundIcon />
       </Button>
       {/* <Button
         title="Hapus"

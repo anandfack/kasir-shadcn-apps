@@ -14,6 +14,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
+import { CalendarIcon, Loader2Icon, SaveIcon } from "lucide-react";
 
 const formatDateForInput = (date) => {
   if (!date) return "";
@@ -21,9 +30,6 @@ const formatDateForInput = (date) => {
 };
 
 const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
-  /** =========================
-   * Normalized initial data
-   * ========================= */
   const normalizedInitialData = useMemo(() => {
     if (!initialData) return {};
 
@@ -34,22 +40,14 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
     };
   }, [initialData]);
 
-  /** =========================
-   * State
-   * ========================= */
   const [formData, setFormData] = useState(normalizedInitialData);
   const [isChanged, setIsChanged] = useState(false);
+  const [openCalendar, setOpenCalendar] = useState(false);
 
-  /** =========================
-   * Sync initial data
-   * ========================= */
   useEffect(() => {
     setFormData(normalizedInitialData);
   }, [normalizedInitialData]);
 
-  /** =========================
-   * Dirty check (accurate)
-   * ========================= */
   useEffect(() => {
     const fields = [
       "nip_pegawai",
@@ -64,15 +62,12 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
     ];
 
     const hasChanged = fields.some(
-      (key) => formData[key] !== normalizedInitialData[key]
+      (key) => formData[key] !== normalizedInitialData[key],
     );
 
     setIsChanged(hasChanged);
   }, [formData, normalizedInitialData]);
 
-  /** =========================
-   * Handlers
-   * ========================= */
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -101,7 +96,7 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
       const updatedData = await apiRequest(
         "PUT",
         `/api/v1/admin/pegawai/${formData.id}`,
-        payload
+        payload,
       );
 
       setFormData({
@@ -117,9 +112,6 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
     }
   };
 
-  /** =========================
-   * Render
-   * ========================= */
   return (
     <div className="grid gap-4 py-4">
       {/* NIP */}
@@ -150,6 +142,62 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
 
       {/* Tanggal Lahir */}
       <div className="grid grid-cols-4 items-center gap-4">
+        <Label htmlFor="tanggal-lahir" className="text-center">
+          Tanggal Lahir <i className="text-red-500">*</i>
+        </Label>
+
+        <Popover
+          open={openCalendar}
+          onOpenChange={setOpenCalendar}
+          modal={false}
+        >
+          <PopoverTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              className="col-span-3 justify-start text-left font-normal"
+            >
+              <CalendarIcon className="mr-2 h-4 w-4 text-sky-500" />
+
+              {formData.tanggal_lahir
+                ? format(new Date(formData.tanggal_lahir), "dd MMMM yyyy", {
+                    locale: id,
+                  })
+                : "Pilih tanggal"}
+            </Button>
+          </PopoverTrigger>
+
+          <PopoverContent align="start" sideOffset={8} className="w-auto p-0">
+            <Calendar
+              mode="single"
+              locale={id}
+              selected={
+                formData.tanggal_lahir
+                  ? new Date(formData.tanggal_lahir)
+                  : undefined
+              }
+              captionLayout="dropdown"
+              fromYear={1945}
+              toYear={new Date().getFullYear()}
+              disabled={{ after: new Date() }}
+              onSelect={(date) => {
+                if (!date) return;
+
+                setFormData((prev) => ({
+                  ...prev,
+                  tanggal_lahir: date.toISOString().split("T")[0],
+                }));
+
+                setOpenCalendar(false); // tutup setelah pilih
+              }}
+              initialFocus
+              className="rounded-md border"
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      {/* <div className="grid grid-cols-4 items-center gap-4">
         <Label className="text-center">
           Tanggal Lahir <i className="text-red-500">*</i>
         </Label>
@@ -161,7 +209,7 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
           max={new Date().toISOString().split("T")[0]}
           className="col-span-3"
         />
-      </div>
+      </div> */}
 
       {/* Jenis Kelamin */}
       <div className="grid grid-cols-4 items-center gap-4">
@@ -207,9 +255,19 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
           Nomor Telepon <i className="text-red-500">*</i>
         </Label>
         <Input
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          onChange={(e) => {
+            const value = e.target.value.replace(/[^0-9]/g, "");
+            setFormData((prev) => ({
+              ...prev,
+              nomor_telepon_pegawai: value,
+            }));
+          }}
           name="nomor_telepon_pegawai"
           value={formData.nomor_telepon_pegawai || ""}
-          onChange={handleChange}
+          // onChange={handleChange}
           className="col-span-3"
         />
       </div>
@@ -251,8 +309,22 @@ const UpdatePegawaiForm = ({ initialData, onSubmit, isLoading, onError }) => {
 
       {/* Submit */}
       <div className="flex justify-end">
-        <Button disabled={!isChanged || isLoading} onClick={handleSubmit}>
-          {isLoading ? "Loading..." : "Simpan"}
+        <Button
+          onClick={handleSubmit}
+          disabled={!isChanged || isLoading}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+        >
+          {isLoading ? (
+            <>
+              <Loader2Icon className="w-4 h-4 animate-spin" />
+              Menyimpan...
+            </>
+          ) : (
+            <>
+              <SaveIcon className="w-4 h-4" />
+              Simpan Perubahan
+            </>
+          )}
         </Button>
       </div>
     </div>

@@ -118,23 +118,23 @@ const AdminStokVariantTable = () => {
   const statusBadgeMap = {
     "Belum Diatur": {
       label: "Belum Diatur",
-      className: "bg-purple-100 text-purple-700 border-purple-200",
+      className: "bg-purple-500/20 text-purple-400 border border-purple-500/30",
     },
     Habis: {
       label: "Habis",
-      className: "bg-red-100 text-red-700 border-red-200",
+      className: "bg-rose-500/20 text-rose-400 border border-rose-500/30",
     },
     Menipis: {
       label: "Menipis",
-      className: "bg-yellow-100 text-yellow-700 border-yellow-200",
+      className: "bg-amber-500/20 text-amber-400 border border-amber-500/30"
     },
     Berlebih: {
       label: "Berlebih",
-      className: "bg-blue-100 text-blue-700 border-blue-200",
+      className: "bg-sky-500/20 text-sky-400 border border-sky-500/30"
     },
     Aman: {
       label: "Aman",
-      className: "bg-green-100 text-green-700 border-green-200",
+      className: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
     },
   };
 

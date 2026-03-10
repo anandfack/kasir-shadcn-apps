@@ -8,6 +8,7 @@ import { apiRequest } from "@/lib/apiRequest";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { Switch } from "../ui/switch";
 import { ROLE_OPTIONS } from "@/lib/roleBadge";
+import { Loader2Icon, SaveIcon } from "lucide-react";
 
 const UpdateKonfigurasiPenggunaForm = ({
   pegawaiData,
@@ -32,7 +33,7 @@ const UpdateKonfigurasiPenggunaForm = ({
     if (!searchPegawai) return pegawaiList;
 
     return pegawaiList.filter((item) =>
-      item.nama_kategori.toLowerCase().includes(searchPegawai.toLowerCase())
+      item.nama_kategori.toLowerCase().includes(searchPegawai.toLowerCase()),
     );
   }, [pegawaiList, searchPegawai]);
 
@@ -59,7 +60,7 @@ const UpdateKonfigurasiPenggunaForm = ({
   }, [formData, initialData]);
 
   const filteredRoles = ROLE_OPTIONS.filter((role) =>
-    role.label.toLowerCase().includes(searchRole.toLowerCase())
+    role.label.toLowerCase().includes(searchRole.toLowerCase()),
   );
 
   const handleChange = (e) => {
@@ -89,7 +90,7 @@ const UpdateKonfigurasiPenggunaForm = ({
       const updatedData = await apiRequest(
         "PUT",
         `/api/v1/admin/konfigurasi-pengguna/${formData.id}`,
-        dataToSend
+        dataToSend,
       );
 
       setFormData((prev) => ({
@@ -118,6 +119,7 @@ const UpdateKonfigurasiPenggunaForm = ({
         <div className="col-span-3">
           <Listbox
             value={formData.pegawai}
+            disabled
             onChange={(pegawai) => {
               if (pegawai.id !== formData.pegawai) {
                 setFormData((prev) => ({ ...prev, pegawai }));
@@ -323,8 +325,22 @@ const UpdateKonfigurasiPenggunaForm = ({
 
       {/* Tombol Simpan */}
       <div className="flex justify-end">
-        <Button onClick={handleSubmit} disabled={!isChanged || isLoading}>
-          {isLoading ? "Loading..." : "Simpan"}
+        <Button
+          onClick={handleSubmit}
+          disabled={!isChanged || isLoading}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+        >
+          {isLoading ? (
+            <>
+              <Loader2Icon className="w-4 h-4 animate-spin" />
+              Menyimpan...
+            </>
+          ) : (
+            <>
+              <SaveIcon className="w-4 h-4" />
+              Simpan Perubahan
+            </>
+          )}
         </Button>
       </div>
     </div>

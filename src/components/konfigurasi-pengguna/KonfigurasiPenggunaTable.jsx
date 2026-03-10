@@ -49,7 +49,7 @@ const KonfigurasiPenggunaTable = () => {
 
   const { data, loading, error } = useFetchKonfigurasiPengguna(
     "/api/v1/admin/konfigurasi-pengguna",
-    refreshKey
+    refreshKey,
   );
 
   useEffect(() => {
@@ -105,13 +105,13 @@ const KonfigurasiPenggunaTable = () => {
 
   const dialogDescription = useMemo(
     () => `${editData?.pegawai?.nama_pegawai || ""}`,
-    [editData]
+    [editData],
   );
   const dialogTitleReset = useMemo(() => `Reset Password`, []);
 
   const dialogDescriptionReset = useMemo(
     () => `${resetPasswordData?.pegawai?.nama_pegawai || ""}`,
-    [resetPasswordData]
+    [resetPasswordData],
   );
 
   const handleError = useCallback((error) => {
@@ -300,7 +300,6 @@ const KonfigurasiPenggunaTable = () => {
                 onEdit={() => {
                   setEditData(loadData);
                   setIsDialogUpdateOpen(true);
-                  console.log("klik edit");
                 }}
                 // onDelete={() => {
                 //   setDeleteData(loadData);
@@ -316,7 +315,7 @@ const KonfigurasiPenggunaTable = () => {
         },
       },
     ],
-    []
+    [],
   );
 
   const table = useReactTable({
@@ -413,7 +412,7 @@ const KonfigurasiPenggunaTable = () => {
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}
@@ -428,7 +427,7 @@ const KonfigurasiPenggunaTable = () => {
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

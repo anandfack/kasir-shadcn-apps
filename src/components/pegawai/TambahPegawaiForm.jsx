@@ -21,12 +21,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { apiRequest } from "@/lib/apiRequest";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
+import { CalendarIcon, Loader2Icon, SaveIcon } from "lucide-react";
 
 const TambahPegawaiForm = ({ onSuccess, onError }) => {
   const [loading, setLoading] = useState(false);
   const [nipPegawai, setNipPegawai] = useState("");
   const [namaPegawai, setNamaPegawai] = useState("");
-  const [tanggalLahir, setTanggalLahir] = useState("");
+  // const [tanggalLahir, setTanggalLahir] = useState("");
+  const [tanggalLahir, setTanggalLahir] = useState(new Date());
+
   const [jenisKelamin, setJenisKelamin] = useState("");
   const [alamatPegawai, setAlamatPegawai] = useState("");
   const [nomorTeleponPegawai, setNomorTeleponPegawai] = useState("");
@@ -41,7 +52,7 @@ const TambahPegawaiForm = ({ onSuccess, onError }) => {
       await apiRequest("POST", "/api/v1/admin/pegawai", {
         nip_pegawai: nipPegawai,
         nama_pegawai: namaPegawai,
-        tanggal_lahir: tanggalLahir,
+        tanggal_lahir: tanggalLahir.toISOString(),
         jenis_kelamin: jenisKelamin,
         alamat_pegawai: alamatPegawai,
         nomor_telepon_pegawai: nomorTeleponPegawai,
@@ -98,15 +109,53 @@ const TambahPegawaiForm = ({ onSuccess, onError }) => {
             <Label htmlFor="tanggal-lahir" className="text-center">
               Tanggal Lahir <i className="text-red-500">*</i>
             </Label>
-            <Input
-              id="tanggal-lahir"
-              type="date"
-              value={tanggalLahir}
-              onChange={(e) => setTanggalLahir(e.target.value)}
-              className="col-span-3"
-              placeholder="Masukkan tanggal lahir pegawai"
-              max={new Date().toISOString().split("T")[0]}
-            />
+
+            <Popover modal={false}>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="justify-start text-left font-normal"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4 text-sky-500" />
+                  {tanggalLahir instanceof Date && !isNaN(tanggalLahir)
+                    ? format(tanggalLahir, "dd MMMM yyyy", { locale: id })
+                    : "Pilih tanggal"}
+                </Button>
+              </PopoverTrigger>
+
+              <PopoverContent
+                align="start"
+                side="bottom"
+                sideOffset={8}
+                className="w-auto p-0"
+                style={{ pointerEvents: "auto" }}
+              >
+                <Calendar
+                  mode="single"
+                  locale={id}
+                  selected={tanggalLahir}
+                  captionLayout="dropdown"
+                  fromYear={1945}
+                  toYear={new Date().getFullYear()}
+                  disabled={{ after: new Date() }}
+                  onSelect={(date) => {
+                    if (date) {
+                      const now = new Date();
+                      date.setHours(
+                        now.getHours(),
+                        now.getMinutes(),
+                        now.getSeconds(),
+                        now.getMilliseconds(),
+                      );
+                      setTanggalLahir(date);
+                    }
+                  }}
+                  initialFocus
+                  className="rounded-lg border"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
         <div className="grid gap-4 py-4">
@@ -153,9 +202,15 @@ const TambahPegawaiForm = ({ onSuccess, onError }) => {
               Nomor Telepon <i className="text-red-500">*</i>
             </Label>
             <Input
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              onChange={(e) => {
+                const value = e.target.value.replace(/[^0-9]/g, "");
+                setNomorTeleponPegawai(value);
+              }}
               id="nomor-telepon-pegawai"
               value={nomorTeleponPegawai}
-              onChange={(e) => setNomorTeleponPegawai(e.target.value)}
               className="col-span-3"
               placeholder="Masukkan nomor telepon pegawai"
             />
@@ -190,8 +245,22 @@ const TambahPegawaiForm = ({ onSuccess, onError }) => {
           </div>
         </div>
         <div className="flex justify-end">
-          <Button onClick={handleSubmit} variant="outline" disabled={loading}>
-            {loading ? "Loading..." : "Simpan"}
+          <Button
+            onClick={handleSubmit}
+            disabled={loading}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+          >
+            {loading ? (
+              <>
+                <Loader2Icon className="w-4 h-4 animate-spin" />
+                Menyimpan...
+              </>
+            ) : (
+              <>
+                <SaveIcon className="w-4 h-4" />
+                Simpan
+              </>
+            )}
           </Button>
         </div>
       </form>

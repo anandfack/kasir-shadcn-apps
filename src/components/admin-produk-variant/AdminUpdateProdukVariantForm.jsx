@@ -158,10 +158,6 @@ const AdminUpdateProdukVariantForm = ({
             </>
           )}
         </Button>
-
-        {/* <Button onClick={handleSubmit} disabled={!isChanged || isLoading}>
-          {isLoading ? "Loading..." : "Simpan"}
-        </Button> */}
       </div>
     </div>
   );
