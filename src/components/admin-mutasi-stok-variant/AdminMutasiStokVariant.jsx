@@ -55,7 +55,7 @@ export default function AdminMutasiStokVariant({
         onOpenChange(isOpen);
       }}
     >
-      <DialogContent className="sm:max-w-7xl max-h-[120vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-7xl max-h-[90vh] overflow-y-auto">
         <div className="text-sm space-y-2">
           <DialogHeader>
             <DialogTitle>Mutasi Stok</DialogTitle>

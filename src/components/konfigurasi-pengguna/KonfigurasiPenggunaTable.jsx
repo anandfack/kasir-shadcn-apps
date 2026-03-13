@@ -245,8 +245,14 @@ const KonfigurasiPenggunaTable = () => {
         cell: ({ row }) => {
           const isActive = row.getValue("is_aktif");
           return (
-            <Badge variant={isActive ? "secondary" : "destructive"}>
-              {isActive ? "Aktif" : "Non-Aktif"}
+            <Badge
+              className={`text-xs ${
+                isActive
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+              }`}
+            >
+              {isActive ? "Aktif" : "Tidak Aktif"}
             </Badge>
           );
         },
@@ -266,7 +272,13 @@ const KonfigurasiPenggunaTable = () => {
         cell: ({ row }) => {
           const isVerified = row.getValue("verified");
           return (
-            <Badge variant={isVerified ? "secondary" : "destructive"}>
+            <Badge
+              className={`text-xs ${
+                isVerified
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+              }`}
+            >
               {isVerified ? "Verified" : "Not Verified"}
             </Badge>
           );
