@@ -1,7 +1,12 @@
 import jsonResponse from "@/lib/jsonResponse";
 import { verifyAuth } from "@/lib/verifyAuth";
-import { createProdukRepo, findProduk } from "./produk.reprository";
-import { validateCreateProduk } from "./produk.validation";
+import {
+  createProdukRepo,
+  deleteProdukRepo,
+  findProduk,
+  updateProdukRepo,
+} from "./produk.reprository";
+import { validateProduk } from "./produk.validation";
 
 export async function getProduk(req) {
   try {
@@ -53,9 +58,9 @@ export async function createProduk(req) {
       return jsonResponse({ message: auth.error }, 401);
     }
 
-    const data  = await req.json();
+    const data = await req.json();
 
-    const errors = validateCreateProduk(data);
+    const errors = validateProduk(data);
 
     if (Object.keys(errors).length > 0) {
       return jsonResponse(
@@ -79,6 +84,84 @@ export async function createProduk(req) {
   } catch (error) {
     console.error("Error:", error);
     return jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500,
+    );
+  }
+}
+
+export async function updateProduk(req, { params }) {
+  try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse(
+        {
+          message: auth.error,
+        },
+        401,
+      );
+    }
+
+    const { id } = params;
+
+    const data = await req.json();
+
+    const errors = validateProduk(data);
+
+    if (Object.keys(errors).length > 0) {
+      return jsonResponse(
+        {
+          message: "Validation Error",
+          errors,
+        },
+        400,
+      );
+    }
+
+    const produk = await updateProdukRepo(Number(id), data);
+
+    return jsonResponse(
+      {
+        message: "Produk berhasil diperbarui",
+        data: produk,
+      },
+      200,
+    );
+  } catch (error) {
+    console.log(error);
+    jsonResponse(
+      {
+        message: "Internal Server Error",
+      },
+      500,
+    );
+  }
+}
+
+export async function deleteProduk(req, { params }) {
+  try {
+    const auth = verifyAuth(req);
+
+    if (auth.error) {
+      return jsonResponse({ message: auth.error }, 401);
+    }
+
+    const { id } = params;
+    const produk = await deleteProdukRepo(Number(id));
+
+    return jsonResponse(
+      {
+        message: "Produk berhasil dihapus",
+        data: produk,
+      },
+      200,
+    );
+  } catch (error) {
+    console.log(error);
+    jsonResponse(
       {
         message: "Internal Server Error",
       },

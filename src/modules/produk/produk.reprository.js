@@ -57,3 +57,27 @@ export async function createProdukRepo(data) {
     },
   });
 }
+
+export async function updateProdukRepo(id, data) {
+  return prisma.produk.update({
+    where: { id },
+    data: {
+      kategori_id: Number(data.kategori_id),
+      satuan_produk_id: Number(data.satuan_produk_id),
+      supplier_id: Number(data.supplier_id),
+      kode_produk: data.kode_produk,
+      nama_produk: data.nama_produk,
+      deskripsi_produk: data.deskripsi_produk,
+      is_aktif: data.is_aktif ?? true,
+    },
+  });
+}
+
+export async function deleteProdukRepo(id) {
+  return prisma.produk.update({
+    where: { id },
+    data: {
+      deleted_at: new Date(),
+    },
+  });
+}
