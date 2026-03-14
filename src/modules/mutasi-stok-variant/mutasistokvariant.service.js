@@ -1,8 +1,8 @@
 import jsonResponse from "@/lib/jsonResponse";
 import { verifyAuth } from "@/lib/verifyAuth";
-import { mutasiStokRepo } from "./mutasiStok.repository";
+import { mutasiStokVariantRepo } from "./mutasistokvariant.repository";
 
-export async function getMutasiStok(req, { params }) {
+export async function getMutasiStokVariant(req, { params }) {
   try {
     const auth = verifyAuth(req);
 
@@ -10,14 +10,13 @@ export async function getMutasiStok(req, { params }) {
       return jsonResponse({ message: auth.error }, 401);
     }
 
-    const produkId = parseInt(params.id);
+    const produkVariantId = parseInt(params.id);
 
-    const mutasiStok = await mutasiStokRepo(produkId);
-
+    const mutasiStokVariant = await mutasiStokVariantRepo(produkVariantId);
     return jsonResponse(
       {
         message: "OK",
-        data: mutasiStok,
+        data: mutasiStokVariant,
       },
       200,
     );
@@ -25,7 +24,7 @@ export async function getMutasiStok(req, { params }) {
     console.log(error);
     return jsonResponse(
       {
-        message: "Internal Server Error",
+        message: "Internal server error",
       },
       500,
     );
