@@ -27,12 +27,14 @@ const TambahSupplierForm = ({ onSuccess, onError }) => {
     setLoading(true);
 
     try {
-      await apiRequest("POST", "/api/v1/admin/supplier", {
+      const payload = {
         kode_supplier: kodeSupplier,
         nama_supplier: namaSupplier,
         alamat_supplier: alamatSupplier,
         nomor_telepon_supplier: nomorTeleponSupplier,
-      });
+      };
+
+      await apiRequest("POST", "/api/v1/admin/supplier", payload);
 
       onSuccess();
     } catch (error) {
