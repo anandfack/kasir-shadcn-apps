@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { generateSlug, generateUniqueSlug } from "@/lib/slug";
 
 export async function findProduk(whereCondition) {
   return prisma.produk.findMany({
@@ -45,6 +46,8 @@ export async function findProduk(whereCondition) {
 }
 
 export async function createProdukRepo(data) {
+  const baseSlug = generateSlug(data.nama_produk);
+  const slug = await generateUniqueSlug("produk", baseSlug);
   return prisma.produk.create({
     data: {
       kategori_id: Number(data.kategori_id),
@@ -52,6 +55,7 @@ export async function createProdukRepo(data) {
       supplier_id: Number(data.supplier_id),
       kode_produk: data.kode_produk,
       nama_produk: data.nama_produk,
+      slug,
       deskripsi_produk: data.deskripsi_produk,
       is_aktif: data.is_aktif ?? true,
     },
@@ -59,6 +63,16 @@ export async function createProdukRepo(data) {
 }
 
 export async function updateProdukRepo(id, data) {
+  const existing = await prisma.produk.findUnique({
+    where: { id },
+  });
+
+  let slug = existing.slug;
+
+  if (data.nama_produk && data.nama_produk !== existing.nama_produk) {
+    const baseSlug = generateSlug(data.nama_produk);
+    slug = await generateUniqueSlug("produk", baseSlug);
+  }
   return prisma.produk.update({
     where: { id },
     data: {
@@ -67,6 +81,7 @@ export async function updateProdukRepo(id, data) {
       supplier_id: Number(data.supplier_id),
       kode_produk: data.kode_produk,
       nama_produk: data.nama_produk,
+      slug,
       deskripsi_produk: data.deskripsi_produk,
       is_aktif: data.is_aktif ?? true,
     },

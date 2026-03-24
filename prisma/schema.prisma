@@ -143,13 +143,15 @@ model MutasiStokVariant {
 }
 
 model Kategori {
-  id            Int       @id @default(autoincrement())
+  id            Int     @id @default(autoincrement())
   kode_kategori String
   nama_kategori String
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
-  deleted_at    DateTime?
-  Produk        Produk[]
+  slug          String? @unique
+
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  deleted_at DateTime?
+  Produk     Produk[]
 
   @@map("kategoriproduk_m")
 }
@@ -194,6 +196,7 @@ model Produk {
   supplier             Supplier?              @relation(fields: [supplier_id], references: [id])
   kode_produk          String
   nama_produk          String
+  slug                 String?                @unique
   deskripsi_produk     String?
   gambar_produk        String?
   is_aktif             Boolean

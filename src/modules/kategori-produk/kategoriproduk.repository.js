@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { generateSlug, generateUniqueSlug } from "@/lib/slug";
 
 export async function getKategoriProdukRepo() {
   return prisma.kategori.findMany({
@@ -17,6 +18,9 @@ export async function getKategoriProdukRepo() {
 }
 
 export async function createKategoriProdukRepo(data) {
+  const baseSlug = generateSlug(data.nama_kategori);
+  const slug = await generateUniqueSlug("kategori", baseSlug);
+
   const existingKodeKategori = await prisma.kategori.findFirst({
     where: {
       kode_kategori: data.kode_kategori,
@@ -37,16 +41,29 @@ export async function createKategoriProdukRepo(data) {
     data: {
       kode_kategori: data.kode_kategori,
       nama_kategori: data.nama_kategori,
+      slug,
     },
   });
 }
 
 export async function updateKategoriProdukRepo(id, data) {
+  const existing = await prisma.kategori.findUnique({
+    where: { id },
+  });
+
+  let slug = existing.slug;
+
+  if (data.nama_kategori && data.nama_kategori !== existing.nama_kategori) {
+    const baseSlug = generateSlug(data.nama_kategori);
+    slug = await generateUniqueSlug("kategori", baseSlug);
+  }
+
   return prisma.kategori.update({
     where: { id: parseInt(id) },
     data: {
       kode_kategori: data.kode_kategori,
       nama_kategori: data.nama_kategori,
+      slug,
     },
   });
 }
