@@ -10,6 +10,7 @@ import {
   validateCreateHargaProduk,
   validateUpdateHargaProduk,
 } from "./hargaproduk.validation";
+import { deleteCacheByPattern, withCacheRequest } from "@/lib/cache";
 
 export async function getHargaProduk(req) {
   try {
@@ -19,7 +20,14 @@ export async function getHargaProduk(req) {
       return jsonResponse({ message: auth.error }, 401);
     }
 
-    const hargaProduk = await getHargaProdukRepo();
+    const hargaProduk = await withCacheRequest(
+      req,
+      () => getHargaProdukRepo(),
+      {
+        ttl: 60,
+        module: "harga-produk",
+      },
+    );
 
     return jsonResponse(
       {
@@ -62,6 +70,8 @@ export async function createHargaProduk(req) {
     }
 
     const hargaProduk = await createHargaProdukRepo(data);
+
+    await deleteCacheByPattern("kasir:harga-produk*");
 
     return jsonResponse(
       {
@@ -106,6 +116,8 @@ export async function updateHargaProduk(req, { params }) {
 
     const hargaProduk = await updateHargaProdukRepo(Number(id), data);
 
+    await deleteCacheByPattern("kasir:harga-produk*");
+
     return jsonResponse(
       {
         message: "Berhasil update harga produk",
@@ -135,6 +147,8 @@ export async function deleteHargaProduk(req, { params }) {
     const { id } = params;
 
     const hargaProduk = await deleteHargaProdukRepo(id);
+
+    await deleteCacheByPattern("kasir:harga-produk*");
 
     return jsonResponse(
       {

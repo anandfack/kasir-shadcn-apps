@@ -10,6 +10,7 @@ import {
   validateCreateSatuanProduk,
   validateUpdateSatuanProduk,
 } from "./satuanproduk.validation";
+import { deleteCacheByPattern, withCacheRequest } from "@/lib/cache";
 
 export async function getSatuanProduk(req) {
   try {
@@ -19,7 +20,14 @@ export async function getSatuanProduk(req) {
       return jsonResponse({ message: auth.error }, 401);
     }
 
-    const satuanProduk = await getSatuanProdukRepo();
+    const satuanProduk = await withCacheRequest(
+      req,
+      () => getSatuanProdukRepo(),
+      {
+        ttl: 120,
+        module: "satuan-produk",
+      },
+    );
 
     return jsonResponse({
       message: "OK",
@@ -58,6 +66,9 @@ export async function createSatuanProduk(req) {
     }
 
     const satuanProduk = await createSatuanProdukRepo(data);
+
+    await deleteCacheByPattern("kasir:satuan-produk*");
+
     return jsonResponse(
       {
         message: "Berhasil menambahkan satuan produk",
@@ -101,6 +112,8 @@ export async function updateSatuanProduk(req, { params }) {
 
     const satuanProduk = await updateSatuanProdukRepo(Number(id), data);
 
+    await deleteCacheByPattern("kasir:satuan-produk*");
+
     return jsonResponse(
       {
         message: "Berhasil update satuan produk",
@@ -128,7 +141,10 @@ export async function deleteSatuanProduk(req, { params }) {
     }
 
     const { id } = params;
+
     const satuanProduk = await deleteSatuanProdukRepo(id);
+
+    await deleteCacheByPattern("kasir:satuan-produk*");
     return jsonResponse(
       {
         message: "Berhasil hapus satuan produk",

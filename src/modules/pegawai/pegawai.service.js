@@ -11,6 +11,7 @@ import {
   validateCreatePegawai,
   validateUpdatePegawai,
 } from "./pegawai.validation";
+import { deleteCacheByPattern, withCacheRequest } from "@/lib/cache";
 
 export async function getPegawai(req) {
   try {
@@ -34,7 +35,14 @@ export async function getPegawai(req) {
       ];
     }
 
-    const pegawai = await getPegawaiRepo(whereCondition);
+    const pegawai = await withCacheRequest(
+      req,
+      () => getPegawaiRepo(whereCondition),
+      {
+        ttl: 60,
+        module: "pegawai",
+      },
+    );
 
     return jsonResponse(
       {
@@ -105,7 +113,14 @@ export async function getDetailPegawai(req, { params }) {
 
     const pegawaiId = parseInt(params.id);
 
-    const pegawai = await getDetailPegawaiRepo(pegawaiId);
+    const pegawai = await withCacheRequest(
+      req,
+      () => getDetailPegawaiRepo(pegawaiId),
+      {
+        ttl: 60,
+        module: "pegawai",
+      },
+    );
 
     return jsonResponse(
       {
@@ -150,6 +165,8 @@ export async function updatePegawai(req, { params }) {
 
     const pegawai = await updatePegawaiRepo(id, data);
 
+    await deleteCacheByPattern("kasir:pegawai*");
+
     return jsonResponse(
       {
         data: pegawai,
@@ -179,6 +196,8 @@ export async function deletePegawai(req, { params }) {
     const { id } = params;
 
     const pegawai = await deletePegawaiRepo(id);
+
+    await deleteCacheByPattern("kasir:pegawai*");
 
     return jsonResponse(
       {

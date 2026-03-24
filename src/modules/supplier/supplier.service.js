@@ -10,6 +10,7 @@ import {
   validateCreateSupplier,
   validateUpdateSupplier,
 } from "./supplier.validation";
+import { deleteCacheByPattern, withCacheRequest } from "@/lib/cache";
 
 export async function getSupplier(req) {
   try {
@@ -19,7 +20,10 @@ export async function getSupplier(req) {
       return jsonResponse({ message: auth.error }, 401);
     }
 
-    const supplier = await getSupplierRepo();
+    const supplier = await withCacheRequest(req, () => getSupplierRepo(), {
+      ttl: 120,
+      module: "supplier",
+    });
 
     return jsonResponse(
       {
@@ -61,6 +65,8 @@ export async function createSupplier(req) {
     }
 
     const supplier = await createSupplierRepo(data);
+
+    await deleteCacheByPattern("kasir:supplier*");
 
     return jsonResponse(
       {
@@ -106,6 +112,8 @@ export async function updateSupplier(req, { params }) {
 
     const supplier = await updateSupplierRepo(id, data);
 
+    await deleteCacheByPattern("kasir:supplier*");
+
     return jsonResponse(
       {
         data: supplier,
@@ -135,6 +143,8 @@ export async function deleteSupplier(req, { params }) {
     const { id } = params;
 
     const supplier = await deleteSupplierRepo(id);
+
+    await deleteCacheByPattern("kasir:supplier*");
 
     return jsonResponse(
       {

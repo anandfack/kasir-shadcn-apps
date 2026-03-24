@@ -10,6 +10,7 @@ import {
   validateCreateKategoriProduk,
   validateUpdateKategoriProduk,
 } from "./kategoriproduk.validation";
+import { deleteCacheByPattern, withCacheRequest } from "@/lib/cache";
 
 export async function getKategoriProduk(req) {
   try {
@@ -19,7 +20,14 @@ export async function getKategoriProduk(req) {
       return jsonResponse({ message: auth.error }, 401);
     }
 
-    const kategoriProduk = await getKategoriProdukRepo();
+    const kategoriProduk = await withCacheRequest(
+      req,
+      () => getKategoriProdukRepo(),
+      {
+        ttl: 60,
+        module: "kategori-produk",
+      },
+    );
 
     return jsonResponse(
       {
@@ -63,6 +71,8 @@ export async function createKategoriProduk(req) {
 
     const kategoriProduk = await createKategoriProdukRepo(data);
 
+    await deleteCacheByPattern("kasir:kategori-produk*");
+
     return jsonResponse({
       message: "Berhasil menambahkan kategori produk",
       data: kategoriProduk,
@@ -102,6 +112,9 @@ export async function updateKategoriProduk(req, { params }) {
     }
 
     const kategoriProduk = await updateKategoriProdukRepo(Number(id), data);
+
+    await deleteCacheByPattern("kasir:kategori-produk*");
+
     return jsonResponse(
       {
         message: "Berhasil update kategori produk",
@@ -131,6 +144,8 @@ export async function deleteKategoriProduk(req, { params }) {
     const { id } = params;
 
     const kategoriProduk = await deleteKategoriProdukRepo(id);
+
+    await deleteCacheByPattern("kasir:kategori-produk*");
 
     return jsonResponse(
       {

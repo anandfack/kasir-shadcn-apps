@@ -12,6 +12,7 @@ import {
   validateResetPassword,
   validateUpdateUser,
 } from "./konfigurasipengguna.validation";
+import { deleteCacheByPattern, withCacheRequest } from "@/lib/cache";
 
 export async function getKonfigurasiPengguna(req) {
   try {
@@ -21,7 +22,17 @@ export async function getKonfigurasiPengguna(req) {
       return jsonResponse({ message: auth.error }, 401);
     }
 
-    const konfigurasiPengguna = await getKonfigurasiPenggunaRepo();
+    const userId = auth.user.id;
+
+    const konfigurasiPengguna = await withCacheRequest(
+      req,
+      () => getKonfigurasiPenggunaRepo(),
+      {
+        ttl: 120,
+        module: "konfigurasi-pengguna",
+        prefix: `kasir:user:${userId}`,
+      },
+    );
 
     return jsonResponse(
       {
@@ -64,6 +75,8 @@ export async function createUser(req) {
     }
 
     const konfigurasiPengguna = await createUserRepo(data);
+
+    await deleteCacheByPattern("kasir:user:*:konfigurasi-pengguna*");
 
     return jsonResponse(
       {
@@ -108,6 +121,8 @@ export async function updateUser(req, { params }) {
 
     const updateUser = await updateUserRepo(id, data);
 
+    await deleteCacheByPattern("kasir:user:*:konfigurasi-pengguna*");
+
     return jsonResponse(
       {
         data: updateUser,
@@ -138,10 +153,12 @@ export async function deleteUser(req, { params }) {
 
     const deleteUser = await deleteUserRepo(id);
 
+    await deleteCacheByPattern("kasir:user:*:konfigurasi-pengguna*");
+
     return jsonResponse(
       {
         data: deleteUser,
-        message: "Internal server error",
+        message: "User berhasil dihapus",
       },
       201,
     );
@@ -180,6 +197,8 @@ export async function resetPassword(req, { params }) {
     }
 
     const resetPassword = await resetPasswordRepo(id, data);
+
+    await deleteCacheByPattern("kasir:user:*:konfigurasi-pengguna*");
 
     return jsonResponse(
       {

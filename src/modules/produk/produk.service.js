@@ -7,6 +7,7 @@ import {
   updateProdukRepo,
 } from "./produk.reprository";
 import { validateProduk } from "./produk.validation";
+import { deleteCacheByPattern, withCacheRequest } from "@/lib/cache";
 
 export async function getProduk(req) {
   try {
@@ -31,7 +32,11 @@ export async function getProduk(req) {
       };
     }
 
-    const data = await findProduk(whereCondition);
+    const data = await withCacheRequest(req, () => findProduk(whereCondition), {
+      ttl: 60,
+      module: "produk",
+    });
+
     return jsonResponse(
       {
         message: "OK",
@@ -73,6 +78,8 @@ export async function createProduk(req) {
     }
 
     const produk = await createProdukRepo(data);
+
+    await deleteCacheByPattern("kasir:produk*");
 
     return jsonResponse(
       {
@@ -123,6 +130,8 @@ export async function updateProduk(req, { params }) {
 
     const produk = await updateProdukRepo(Number(id), data);
 
+    await deleteCacheByPattern("kasir:produk*");
+
     return jsonResponse(
       {
         message: "Produk berhasil diperbarui",
@@ -132,7 +141,7 @@ export async function updateProduk(req, { params }) {
     );
   } catch (error) {
     console.log(error);
-    jsonResponse(
+    return jsonResponse(
       {
         message: "Internal Server Error",
       },
@@ -152,6 +161,8 @@ export async function deleteProduk(req, { params }) {
     const { id } = params;
     const produk = await deleteProdukRepo(Number(id));
 
+    await deleteCacheByPattern("kasir:produk*");
+
     return jsonResponse(
       {
         message: "Produk berhasil dihapus",
@@ -161,7 +172,7 @@ export async function deleteProduk(req, { params }) {
     );
   } catch (error) {
     console.log(error);
-    jsonResponse(
+    return jsonResponse(
       {
         message: "Internal Server Error",
       },

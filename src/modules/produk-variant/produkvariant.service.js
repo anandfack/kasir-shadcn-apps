@@ -10,6 +10,7 @@ import {
   validateProdukVariant,
   validateUpdateProdukVariant,
 } from "./produkvariant.validation";
+import { deleteCacheByPattern, withCacheRequest } from "@/lib/cache";
 
 export async function getProdukVariant(req) {
   try {
@@ -19,7 +20,10 @@ export async function getProdukVariant(req) {
       return jsonResponse({ message: auth.error }, 401);
     }
 
-    const produkVariant = await produkVariantRepo();
+    const produkVariant = await withCacheRequest(req, () => produkVariantRepo(), {
+      ttl: 60,
+      module: "produk-variant",
+    });
 
     return jsonResponse({
       message: "OK",
@@ -58,6 +62,8 @@ export async function createProdukVariant(req) {
     }
 
     const produkVariant = await createProdukVariantRepo(data);
+
+    await deleteCacheByPattern("kasir:produk-variant*");
 
     return jsonResponse(
       {
@@ -103,6 +109,8 @@ export async function updateProdukVariant(req, { params }) {
 
     const produkVariant = await updateProdukVariantRepo(Number(id), data);
 
+    await deleteCacheByPattern("kasir:produk-variant*");
+
     return jsonResponse(
       {
         message: "Berhasil update produk variant",
@@ -130,6 +138,8 @@ export async function deleteProdukVariant(req, { params }) {
     const { id } = params;
 
     const produkVariant = await deleteProdukVariantRepo(Number(id));
+
+    await deleteCacheByPattern("kasir:produk-variant*");
 
     return jsonResponse(
       {
