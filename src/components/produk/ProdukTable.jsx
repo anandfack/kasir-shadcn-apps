@@ -12,7 +12,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
 } from "@tanstack/react-table";
-import { ArrowUpDown, CirclePlus, Loader2 } from "lucide-react";
+import { ArrowUpDown, CirclePlus, ImageIcon, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -43,6 +43,7 @@ import { ArrowLeftRight } from "lucide-react";
 import { apiRequest } from "@/lib/apiRequest";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 import { get } from "react-hook-form";
+import GambarProduk from "../admin-gambar-produk/AdminGambarProduk";
 
 const ProdukTable = () => {
   const { toast } = useToast();
@@ -84,6 +85,10 @@ const ProdukTable = () => {
   const [mutasiData, setMutasiData] = useState(null);
   const [isMutasiLoading, setIsMutasiLoading] = useState(false);
   const [selectedProduk, setSelectedProduk] = useState(null);
+  const [isGambarDialogOpen, setIsGambarDialogOpen] = useState(false);
+  const [gambarProdukData, setGambarProdukData] = useState(null);
+  const [isGambarProdukLoading, setIsGambarProdukLoading] = useState(false);
+  // const [selectedProduk, setSelectedProduk] = useState(null);
 
   const { data: kategoriData = [], isLoading: kategoriLoading } = useQuery({
     queryKey: ["kategori"],
@@ -121,6 +126,30 @@ const ProdukTable = () => {
         });
       } finally {
         setIsMutasiLoading(false);
+      }
+    },
+    [toast],
+  );
+
+  const fetchGambarProduk = useCallback(
+    async (id) => {
+      setIsGambarProdukLoading(true);
+      try {
+        const res = await apiRequest(
+          "GET",
+          `/api/v1/admin/gambar-produk/${id}`,
+        );
+        setGambarProdukData(res);
+        // setIsMutasiDialogOpen(true);
+        setIsGambarDialogOpen(true);
+      } catch (err) {
+        toast({
+          title: "Gagal mengambil gambar produk",
+          description: getApiErrorMessage(err),
+          variant: "destructive",
+        });
+      } finally {
+        setIsGambarProdukLoading(false);
       }
     },
     [toast],
@@ -298,7 +327,21 @@ const ProdukTable = () => {
 
           return (
             <div className="flex items-center justify-center gap-2">
-              {/* ✅ Mutasi Stok */}
+              <Button
+                variant="secondary"
+                className="text-xs text-emerald-400 border-emerald-400 hover:bg-emerald-400/10 transition-colors"
+                title="Gambar Produk"
+                onClick={() => {
+                  setSelectedProduk(loadData);
+                  fetchGambarProduk(loadData.id);
+                }}
+              >
+                {isGambarProdukLoading ? (
+                  <Loader2 className="animate-spin h-4 w-4" />
+                ) : (
+                  <ImageIcon className="h-4 w-4" />
+                )}
+              </Button>
               <Button
                 variant="secondary"
                 className="text-xs text-sky-400 border-sky-400 hover:bg-sky-400/10 transition-colors"
@@ -315,8 +358,6 @@ const ProdukTable = () => {
                   <ArrowLeftRight className="h-4 w-4" />
                 )}
               </Button>
-
-              {/* Edit & Delete tetap */}
               <ProdukActions
                 onEdit={() => {
                   setEditData(loadData);
@@ -332,7 +373,12 @@ const ProdukTable = () => {
         },
       },
     ],
-    [fetchMutasiStok, isMutasiLoading],
+    [
+      fetchMutasiStok,
+      isMutasiLoading,
+      isGambarProdukLoading,
+      fetchGambarProduk,
+    ],
   );
 
   const table = useReactTable({
@@ -552,6 +598,28 @@ const ProdukTable = () => {
         onOpenChange={setIsMutasiDialogOpen}
         data={mutasiData}
         produk={selectedProduk}
+      />
+      <GambarProduk
+        open={isGambarDialogOpen}
+        onOpenChange={setIsGambarDialogOpen}
+        data={gambarProdukData}
+        produk={selectedProduk}
+        onSubmit={() => {
+          toast({
+            title: "Sukses!",
+            description: "Gambar berhasil diupload.",
+          });
+          // setRefreshKey((prev) => prev + 1);
+          fetchGambarProduk(selectedProduk.id);
+          // setIsGambarDialogOpen(true);
+        }}
+        onError={(error) => {
+          toast({
+            title: "Terjadi kesalahan",
+            description: getApiErrorMessage(error),
+            variant: "destructive",
+          });
+        }}
       />
     </div>
   );

@@ -210,6 +210,7 @@ model Produk {
   DetailPembelian      DetailPembelian[]
   DetailReturPembelian DetailReturPembelian[]
   produkVariants       ProdukVariant[]
+  gambarProduks        GambarProduk[]
 
   @@map("produk_m")
 }
@@ -595,4 +596,16 @@ model PembayaranInvoice {
   deleted_at DateTime?
 
   @@map("pembayaraninvoice_t")
+}
+
+model GambarProduk {
+  id Int @id @default(autoincrement())
+
+  produk_id Int
+  produk    Produk @relation(fields: [produk_id], references: [id])
+
+  url        String
+  created_at DateTime @default(now())
+
+  @@map("gambarproduk_m")
 }
