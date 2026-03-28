@@ -86,7 +86,7 @@ export default function GambarProduk({
               <input
                 type="file"
                 multiple
-                accept="image/*"
+                accept="image/webp,.webp"
                 onChange={handleSelectFile}
                 className="text-xs"
               />

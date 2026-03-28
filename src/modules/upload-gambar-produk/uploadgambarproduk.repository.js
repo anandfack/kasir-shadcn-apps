@@ -8,3 +8,10 @@ export async function createGambarProdukRepo(produkId, urls) {
     })),
   });
 }
+
+export async function getProdukSlugById(id) {
+  return prisma.produk.findUnique({
+    where: { id },
+    select: { slug: true },
+  });
+}

@@ -1,7 +1,10 @@
 import jsonResponse from "@/lib/jsonResponse";
-import { createGambarProdukRepo } from "./uploadgambarproduk.repository";
+import {
+  createGambarProdukRepo,
+  getProdukSlugById,
+} from "./uploadgambarproduk.repository";
 import { verifyAuth } from "@/lib/verifyAuth";
-import { writeFile } from "fs/promises";
+import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 
 export async function createGambarProduk(req) {
@@ -21,7 +24,35 @@ export async function createGambarProduk(req) {
     const produkId = formData.get("produk_id");
     const files = formData.getAll("files");
 
+    const produk = await getProdukSlugById(Number(produkId));
+
+    if (!produk) {
+      return jsonResponse({ message: "Produk tidak ditemukan" }, 404);
+    }
+
+    const slug = produk.slug;
+
     const urls = [];
+
+    const uploadDir = path.join(process.cwd(), "public/uploads", slug);
+
+    for (const file of files) {
+      if (!file || typeof file === "string") continue;
+
+      if (file.type !== "image/webp") {
+        return jsonResponse({ message: "File harus berformat webp" }, 400);
+      }
+
+      if (file.size > 2 * 1024 * 1024) {
+        return jsonResponse({ message: "Ukuran file maksimal 2MB" }, 400);
+      }
+
+      if (!file.name.toLowerCase().endsWith(".webp")) {
+        return jsonResponse({ message: "File harus berekstensi webp" }, 400);
+      }
+    }
+
+    await mkdir(uploadDir, { recursive: true });
 
     for (const file of files) {
       if (!file || typeof file === "string") continue;
@@ -29,14 +60,16 @@ export async function createGambarProduk(req) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
-      const fileName = Date.now() + "-" + file.name;
-      const filePath = path.join(process.cwd(), "public/uploads", fileName);
+      const fileName = `img-${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2)}.webp`;
+
+      const filePath = path.join(uploadDir, fileName);
 
       await writeFile(filePath, buffer);
 
-      urls.push(`/uploads/${fileName}`);
+      urls.push(`/uploads/${slug}/${fileName}`);
     }
-
     const gambarProduk = await createGambarProdukRepo(produkId, urls);
 
     return jsonResponse(
