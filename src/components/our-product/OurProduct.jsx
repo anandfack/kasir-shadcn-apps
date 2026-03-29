@@ -1,16 +1,27 @@
-import { PlayIcon, SquareChevronLeftIcon } from "lucide-react";
-import Image from "next/image";
+"use client";
 
-const products = [
-  { id: 1, title: "Product 1", image: "/image/collection-image.webp" },
-  { id: 2, title: "Product 2", image: "/image/collection-image.webp" },
-  { id: 3, title: "Product 3", image: "/image/collection-image.webp" },
-  { id: 4, title: "Product 4", image: "/image/collection-image.webp" },
-  { id: 5, title: "Product 5", image: "/image/collection-image.webp" },
-  { id: 6, title: "Product 6", image: "/image/collection-image.webp" },
-];
+import publicApiRequest from "@/lib/publicApiRequest";
+import { PlayIcon } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
 export default function OurProduct() {
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await publicApiRequest.get("/dashboard");
+
+        setProducts(res.data.data.ourProducts || []);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    fetchData();
+  }, []);
+
   return (
     <div className="mt-10">
       <h1 className="font-anton uppercase text-6xl">our product</h1>
@@ -20,15 +31,15 @@ export default function OurProduct() {
           <div key={product.id} className="border border-black">
             <div className="relative w-full aspect-[4/5] border-b border-black">
               <Image
-                src={product.image}
-                alt={product.title}
+                src={product.gambarProduks[0]?.url}
+                alt={product.nama_produk}
                 fill
                 className="object-cover"
               />
             </div>
 
             <div className="flex items-center justify-between px-8 py-5 border-t border-black font-anton uppercase">
-              <h2 className="text-xl">{product.title}</h2>
+              <h2 className="text-xl">{product.nama_produk}</h2>
               <button className="flex items-center gap-2 bg-black text-white px-3 py-2">
                 <span className="uppercase">details</span>
                 <PlayIcon size={14} className="fill-white stroke-white" />

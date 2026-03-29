@@ -1,0 +1,45 @@
+import { prisma } from "@/lib/prisma";
+
+export async function getDashboardRepo() {
+  const ourProducts = await prisma.produk.findMany({
+    where: {
+      deleted_at: null,
+    },
+    select: {
+      id: true,
+      kode_produk: true,
+      nama_produk: true,
+      slug: true,
+      gambarProduks: {
+        select: {
+          id: true,
+          url: true,
+        },
+      },
+    },
+    take: 6,
+  });
+
+  const signaturePieces = await prisma.produk.findMany({
+    where: {
+      deleted_at: null,
+    },
+    select: {
+      id: true,
+      kode_produk: true,
+      nama_produk: true,
+      slug: true,
+      gambarProduks: {
+        select: {
+          id: true,
+          url: true,
+        },
+      },
+    },
+  });
+
+  return {
+    ourProducts,
+    signaturePieces,
+  };
+}

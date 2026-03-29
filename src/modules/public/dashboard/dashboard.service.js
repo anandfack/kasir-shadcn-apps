@@ -1,16 +1,17 @@
 import jsonResponse from "@/lib/jsonResponse";
+import { getDashboardRepo } from "./dashboard.repository";
 import { verifyPublicApiKey } from "@/lib/verifyPublicApiKey";
 
-export async function GET(req) {
+export async function getDashboard(req) {
   try {
     verifyPublicApiKey(req);
 
-    const produk = await getProdukRepo(req);
+    const dashboard = await getDashboardRepo();
 
     return jsonResponse(
       {
-        data: produk,
-        message: "Check public data",
+        data: dashboard,
+        message: "OK",
       },
       200,
     );
@@ -18,9 +19,9 @@ export async function GET(req) {
     console.log(error);
     return jsonResponse(
       {
-        message: "Unauthorized",
+        message: "Internal server error",
       },
-      401,
+      500,
     );
   }
 }
