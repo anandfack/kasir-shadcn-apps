@@ -36,6 +36,7 @@ export async function getDashboardRepo() {
         },
       },
     },
+    take: 3,
   });
 
   return {

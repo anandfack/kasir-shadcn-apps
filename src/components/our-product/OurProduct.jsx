@@ -24,15 +24,15 @@ export default function OurProduct() {
 
   return (
     <div className="mt-10">
-      <h1 className="font-anton uppercase text-6xl">our product</h1>
+      <h1 className="font-anton uppercase text-6xl">new arrivals</h1>
 
       <div className="grid grid-cols-3 border border-black -mt-px -ml-px">
         {products.map((product) => (
           <div key={product.id} className="border border-black">
-            <div className="relative w-full aspect-[4/5] border-b border-black">
+            <div className="relative h-[600px] w-full border-b border-black">
               <Image
                 src={product.gambarProduks[0]?.url}
-                alt={product.nama_produk}
+                alt={product.slug}
                 fill
                 className="object-cover"
               />
