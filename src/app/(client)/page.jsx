@@ -8,14 +8,16 @@ import SignaturePieces from "@/components/signature-pieces/SignaturePieces";
 
 export default function Home() {
   return (
-    <section>
+    <>
       <Navbar />
-      <Hero />
-      <OurProduct />
-      <Campaign />
-      {/* <Tagline /> */}
-      <SignaturePieces />
-      <Footer />
-    </section>
+      <section className="mx-5">
+        <Hero />
+        <OurProduct />
+        <Campaign />
+        {/* <Tagline /> */}
+        <SignaturePieces />
+        <Footer />
+      </section>
+    </>
   );
 }

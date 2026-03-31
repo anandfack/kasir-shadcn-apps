@@ -8,19 +8,19 @@ export default function Footer() {
       <div className="pt-10 pb-3 mt-10 bg-black text-white -mx-5 px-5 ">
         <div className="md:flex md:justify-center md:gap-2 md:px-[300px]">
           <div className="grid grid-cols-1 gap-3 md:w-full md:max-w-[400px]">
-            <h1 className="text-md capitalize font-semibold border-b border-white py-1">
+            <h1 className="text-sm md:text-md capitalize font-semibold border-b border-white py-1">
               Lorem Ipsum
             </h1>
-            <h1 className="text-md capitalize font-semibold border-b border-white py-1">
+            <h1 className="text-sm md:text-md capitalize font-semibold border-b border-white py-1">
               Lorem Ipsum
             </h1>
-            <h1 className="text-md capitalize font-semibold border-b border-white py-1">
+            <h1 className="text-sm md:text-md capitalize font-semibold border-b border-white py-1">
               Lorem Ipsum
             </h1>
-            <h1 className="text-md capitalize font-semibold border-b border-white py-1">
+            <h1 className="text-sm md:text-md capitalize font-semibold border-b border-white py-1">
               Lorem Ipsum
             </h1>
-            <h1 className="text-md capitalize font-semibold border-b border-white py-1">
+            <h1 className="text-sm md:text-md capitalize font-semibold border-b border-white py-1">
               Lorem Ipsum
             </h1>
           </div>

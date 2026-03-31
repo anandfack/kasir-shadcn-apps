@@ -1,3 +1,3 @@
 export default function ClientLayout({ children }) {
-  return <div className="font-jakarta mx-5">{children}</div>;
+  return <div className="font-jakarta">{children}</div>;
 }

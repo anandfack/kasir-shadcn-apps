@@ -22,8 +22,8 @@ const Hero = () => {
       </section>
 
       {/* MOBILE */}
-      <section className="md:hidden w-full flex justify-center px-6">
-        <div className="relative aspect-square w-full max-w-[420px]">
+      <section className="md:hidden w-full flex justify-center">
+        <div className="relative aspect-square w-full h-[50vh]">
           <Image
             src="/image/hero-image-2.webp"
             alt="Hero Mobile"
@@ -55,8 +55,8 @@ const Hero = () => {
           />
         </div>
       </section>
-      <section className="bg-black text-white mt-2 -mx-5 overflow-hidden py-5">
-        <div className="flex whitespace-nowrap font-anton text-6xl animate-marquee">
+      <section className="bg-black text-white mt-2 -mx-5 overflow-hidden py-3 md:py-5">
+        <div className="flex whitespace-nowrap font-anton text-3xl md:text-6xl animate-marquee">
           {[...Array(2)].map((_, i) => (
             <div key={i} className="flex items-center gap-8 px-2">
               {Array.from({ length: 6 }).map((_, j) => (
