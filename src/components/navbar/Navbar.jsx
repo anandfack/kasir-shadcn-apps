@@ -26,7 +26,7 @@ const Navbar = () => {
       <nav
         className={`w-full sticky top-0 z-50 transition-all duration-700 ${
           show ? "translate-y-0 opacity-100" : "-translate-y-full opacity-0"
-        } bg-white text-black md:px-5 py-2 md:py-4 shadow-lg`}
+        } bg-white text-black md:px-5 py-2 md:py-4 border-black border-b-4`}
       >
         <div className="flex justify-between items-center md:hidden px-4 py-3">
           <MenuIcon size={20} />
