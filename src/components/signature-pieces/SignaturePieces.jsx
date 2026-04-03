@@ -34,7 +34,7 @@ export default function SignaturePieces() {
                 src={signaturePiece.gambarProduks[0]?.url}
                 alt={signaturePiece.nama_produk}
                 fill
-                className="object-cover"
+                className="object-cover grayscale"
               />
             </div>
 

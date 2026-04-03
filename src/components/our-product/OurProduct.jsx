@@ -28,7 +28,7 @@ export default function OurProduct() {
 
   return (
     <>
-      <div className="mt-10">
+      {/* <div className="mt-10">
         <h1 className="font-anton uppercase text-3xl md:text-6xl">
           new arrivals
         </h1>
@@ -71,7 +71,7 @@ export default function OurProduct() {
           </div>
           <PlayIcon className="fill-black w-4 h-4 md:w-6 md:h-6" />
         </div>
-      </div>
+      </div> */}
       <div className="flex items-baseline justify-between mb-8 border-b-4 border-black pb-4 mt-20">
         <div>
           <h2 className="text-5xl md:text-7xl tracking-tighter font-anton">

@@ -12,10 +12,10 @@ export default function Home() {
       <Navbar />
       <section className="mx-5">
         <Hero />
+        <SignaturePieces />
         <OurProduct />
         <Campaign />
         {/* <Tagline /> */}
-        <SignaturePieces />
         <Footer />
       </section>
     </>

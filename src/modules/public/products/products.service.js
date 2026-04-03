@@ -1,16 +1,19 @@
 import jsonResponse from "@/lib/jsonResponse";
 import { verifyPublicApiKey } from "@/lib/verifyPublicApiKey";
+import { getDetailProductsRepo } from "./products.repository";
 
-export async function GET(req) {
+export async function getDetailProducts(req, { params }) {
   try {
     verifyPublicApiKey(req);
 
-    const produk = await getProdukRepo(req);
+    const { slug } = params;
+
+    const products = await getDetailProductsRepo(slug);
 
     return jsonResponse(
       {
-        data: produk,
-        message: "Check public data",
+        data: products,
+        message: "OK",
       },
       200,
     );
@@ -18,9 +21,9 @@ export async function GET(req) {
     console.log(error);
     return jsonResponse(
       {
-        message: "Unauthorized",
+        message: "Internal server error",
       },
-      401,
+      500,
     );
   }
 }
