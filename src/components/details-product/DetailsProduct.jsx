@@ -6,6 +6,8 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import publicApiRequest from "@/lib/publicApiRequest";
+import { useDispatch, useSelector } from "react-redux";
+import { addToCart } from "@/app/store/features/cart/cartSlice";
 // import { useState } from "react";
 // import ImageWithFallback from "@/components/ImageWithFallback";
 
@@ -21,6 +23,9 @@ export default function DetailsProduct() {
   const [products, setProducts] = useState(null); // FIX: jadi object
 
   const [mainImage, setMainImage] = useState(""); // FIX
+
+  const dispatch = useDispatch();
+  const cart = useSelector((state) => state.cart);
 
   useEffect(() => {
     async function fetchData() {
@@ -41,6 +46,11 @@ export default function DetailsProduct() {
     }
   }, [products]);
 
+  // ✅ TAMBAHKAN DI SINI (untuk debug Redux)
+  useEffect(() => {
+    console.log("Cart updated:", cart);
+  }, [cart]);
+
   const sizes = [
     ...new Set(
       (products?.produkVariants || []).map((v) => v.ukuran).filter(Boolean),
@@ -56,10 +66,17 @@ export default function DetailsProduct() {
       alert("Please select a size");
       return;
     }
-    // Simulate add to cart
-    alert(
-      `Added ${quantity} x ${products.nama_produk} (${selectedSize}) to cart`,
-    );
+
+    // cara gunakan redux
+    const productData = {
+      id: products.id,
+      name: products.nama_produk,
+      price: products?.Harga?.[0]?.harga_jual,
+      size: selectedSize,
+      quantity: quantity, 
+    };
+
+    dispatch(addToCart(productData));
   };
 
   return (
