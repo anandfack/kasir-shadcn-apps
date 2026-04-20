@@ -3,6 +3,7 @@
 import publicApiRequest from "@/lib/publicApiRequest";
 import { ArrowUpRight, PlayIcon, SquareChevronLeftIcon } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 
 export default function SignaturePieces() {
@@ -42,10 +43,13 @@ export default function SignaturePieces() {
               <h2 className="text-xs md:text-xl">
                 {signaturePiece.nama_produk}
               </h2>
-              <button className="flex items-center gap-2 bg-black text-white px-2 py-1 md:px-3 md:py-2">
+              <Link
+                className="flex items-center gap-2 bg-black text-white px-2 py-1 md:px-3 md:py-2"
+                href={`/products/${signaturePiece.slug}`}
+              >
                 <span className="uppercase text-xs">details</span>
                 <PlayIcon className="w-3 h-3 md:w-6 md:h-6 fill-white stroke-white" />
-              </button>
+              </Link>
             </div>
           </div>
         ))}

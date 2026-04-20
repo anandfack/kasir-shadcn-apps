@@ -1,10 +1,11 @@
 "use client";
 
-import { MenuIcon, ShoppingCartIcon } from "lucide-react";
+import { MenuIcon, ShoppingCartIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { formatRupiah } from "@/lib/formatRupiah";
+import Link from "next/link";
 
 const Navbar = () => {
   const [show, setShow] = useState(true);
@@ -36,8 +37,17 @@ const Navbar = () => {
       >
         <div className="flex justify-between items-center md:hidden px-4 py-3">
           <MenuIcon size={20} />
-          <span className="font-anton uppercase text-3xl">ATELIER 01</span>
-          <ShoppingCartIcon size={20} />
+          <Link className="font-anton uppercase text-3xl" href="/">
+            ATELIER 01
+          </Link>
+          <div>
+            <div
+              onClick={() => setOpenCart(!openCart)}
+              className="cursor-pointer"
+            >
+              <ShoppingCartIcon size={20} />
+            </div>
+          </div>
         </div>
 
         <div className="mx-auto hidden items-center md:flex">
@@ -50,7 +60,10 @@ const Navbar = () => {
 
           {/* CENTER (LOGO) */}
           <div className="flex-1 text-center">
-            <span className="font-anton uppercase text-4xl">ATELIER 01</span>
+            <Link className="font-anton uppercase text-4xl" href="/">
+              ATELIER 01
+            </Link>
+            {/* <span className="font-anton uppercase text-4xl">ATELIER 01</span> */}
           </div>
 
           {/* RIGHT */}
@@ -83,22 +96,36 @@ const Navbar = () => {
           ) : (
             <div className="space-y-4">
               {cart.items.map((item, index) => (
-                <div key={index} className="border-b pb-2 flex gap-3">
-                  {/* ✅ IMAGE */}
-                  <Image
-                    src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${item.image}`}
-                    alt={item.name}
-                    width={64}
-                    height={64}
-                    className="grayscale"
-                  />
-                  <div>
-                    <p className="font-bold">{item.name}</p>
-                    <p>Size: {item.size}</p>
-                    <p>Qty: {item.quantity}</p>
+                <div
+                  key={`${item.id}-${item.size}`}
+                  className="flex items-center justify-between gap-4 border-b pb-4"
+                >
+                  {/* LEFT: Image + Info */}
+                  <div className="flex items-center gap-4">
+                    <Image
+                      src={`${process.env.NEXT_PUBLIC_API_BASE_URL}${item.image}`}
+                      alt={item.name}
+                      width={64}
+                      height={64}
+                      className="w-24 h-32 object-cover grayscale border"
+                    />
 
-                    <p>{formatRupiah(item.price)}</p>
+                    <div className="space-y-1">
+                      <p className="font-semibold text-sm">{item.name}</p>
+                      <p className="text-xs text-gray-500">Size: {item.size}</p>
+                      <p className="text-xs text-gray-500">
+                        Qty: {item.quantity}
+                      </p>
+                      <p className="text-sm font-medium">
+                        {formatRupiah(item.price)}
+                      </p>
+                    </div>
                   </div>
+
+                  {/* RIGHT: Delete Button */}
+                  <button className="p-2 border border-black hover:bg-black hover:text-white transition-all duration-200">
+                    <TrashIcon className="w-4 h-4" />
+                  </button>
                 </div>
               ))}
               <div className="mt-5 border-t pt-4">
