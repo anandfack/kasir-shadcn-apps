@@ -73,7 +73,8 @@ export default function DetailsProduct() {
       name: products.nama_produk,
       price: products?.Harga?.[0]?.harga_jual,
       size: selectedSize,
-      quantity: quantity, 
+      quantity: quantity,
+      image: products?.gambarProduks?.[0]?.url,
     };
 
     dispatch(addToCart(productData));
