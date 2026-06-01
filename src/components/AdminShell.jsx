@@ -1,6 +1,5 @@
 "use client";
 
-import { ThemeProvider } from "next-themes";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import AdminNavbar from "@/components/admin-navbar/AdminNavbar";
@@ -8,7 +7,6 @@ import { Toaster } from "@/components/ui/toaster";
 
 export default function AdminShell({ children, user }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
       <SidebarProvider>
         <div className="flex min-h-screen w-screen bg-background overflow-hidden">
           <AppSidebar />
@@ -24,6 +22,5 @@ export default function AdminShell({ children, user }) {
 
         <Toaster />
       </SidebarProvider>
-    </ThemeProvider>
   );
 }

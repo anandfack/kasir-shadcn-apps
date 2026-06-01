@@ -69,7 +69,8 @@ import { PrismaClient } from "@prisma/client";
 import { verifyJwt } from "@/lib/verifyJwt";
 
 import AdminShell from "@/components/AdminShell";
-import ReactQueryProvider from "../providers/ReactQueryProvider";
+import AdminProvider from "./providers/AdminProvider";
+import AdminReactQueryProvider from "./providers/AdminReactQueryProvider";
 
 const prisma = new PrismaClient();
 
@@ -94,8 +95,10 @@ export default async function AdminLayout({ children }) {
   }
 
   return (
-    <ReactQueryProvider>
-      <AdminShell user={user}>{children}</AdminShell>
-    </ReactQueryProvider>
+    <AdminProvider>
+      <AdminReactQueryProvider>
+        <AdminShell user={user}>{children}</AdminShell>
+      </AdminReactQueryProvider>
+    </AdminProvider>
   );
 }

@@ -7,7 +7,10 @@ import { store } from "../store";
 
 export default function Providers({ children }) {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+    >
       <Provider store={store}>
         <ReactQueryProvider>{children}</ReactQueryProvider>
       </Provider>
