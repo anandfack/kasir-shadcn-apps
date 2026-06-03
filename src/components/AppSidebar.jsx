@@ -96,7 +96,6 @@ export function AppSidebar() {
     },
     { icon: <MailCheckIcon />, name: "Verifikasi E-mail", href: "#" },
     { icon: <SettingsIcon />, name: "Pengaturan Sistem", href: "#" },
-    { icon: <LogOutIcon />, name: "Logout", action: handleLogout },
   ];
 
   return (
