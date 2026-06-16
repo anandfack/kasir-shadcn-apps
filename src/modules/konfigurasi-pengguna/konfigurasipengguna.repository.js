@@ -8,7 +8,6 @@ export async function getKonfigurasiPenggunaRepo() {
       id: true,
       username: true,
       last_login: true,
-      role: true,
       email: true,
       verified: true,
       is_aktif: true,
@@ -21,6 +20,17 @@ export async function getKonfigurasiPenggunaRepo() {
           nama_pegawai: true,
         },
       },
+      userRoles: {
+        select: {
+          role: {
+            select: {
+              id: true,
+              name: true,
+              label: true,
+            },
+          },
+        },
+      },
     },
   });
 }
@@ -28,30 +38,58 @@ export async function getKonfigurasiPenggunaRepo() {
 export async function createUserRepo(data) {
   const hashedPassword = await bcrypt.hash(data.password, 10);
 
-  return prisma.loginPemakai.create({
+  const user = await prisma.loginPemakai.create({
     data: {
       pegawai_id: data.pegawai_id,
       username: data.username,
       email: data.email,
       password: hashedPassword,
-      role: data.role,
       verified: data.verified ? data.verified : true,
       is_aktif: data.is_aktif ? data.is_aktif : true,
     },
   });
+
+  if (data.role_ids && Array.isArray(data.role_ids) && data.role_ids.length > 0) {
+    await prisma.userRole.createMany({
+      data: data.role_ids.map((roleId) => ({
+        loginpemakai_id: user.id,
+        role_id: roleId,
+      })),
+    });
+  }
+
+  return user;
 }
 
 export async function updateUserRepo(id, data) {
-  return prisma.loginPemakai.update({
+  const updateData = {
+    pegawai_id: Number(data.pegawai_id),
+    username: data.username,
+    email: data.email,
+    is_aktif: data.is_aktif,
+  };
+
+  const result = await prisma.loginPemakai.update({
     where: { id: parseInt(id) },
-    data: {
-      pegawai_id: Number(data.pegawai_id),
-      username: data.username,
-      email: data.email,
-      role: data.role,
-      is_aktif: data.is_aktif,
-    },
+    data: updateData,
   });
+
+  if (data.role_ids && Array.isArray(data.role_ids)) {
+    await prisma.userRole.deleteMany({
+      where: { loginpemakai_id: parseInt(id) },
+    });
+
+    if (data.role_ids.length > 0) {
+      await prisma.userRole.createMany({
+        data: data.role_ids.map((roleId) => ({
+          loginpemakai_id: parseInt(id),
+          role_id: roleId,
+        })),
+      });
+    }
+  }
+
+  return result;
 }
 
 export async function deleteUserRepo(id) {

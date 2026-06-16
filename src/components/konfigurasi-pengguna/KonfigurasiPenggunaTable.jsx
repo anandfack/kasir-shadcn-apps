@@ -193,7 +193,9 @@ const KonfigurasiPenggunaTable = () => {
       },
 
       {
-        accessorKey: "role",
+        id: "roles",
+        accessorFn: (row) =>
+          row.userRoles?.map((ur) => ur.role?.label || ur.role?.name).join(", "),
         header: ({ column }) => (
           <Button
             variant="link"
@@ -205,13 +207,29 @@ const KonfigurasiPenggunaTable = () => {
           </Button>
         ),
         cell: ({ row }) => {
-          const role = row.getValue("role");
-          const badge = roleBadgeMap[role];
+          const userRoles = row.original.userRoles || [];
 
           return (
-            <Badge variant={badge?.variant || "outline"}>
-              {badge?.label || role}
-            </Badge>
+            <div className="flex flex-wrap gap-1">
+              {userRoles.map((ur) => {
+                const roleName = ur.role?.name;
+                const badge = roleBadgeMap[roleName];
+
+                return (
+                  <Badge
+                    key={ur.role?.id}
+                    variant={badge?.variant || "outline"}
+                  >
+                    {badge?.label || ur.role?.label || roleName}
+                  </Badge>
+                );
+              })}
+              {userRoles.length === 0 && (
+                <span className="text-muted-foreground text-sm">
+                  Tidak ada role
+                </span>
+              )}
+            </div>
           );
         },
       },

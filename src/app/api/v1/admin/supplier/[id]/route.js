@@ -1,12 +1,8 @@
+import { withPermission } from "@/lib/withPermission";
 import {
   deleteSupplier,
   updateSupplier,
 } from "@/modules/supplier/supplier.service";
 
-export async function PUT(req, { params }) {
-  return updateSupplier(req, { params });
-}
-
-export async function DELETE(req, { params }) {
-  return deleteSupplier(req, { params });
-}
+export const PUT = withPermission(updateSupplier, "supplier.edit");
+export const DELETE = withPermission(deleteSupplier, "supplier.delete");

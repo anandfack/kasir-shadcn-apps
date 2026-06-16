@@ -1,12 +1,8 @@
+import { withPermission } from "@/lib/withPermission";
 import {
   deleteUser,
   updateUser,
 } from "@/modules/konfigurasi-pengguna/konfigurasipengguna.service";
 
-export async function PUT(req, { params }) {
-  return updateUser(req, { params });
-}
-
-export async function DELETE(req, { params }) {
-  return deleteUser(req, { params });
-}
+export const PUT = withPermission(updateUser, "konfigurasi-pengguna.edit");
+export const DELETE = withPermission(deleteUser, "konfigurasi-pengguna.edit");

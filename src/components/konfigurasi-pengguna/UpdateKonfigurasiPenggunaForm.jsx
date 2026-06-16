@@ -1,14 +1,14 @@
 "use client";
-import React, { useState, useEffect, useMemo, Fragment } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Listbox, Transition } from "@headlessui/react";
 import { apiRequest } from "@/lib/apiRequest";
-import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/20/solid";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "../ui/switch";
-import { ROLE_OPTIONS } from "@/lib/roleBadge";
-import { Loader2Icon, SaveIcon } from "lucide-react";
+import { Loader2Icon, SaveIcon, Loader2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { Badge } from "@/components/ui/badge";
 
 const UpdateKonfigurasiPenggunaForm = ({
   pegawaiData,
@@ -19,8 +19,13 @@ const UpdateKonfigurasiPenggunaForm = ({
 }) => {
   const [formData, setFormData] = useState(initialData ?? {});
   const [isChanged, setIsChanged] = useState(false);
-  const [searchRole, setSearchRole] = useState("");
-  const [searchPegawai, setSearchPegawai] = useState("");
+
+  const { data: roleList = [], isLoading: roleLoading } = useQuery({
+    queryKey: ["roles"],
+    queryFn: () =>
+      apiRequest("GET", "/api/v1/admin/roles").then((res) => res.data || []),
+    staleTime: 1000 * 60 * 5,
+  });
 
   const pegawaiList = useMemo(() => {
     if (Array.isArray(pegawaiData)) return pegawaiData;
@@ -28,40 +33,34 @@ const UpdateKonfigurasiPenggunaForm = ({
     return [];
   }, [pegawaiData]);
 
-  const filteredPegawai = useMemo(() => {
-    if (!pegawaiList) return [];
-    if (!searchPegawai) return pegawaiList;
-
-    return pegawaiList.filter((item) =>
-      item.nama_kategori.toLowerCase().includes(searchPegawai.toLowerCase()),
-    );
-  }, [pegawaiList, searchPegawai]);
-
   useEffect(() => {
     if (initialData) {
+      const roleIds =
+        initialData.userRoles?.map((ur) => ur.role?.id).filter(Boolean) || [];
       setFormData({
         ...initialData,
-        kategori:
-          pegawaiList.find((k) => k.id === initialData.pegawai?.id) || null,
+        role_ids: roleIds,
       });
     }
-  }, [initialData, pegawaiList]);
+  }, [initialData]);
 
   useEffect(() => {
     if (!initialData) return;
 
+    const initialRoleIds =
+      initialData.userRoles?.map((ur) => ur.role?.id).filter(Boolean).sort() ||
+      [];
+    const currentRoleIds = (formData.role_ids || []).sort();
+
     const isSame =
       formData.username === initialData.username &&
       formData.email === initialData.email &&
-      formData.role === initialData.role &&
       formData.is_aktif === initialData.is_aktif &&
-      formData.pegawai?.id === initialData.pegawai?.id;
+      formData.pegawai?.id === initialData.pegawai?.id &&
+      JSON.stringify(initialRoleIds) === JSON.stringify(currentRoleIds);
+
     setIsChanged(!isSame);
   }, [formData, initialData]);
-
-  const filteredRoles = ROLE_OPTIONS.filter((role) =>
-    role.label.toLowerCase().includes(searchRole.toLowerCase()),
-  );
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -76,6 +75,19 @@ const UpdateKonfigurasiPenggunaForm = ({
     setFormData((prev) => ({ ...prev, is_aktif: value }));
   };
 
+  const toggleRole = (roleId) => {
+    setFormData((prev) => {
+      const current = prev.role_ids || [];
+      const exists = current.includes(roleId);
+      return {
+        ...prev,
+        role_ids: exists
+          ? current.filter((id) => id !== roleId)
+          : [...current, roleId],
+      };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -84,7 +96,7 @@ const UpdateKonfigurasiPenggunaForm = ({
         pegawai_id: formData.pegawai?.id,
         username: formData.username,
         email: formData.email,
-        role: formData.role,
+        role_ids: formData.role_ids || [],
         is_aktif: formData.is_aktif,
       };
       const updatedData = await apiRequest(
@@ -99,7 +111,6 @@ const UpdateKonfigurasiPenggunaForm = ({
           pegawaiList.find((k) => k.id === updatedData.pegawai_id) || null,
         username: updatedData.username,
         email: updatedData.email,
-        role: updatedData.role,
       }));
 
       if (onSubmit) onSubmit(updatedData);
@@ -113,87 +124,14 @@ const UpdateKonfigurasiPenggunaForm = ({
     <div className="grid gap-4 py-4">
       {/* Pegawai */}
       <div className="grid grid-cols-4 items-center gap-4">
-        <Label htmlFor="pegawai" className="text-center">
+        <Label className="text-center">
           Pegawai <i className="text-red-500">*</i>
         </Label>
-        <div className="col-span-3">
-          <Listbox
-            value={formData.pegawai}
-            disabled
-            onChange={(pegawai) => {
-              if (pegawai.id !== formData.pegawai) {
-                setFormData((prev) => ({ ...prev, pegawai }));
-              }
-            }}
-          >
-            <div className="relative mt-1">
-              <Listbox.Button className="relative w-full h-10 cursor-default rounded-md bg-background py-2 pl-3 pr-10 text-left border border-input shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-input sm:text-sm">
-                <span className="block truncate">
-                  {formData.pegawai?.nama_pegawai || "Pilih Pegawai"}
-                </span>
-
-                <span className="absolute inset-y-0 right-0 flex items-center pr-2">
-                  <ChevronUpDownIcon className="h-5 w-5" />
-                </span>
-              </Listbox.Button>
-              <Transition as={Fragment} leave="transition-opacity duration-100">
-                <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-popover py-1 text-base shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none sm:text-sm z-10">
-                  {/* 🔍 SEARCH */}
-                  <div className="sticky top-0 z-20 bg-popover p-2 border-b">
-                    <Input
-                      placeholder="Cari kategori..."
-                      value={searchPegawai}
-                      onChange={(e) => setSaerchPegawai(e.target.value)}
-                      onKeyDownCapture={(e) => {
-                        if (e.key === " ") e.stopPropagation();
-                      }}
-                      className="h-8 text-sm"
-                    />
-                  </div>
-                  {filteredPegawai.length > 0 ? (
-                    filteredPegawai.map((pegawai) => (
-                      <Listbox.Option
-                        key={pegawai.id}
-                        value={pegawai}
-                        className={({ active }) =>
-                          `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                            active
-                              ? "bg-accent text-accent-foreground"
-                              : "text-popover-foreground"
-                          }`
-                        }
-                      >
-                        {({ selected }) => (
-                          <>
-                            <span
-                              className={`block truncate ${
-                                selected ? "font-medium" : "font-normal"
-                              }`}
-                            >
-                              {pegawai.nama_pegawai}
-                            </span>
-                            {selected ? (
-                              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                                <CheckIcon
-                                  className="h-5 w-5"
-                                  aria-hidden="true"
-                                />
-                              </span>
-                            ) : null}
-                          </>
-                        )}
-                      </Listbox.Option>
-                    ))
-                  ) : (
-                    <div className="py-2 px-4 text-gray-500">
-                      Tidak ada data
-                    </div>
-                  )}
-                </Listbox.Options>
-              </Transition>
-            </div>
-          </Listbox>
-        </div>
+        <Input
+          value={formData.pegawai?.nama_pegawai || ""}
+          disabled
+          className="col-span-3"
+        />
       </div>
 
       {/* Username */}
@@ -224,90 +162,47 @@ const UpdateKonfigurasiPenggunaForm = ({
         />
       </div>
 
-      {/* Role */}
-      <div className="grid grid-cols-4 items-center gap-4">
-        <Label className="text-center">
+      {/* Role (Multi-select) */}
+      <div className="grid grid-cols-4 items-start gap-4">
+        <Label className="text-center pt-2">
           Role <i className="text-red-500">*</i>
         </Label>
 
-        <div className="col-span-3">
-          <Listbox
-            value={ROLE_OPTIONS.find((r) => r.value === formData.role)}
-            onChange={(role) =>
-              setFormData((prev) => ({ ...prev, role: role.value }))
-            }
-          >
-            <div className="relative mt-1">
-              <Listbox.Button className="relative w-full h-10 rounded-md bg-background border border-input py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-ring sm:text-sm">
-                <span className="block truncate">
-                  {ROLE_OPTIONS.find((r) => r.value === formData.role)?.label ||
-                    "Pilih Role"}
-                </span>
-                <span className="absolute inset-y-0 right-0 flex items-center pr-2">
-                  <ChevronUpDownIcon className="h-5 w-5" />
-                </span>
-              </Listbox.Button>
-
-              <Transition as={Fragment} leave="transition-opacity duration-100">
-                <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-hidden rounded-md bg-popover shadow-lg ring-1 ring-black/5 dark:ring-white/10 sm:text-sm">
-                  {/* 🔍 Search Input */}
-                  <div className="p-2 border-b">
-                    <Input
-                      placeholder="Cari role..."
-                      value={searchRole}
-                      onChange={(e) => setSearchRole(e.target.value)}
-                      onKeyDownCapture={(e) => {
-                        if (e.key === " ") {
-                          e.stopPropagation();
-                        }
-                      }}
-                      className="h-8 text-sm"
-                    />
-                  </div>
-
-                  {/* 📋 Role list */}
-                  <div className="max-h-48 overflow-auto">
-                    {filteredRoles.length > 0 ? (
-                      filteredRoles.map((role) => (
-                        <Listbox.Option
-                          key={role.value}
-                          value={role}
-                          className={({ active }) =>
-                            `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                              active
-                                ? "bg-accent text-accent-foreground"
-                                : "text-popover-foreground"
-                            }`
-                          }
-                        >
-                          {({ selected }) => (
-                            <>
-                              <span
-                                className={`block truncate ${
-                                  selected ? "font-medium" : "font-normal"
-                                }`}
-                              >
-                                {role.label}
-                              </span>
-                              {selected && (
-                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                                  <CheckIcon className="h-5 w-5" />
-                                </span>
-                              )}
-                            </>
-                          )}
-                        </Listbox.Option>
-                      ))
-                    ) : (
-                      <div className="px-4 py-2 text-muted-foreground text-sm">
-                        Role tidak ditemukan
-                      </div>
-                    )}
-                  </div>
-                </Listbox.Options>
-              </Transition>
+        <div className="col-span-3 space-y-2">
+          {roleLoading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Memuat role...
             </div>
-          </Listbox>
+          ) : (
+            <div className="border rounded-md p-3 space-y-2 max-h-48 overflow-y-auto">
+              {roleList.length === 0 && (
+                <p className="text-sm text-muted-foreground">
+                  Tidak ada role tersedia
+                </p>
+              )}
+              {roleList.map((role) => {
+                const isSelected = (formData.role_ids || []).includes(role.id);
+                return (
+                  <label
+                    key={role.id}
+                    className="flex items-center gap-3 cursor-pointer hover:bg-accent/50 rounded px-2 py-1.5"
+                  >
+                    <Checkbox
+                      checked={isSelected}
+                      onCheckedChange={() => toggleRole(role.id)}
+                    />
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{role.label}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {role.name}
+                      </Badge>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 

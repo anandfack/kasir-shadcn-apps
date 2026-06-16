@@ -1,5 +1,4 @@
+import { withPermission } from "@/lib/withPermission";
 import { getDetailPenerimaanPo } from "@/modules/penerimaan-po/penerimaanpo.service";
 
-export async function GET(req, { params }) {
-  return getDetailPenerimaanPo(req, { params });
-}
+export const GET = withPermission(getDetailPenerimaanPo, "penerimaan-po.view");

@@ -1,5 +1,4 @@
+import { withPermission } from "@/lib/withPermission";
 import { pembayaranInvoice } from "@/modules/invoice/invoice.service";
 
-export async function POST(req) {
-  return pembayaranInvoice(req);
-}
+export const POST = withPermission(pembayaranInvoice, "invoice.bayar");

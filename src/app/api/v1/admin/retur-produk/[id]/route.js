@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import jsonResponse from "@/lib/jsonResponse";
 import { verifyAuth } from "@/lib/verifyAuth";
+import { requirePermission, ForbiddenError } from "@/lib/permission";
 
 const prisma = new PrismaClient();
 
@@ -10,6 +11,15 @@ export async function GET(req, { params }) {
 
     if (auth.error) {
       return jsonResponse({ message: auth.error }, 401);
+    }
+
+    try {
+      await requirePermission(auth.user.id, "retur-penerimaan.view");
+    } catch (error) {
+      if (error instanceof ForbiddenError) {
+        return jsonResponse({ message: error.message }, 403);
+      }
+      throw error;
     }
 
     const id = parseInt(params.id);

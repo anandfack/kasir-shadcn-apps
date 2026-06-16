@@ -13,13 +13,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getApiErrorMessage } from "@/lib/getApiErrorMessage";
 
 const LoginPage = () => {
-  const router = useRouter();
   const { toast } = useToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -36,7 +34,7 @@ const LoginPage = () => {
         password,
       });
 
-      router.push("/admin/dashboard");
+      window.location.href = "/admin/dashboard";
     } catch (error) {
       toast({
         title: "Gagal login!",
@@ -67,7 +65,7 @@ const LoginPage = () => {
         <form onSubmit={handleSubmit}>
           <div className="flex flex-col gap-6">
             <div className="grid gap-2">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">Username / Email</Label>
               <Input
                 id="username"
                 type="text"

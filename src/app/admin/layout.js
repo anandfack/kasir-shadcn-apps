@@ -83,14 +83,27 @@ export default async function AdminLayout({ children }) {
   let user = null;
 
   if (jwtUser?.pegawai_id) {
-    const pegawai = await prisma.pegawai.findUnique({
-      where: { id: jwtUser.pegawai_id },
-      select: { nama_pegawai: true },
-    });
+    const [pegawai, userRoles] = await Promise.all([
+      prisma.pegawai.findUnique({
+        where: { id: jwtUser.pegawai_id },
+        select: { nama_pegawai: true },
+      }),
+      prisma.userRole.findMany({
+        where: { loginpemakai_id: jwtUser.id },
+        include: {
+          role: {
+            select: { name: true, label: true },
+          },
+        },
+      }),
+    ]);
 
     user = {
       nama: pegawai?.nama_pegawai,
-      role: jwtUser?.role,
+      roles: userRoles.map((ur) => ({
+        name: ur.role.name,
+        label: ur.role.label,
+      })),
     };
   }
 

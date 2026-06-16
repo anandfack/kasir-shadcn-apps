@@ -1,12 +1,8 @@
+import { withPermission } from "@/lib/withPermission";
 import {
   deleteSatuanProduk,
   updateSatuanProduk,
 } from "@/modules/satuan-produk/satuanproduk.service";
 
-export async function PUT(req, { params }) {
-  return updateSatuanProduk(req, { params });
-}
-
-export async function DELETE(req, { params }) {
-  return deleteSatuanProduk(req, { params });
-}
+export const PUT = withPermission(updateSatuanProduk, "satuan-produk.edit");
+export const DELETE = withPermission(deleteSatuanProduk, "satuan-produk.delete");

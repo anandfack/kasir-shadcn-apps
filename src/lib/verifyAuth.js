@@ -1,4 +1,3 @@
-// src/lib/auth.js
 import jwt from "jsonwebtoken";
 
 export function verifyAuth(req) {

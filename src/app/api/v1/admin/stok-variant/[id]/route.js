@@ -1,5 +1,4 @@
+import { withPermission } from "@/lib/withPermission";
 import { updateStokVariant } from "@/modules/stok-variant/stokvariant.service";
 
-export async function PUT(req, { params }) {
-  return updateStokVariant(req, { params });
-}
+export const PUT = withPermission(updateStokVariant, "stok-variant.edit");

@@ -1,5 +1,4 @@
+import { withPermission } from "@/lib/withPermission";
 import { getStokVariant } from "@/modules/stok-variant/stokvariant.service";
 
-export async function GET(req) {
-  return getStokVariant(req);
-}
+export const GET = withPermission(getStokVariant, "stok-variant.view");

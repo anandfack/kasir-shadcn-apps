@@ -1,12 +1,8 @@
+import { withPermission } from "@/lib/withPermission";
 import {
   createPurchaseOrder,
   getPurchaseOrder,
 } from "@/modules/purchase-order/purchaseorder.service";
 
-export async function GET(req) {
-  return getPurchaseOrder(req);
-}
-
-export async function POST(req) {
-  return createPurchaseOrder(req);
-}
+export const GET = withPermission(getPurchaseOrder, "purchase-order.view");
+export const POST = withPermission(createPurchaseOrder, "purchase-order.create");

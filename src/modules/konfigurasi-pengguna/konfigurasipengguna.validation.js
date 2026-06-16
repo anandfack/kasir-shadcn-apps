@@ -33,8 +33,8 @@ export async function validateCreateUser(data) {
     errors.password = "Password tidak boleh mengandung spasi";
   }
 
-  if (!data.role || data.role.trim() === "") {
-    errors.role = "Role wajib diisi";
+  if (!data.role_ids || data.role_ids.length === 0) {
+    errors.role_ids = "Role wajib diisi";
   }
   if (!data.email || data.email.trim() === "") {
     errors.email = "Email wajib diisi";
@@ -55,8 +55,8 @@ export async function validateUpdateUser(data) {
     errors.username = "Username wajib diisi";
   }
 
-  if (!data.role || data.role.trim() === "") {
-    errors.role = "Role wajib diisi";
+  if (!data.role_ids || data.role_ids.length === 0) {
+    errors.role_ids = "Role wajib diisi";
   }
   if (!data.email || data.email.trim() === "") {
     errors.email = "Email wajib diisi";

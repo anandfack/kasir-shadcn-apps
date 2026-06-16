@@ -1,12 +1,8 @@
+import { withPermission } from "@/lib/withPermission";
 import {
   createSatuanProduk,
   getSatuanProduk,
 } from "@/modules/satuan-produk/satuanproduk.service";
 
-export async function GET(req) {
-  return getSatuanProduk(req);
-}
-
-export async function POST(req) {
-  return createSatuanProduk(req);
-}
+export const GET = withPermission(getSatuanProduk, "satuan-produk.view");
+export const POST = withPermission(createSatuanProduk, "satuan-produk.create");

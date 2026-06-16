@@ -1,9 +1,5 @@
+import { withPermission } from "@/lib/withPermission";
 import { createInvoice, getInvoice } from "@/modules/invoice/invoice.service";
 
-export async function GET(req) {
-  return getInvoice(req);
-}
-
-export async function POST(req) {
-  return createInvoice(req);
-}
+export const GET = withPermission(getInvoice, "invoice.view");
+export const POST = withPermission(createInvoice, "invoice.create");

@@ -1,12 +1,8 @@
+import { withPermission } from "@/lib/withPermission";
 import {
   createHargaProduk,
   getHargaProduk,
 } from "@/modules/harga-produk/hargaproduk.service";
 
-export async function GET(req) {
-  return getHargaProduk(req);
-}
-
-export async function POST(req) {
-  return createHargaProduk(req);
-}
+export const GET = withPermission(getHargaProduk, "harga-produk.view");
+export const POST = withPermission(createHargaProduk, "harga-produk.create");

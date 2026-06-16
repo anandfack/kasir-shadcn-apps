@@ -1,12 +1,8 @@
+import { withPermission } from "@/lib/withPermission";
 import {
   createSupplier,
   getSupplier,
 } from "@/modules/supplier/supplier.service";
 
-export async function GET(req) {
-  return getSupplier(req);
-}
-
-export async function POST(req) {
-  return createSupplier(req);
-}
+export const GET = withPermission(getSupplier, "supplier.view");
+export const POST = withPermission(createSupplier, "supplier.create");

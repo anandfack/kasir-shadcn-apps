@@ -46,7 +46,6 @@ model LoginPemakai {
   username          String              @unique
   password          String
   last_login        DateTime?
-  role              String
   is_aktif          Boolean
   email             String
   verified          Boolean             @default(false)
@@ -56,6 +55,7 @@ model LoginPemakai {
   updated_at        DateTime            @updatedAt
   deleted_at        DateTime?
   EmailVerification EmailVerification[]
+  userRoles         UserRole[]
 
   @@map("loginpemakai_k")
 }
@@ -69,6 +69,59 @@ model EmailVerification {
   loginPemakai    LoginPemakai? @relation(fields: [loginpemakai_id], references: [id], onDelete: Cascade)
 
   @@map("emailverification_t")
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  label       String
+  description String?
+  is_system   Boolean  @default(false)
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+
+  @@map("roles_m")
+}
+
+model Permission {
+  id     Int    @id @default(autoincrement())
+  name   String @unique
+  label  String
+  group  String
+  action String
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions_m")
+}
+
+model RolePermission {
+  id            Int      @id @default(autoincrement())
+  role_id       Int
+  permission_id Int
+  created_at    DateTime @default(now())
+
+  role       Role       @relation(fields: [role_id], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permission_id], references: [id], onDelete: Cascade)
+
+  @@unique([role_id, permission_id])
+  @@map("rolepermission_t")
+}
+
+model UserRole {
+  id              Int          @id @default(autoincrement())
+  loginpemakai_id Int
+  role_id         Int
+  created_at      DateTime     @default(now())
+
+  loginpemakai LoginPemakai @relation(fields: [loginpemakai_id], references: [id], onDelete: Cascade)
+  role         Role         @relation(fields: [role_id], references: [id], onDelete: Cascade)
+
+  @@unique([loginpemakai_id, role_id])
+  @@map("userrole_t")
 }
 
 model Satuan {

@@ -1,12 +1,8 @@
+import { withPermission } from "@/lib/withPermission";
 import {
   deleteKategoriProduk,
   updateKategoriProduk,
 } from "@/modules/kategori-produk/kategoriproduk.service";
 
-export async function PUT(req, { params }) {
-  return updateKategoriProduk(req, { params });
-}
-
-export async function DELETE(req, { params }) {
-  return deleteKategoriProduk(req, { params });
-}
+export const PUT = withPermission(updateKategoriProduk, "kategori-produk.edit");
+export const DELETE = withPermission(deleteKategoriProduk, "kategori-produk.delete");

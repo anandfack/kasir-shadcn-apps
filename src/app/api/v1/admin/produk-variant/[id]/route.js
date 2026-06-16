@@ -1,12 +1,8 @@
+import { withPermission } from "@/lib/withPermission";
 import {
   deleteProdukVariant,
   updateProdukVariant,
 } from "@/modules/produk-variant/produkvariant.service";
 
-export async function PUT(req, { params }) {
-  return updateProdukVariant(req, { params });
-}
-
-export async function DELETE(req, { params }) {
-  return deleteProdukVariant(req, { params });
-}
+export const PUT = withPermission(updateProdukVariant, "produk-variant.edit");
+export const DELETE = withPermission(deleteProdukVariant, "produk-variant.delete");

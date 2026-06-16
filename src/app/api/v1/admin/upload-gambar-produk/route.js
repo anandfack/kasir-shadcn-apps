@@ -1,5 +1,4 @@
+import { withPermission } from "@/lib/withPermission";
 import { createGambarProduk } from "@/modules/upload-gambar-produk/uploadgambarproduk.service";
 
-export async function POST(req) {
-  return createGambarProduk(req);
-}
+export const POST = withPermission(createGambarProduk, "produk.edit");

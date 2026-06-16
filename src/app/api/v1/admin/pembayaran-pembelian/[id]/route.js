@@ -98,6 +98,7 @@
 import { PrismaClient } from "@prisma/client";
 import jsonResponse from "@/lib/jsonResponse";
 import { verifyAuth } from "@/lib/verifyAuth";
+import { requirePermission, ForbiddenError } from "@/lib/permission";
 import { hitungStatusPembayaran } from "@/lib/hitungStatusPembayaran";
 
 const prisma = new PrismaClient();
@@ -107,6 +108,15 @@ export async function GET(req, { params }) {
     const auth = verifyAuth(req);
     if (auth.error) {
       return jsonResponse({ message: auth.error }, 401);
+    }
+
+    try {
+      await requirePermission(auth.user.id, "invoice.view");
+    } catch (error) {
+      if (error instanceof ForbiddenError) {
+        return jsonResponse({ message: error.message }, 403);
+      }
+      throw error;
     }
 
     // const pembelianId = Number(params.id);

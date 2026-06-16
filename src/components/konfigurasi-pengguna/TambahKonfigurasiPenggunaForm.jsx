@@ -14,8 +14,10 @@ import { Label } from "@/components/ui/label";
 import { apiRequest } from "@/lib/apiRequest";
 import { Listbox, Transition } from "@headlessui/react";
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
-import { CheckIcon, Loader2Icon, SaveIcon } from "lucide-react";
-import { ROLE_OPTIONS } from "@/lib/roleBadge";
+import { CheckIcon, Loader2Icon, SaveIcon, Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { useQuery } from "@tanstack/react-query";
 
 const TambahKonfigurasiPenggunaForm = ({
   onSuccess,
@@ -30,16 +32,26 @@ const TambahKonfigurasiPenggunaForm = ({
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState("");
+  const [roleIds, setRoleIds] = useState([]);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [searchRole, setSearchRole] = useState("");
   const [searchPegawaiWithoutLogin, setSearchPegawaiWithoutLogin] =
     useState("");
 
-  const filteredRoles = ROLE_OPTIONS.filter((role) =>
-    role.label.toLowerCase().includes(searchRole.toLowerCase()),
-  );
+  const { data: roleList = [], isLoading: roleLoading } = useQuery({
+    queryKey: ["roles"],
+    queryFn: () =>
+      apiRequest("GET", "/api/v1/admin/roles").then((res) => res.data || []),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  const toggleRole = (roleId) => {
+    setRoleIds((prev) =>
+      prev.includes(roleId)
+        ? prev.filter((id) => id !== roleId)
+        : [...prev, roleId],
+    );
+  };
 
   const pegawaiList = useMemo(() => {
     if (Array.isArray(pegawaiWithoutLoginData)) return pegawaiWithoutLoginData;
@@ -74,7 +86,7 @@ const TambahKonfigurasiPenggunaForm = ({
         pegawai_id: pegawaiWithoutLoginId,
         username: username,
         password: password,
-        role: role,
+        role_ids: roleIds,
         email: email,
       });
 
@@ -246,89 +258,49 @@ const TambahKonfigurasiPenggunaForm = ({
               type="password"
             />
           </div>
-          {/* Role */}
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label className="text-center">
+          {/* Role (Multi-select) */}
+          <div className="grid grid-cols-4 items-start gap-4">
+            <Label className="text-center pt-2">
               Role <i className="text-red-500">*</i>
             </Label>
 
-            <div className="col-span-3">
-              <Listbox
-                value={ROLE_OPTIONS.find((r) => r.value === role)}
-                onChange={(selectedRole) => setRole(selectedRole.value)}
-              >
-                <div className="relative mt-1">
-                  <Listbox.Button className="relative w-full h-10 rounded-md bg-background border border-input py-2 pl-3 pr-10 text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-ring sm:text-sm">
-                    <span className="block truncate">
-                      {ROLE_OPTIONS.find((r) => r.value === role)?.label ||
-                        "Pilih Role"}
-                    </span>
-                    <span className="absolute inset-y-0 right-0 flex items-center pr-2">
-                      <ChevronUpDownIcon className="h-5 w-5" />
-                    </span>
-                  </Listbox.Button>
-
-                  <Transition
-                    as={Fragment}
-                    leave="transition-opacity duration-100"
-                  >
-                    <Listbox.Options className="absolute z-10 mt-1 w-full rounded-md bg-popover shadow-lg ring-1 ring-black/5 dark:ring-white/10 sm:text-sm">
-                      {/* 🔍 Search */}
-                      <div className="p-2 border-b">
-                        <Input
-                          placeholder="Cari role..."
-                          value={searchRole}
-                          onChange={(e) => setSearchRole(e.target.value)}
-                          onKeyDownCapture={(e) => {
-                            if (e.key === " ") e.stopPropagation();
-                          }}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-
-                      {/* 📋 List Role */}
-                      <div className="max-h-48 overflow-auto">
-                        {filteredRoles.length > 0 ? (
-                          filteredRoles.map((role) => (
-                            <Listbox.Option
-                              key={role.value}
-                              value={role}
-                              className={({ active }) =>
-                                `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                                  active
-                                    ? "bg-accent text-accent-foreground"
-                                    : "text-popover-foreground"
-                                }`
-                              }
-                            >
-                              {({ selected }) => (
-                                <>
-                                  <span
-                                    className={`block truncate ${
-                                      selected ? "font-medium" : "font-normal"
-                                    }`}
-                                  >
-                                    {role.label}
-                                  </span>
-                                  {selected && (
-                                    <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-primary">
-                                      <CheckIcon className="h-5 w-5" />
-                                    </span>
-                                  )}
-                                </>
-                              )}
-                            </Listbox.Option>
-                          ))
-                        ) : (
-                          <div className="px-4 py-2 text-muted-foreground text-sm">
-                            Role tidak ditemukan
-                          </div>
-                        )}
-                      </div>
-                    </Listbox.Options>
-                  </Transition>
+            <div className="col-span-3 space-y-2">
+              {roleLoading ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Memuat role...
                 </div>
-              </Listbox>
+              ) : (
+                <div className="border rounded-md p-3 space-y-2 max-h-48 overflow-y-auto">
+                  {roleList.length === 0 && (
+                    <p className="text-sm text-muted-foreground">
+                      Tidak ada role tersedia
+                    </p>
+                  )}
+                  {roleList.map((role) => {
+                    const isSelected = roleIds.includes(role.id);
+                    return (
+                      <label
+                        key={role.id}
+                        className="flex items-center gap-3 cursor-pointer hover:bg-accent/50 rounded px-2 py-1.5"
+                      >
+                        <Checkbox
+                          checked={isSelected}
+                          onCheckedChange={() => toggleRole(role.id)}
+                        />
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium">
+                            {role.label}
+                          </span>
+                          <Badge variant="outline" className="text-xs">
+                            {role.name}
+                          </Badge>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>

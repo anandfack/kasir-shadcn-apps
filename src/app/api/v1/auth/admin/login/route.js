@@ -15,7 +15,7 @@ export async function POST(req) {
     const errors = {};
 
     if (!username || username.trim() === "") {
-      errors.username = "Username wajib diisi";
+      errors.username = "Username/Email wajib diisi";
     }
 
     if (password.length < 8) {
@@ -34,23 +34,32 @@ export async function POST(req) {
       );
     }
 
-    const user = await prisma.loginPemakai.findUnique({
-      where: { username },
+    const user = await prisma.loginPemakai.findFirst({
+      where: {
+        OR: [
+          { username },
+          { email: username },
+        ],
+      },
     });
 
     if (!user) {
-      jsonResponse(
+      return jsonResponse(
         {
-          message: "Username tidak ditemukan",
+          message: "Username/Email tidak ditemukan",
         },
         400
       );
     }
 
-    if (user.role !== "superadmin") {
+    const userRoles = await prisma.userRole.findMany({
+      where: { loginpemakai_id: user.id },
+    });
+
+    if (userRoles.length === 0) {
       return jsonResponse(
         {
-          message: "Akses ditolak, anda bukan admin",
+          message: "Akses ditolak, anda tidak memiliki role",
         },
         403
       );
@@ -90,20 +99,10 @@ export async function POST(req) {
       data: { last_login: new Date() },
     });
 
-    // const token = jwt.sign(
-    //   {
-    //     id: user.id,
-    //     username: user.username,
-    //     role: user.role,
-    //     pegawai_id: user.pegawai_id,
-    //   },
-    //   process.env.JWT_SECRET,
-    //   { expiresIn: "1h" }
-    // );
     const token = await new SignJWT({
       id: user.id,
-      role: user.role,
       pegawai_id: user.pegawai_id,
+      role_ids: userRoles.map(ur => ur.role_id),
     })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()

@@ -1,9 +1,5 @@
+import { withPermission } from "@/lib/withPermission";
 import { createProduk, getProduk } from "@/modules/produk/produk.service";
 
-export async function GET(req) {
-  return getProduk(req);
-}
-
-export async function POST(req) {
-  return createProduk(req);
-}
+export const GET = withPermission(getProduk, "produk.view");
+export const POST = withPermission(createProduk, "produk.create");
