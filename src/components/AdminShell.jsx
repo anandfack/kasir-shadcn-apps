@@ -4,6 +4,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import AdminNavbar from "@/components/admin-navbar/AdminNavbar";
 import { Toaster } from "@/components/ui/toaster";
+import AiAssistant from "@/components/ai/AiAssistant";
 
 export default function AdminShell({ children, user }) {
   return (
@@ -23,6 +24,7 @@ export default function AdminShell({ children, user }) {
         </div>
 
         <Toaster />
+        <AiAssistant />
       </SidebarProvider>
     </>
   );
